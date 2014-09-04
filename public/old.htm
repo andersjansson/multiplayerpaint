@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <div id="output"></div>
+  <div id="input">
+    <input id="chat"></input><br/>
+    <input id="nickname" value="I AM AN IDIOT"></input>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    var chatInput = document.getElementById("chat");
+    var nickInput = document.getElementById("nickname");
+
+    chatInput.onkeyup = function(e){
+      if(e.keyCode == '13'){
+        socket.emit("chatMessage", JSON.stringify({
+          "msg" :chatInput.value,
+          "nick":nickInput.value 
+        }));
+        chatInput.value = "";
+      }    
+    };
+
+
+
+    socket.on('new', function(msg){
+      document.getElementById("output").innerHTML += msg + "<br/>";
+    });
+
+  </script>
+</body>
+</html>
