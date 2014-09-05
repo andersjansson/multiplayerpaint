@@ -7,11 +7,15 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
 });
 
+app.get('/js/client.js', function(req, res){
+  res.sendFile(__dirname + '/public/js/client.js');
+});
+
 painting = new Painting();
 
 io.on('connection', function(socket){
   console.log('client connected');
-  console.log(painting.getFullPainting());
+  io.sockets.emit("drawFullCanvas", painting.getFullPainting());
   socket.on('chatMessage', function(msg){
     var input = JSON.parse(msg);
     var chatString = input.nick + ": " + input.msg;
