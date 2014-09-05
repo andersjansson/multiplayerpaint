@@ -7,10 +7,11 @@
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+  <button id="destroy">DESTOOOOOOOY</button>
   <canvas id="canvas" width="490" height="490" style="border: solid black 1px;">
 
     <script>
-      
+     
       
       function CanvasApp()
       {
@@ -23,6 +24,9 @@
         this.clickY = new Array();
         this.clickDrag = new Array();
 
+        this.startX;
+        this.startY;
+
         this.socket = io();
         this.setupListeners();
       }
@@ -32,36 +36,94 @@
           var _this = this;
 
           $(this.canvas).mousedown(function(e){
-            var mouseX = e.pageX - this.offsetLeft;
-            var mouseY = e.pageY - this.offsetTop;
+            _this.startX = e.pageX - this.offsetLeft;
+            _this.startY = e.pageY - this.offsetTop;
 
             _this.isPainting = true;
-            _this.addClick(mouseX, mouseY);
-            //_this.redraw();
           });
 
           $(this.canvas).mousemove(function(e){
-            if(_this.isPainting){
-              _this.addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
-              //_this.redraw();
-            }
+              _this.drawFrame(e);
           });
 
           $(this.canvas).mouseup(function(e){
             _this.isPainting = false;
+            _this.addToCanvas();
           });
 
           $(this.canvas).mouseleave(function(e){
             _this.isPainting = false;
+            _this.addToCanvas();
           });
 
           this.socket.on("otherUserDrawing", function(data){
-            var parsedData = JSON.parse(data);
-            _this.addClickOther(parsedData.x, parsedData.y, parsedData.d);
-            //_this.redraw();
+            var d = JSON.parse(data);
+            _this.drawFrameOther(d.sX, d.sY, d.eX, d.eY);
           });
         }      
 
+        CanvasApp.prototype.drawFrame = function(e)
+        {
+          if(!this.isPainting)
+            return;
+
+          mouseX = e.pageX - this.canvas.offsetLeft;
+          mouseY = e.pageY - this.canvas.offsetTop;
+
+          this.sendData(this.startX, this.startY, mouseX, mouseY);
+
+          this.context.beginPath();
+          this.context.moveTo(this.startX, this.startY);
+
+          this.context.lineTo(mouseX, mouseY);
+          this.context.stroke();
+
+          this.startX = mouseX;
+          this.startY = mouseY;
+        }
+
+        CanvasApp.prototype.drawFrameOther = function(sX,sY,eX,eY)
+        {
+          this.context.beginPath();
+          this.context.moveTo(sX, sY);
+
+          this.context.lineTo(eX, eY);
+          this.context.stroke();
+        }
+
+        CanvasApp.prototype.sendData = function(startX,startY,endX,endY)
+        {
+          this.socket.emit("draw", JSON.stringify({
+            "sX" : startX,
+            "sY" : startY,
+            "eX" : endX,
+            "eY" : endY
+          }));
+        }
+        /*
+        CanvasApp.prototype.drawFullCanvas = function(){
+          this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height); 
+          
+          this.context.strokeStyle = "#df4b26";
+          this.context.lineJoin = "round";
+          this.context.lineWidth = 5;
+              
+          for(var i=0; i < this.tempX.length; i++) {    
+            var x = this.context.beginPath();
+            
+            if(this.clickDrag[i] && i)
+              this.context.moveTo(this.clickX[i-1], this.clickY[i-1]);
+             
+            else
+              this.context.moveTo(this.clickX[i]-1, this.clickY[i]);
+            
+             this.context.lineTo(this.clickX[i], this.clickY[i]);
+             this.context.closePath();
+             this.context.stroke();
+          }
+        }*/
+
+        /*
         CanvasApp.prototype.addClickOther = function(x, y, dragging)
         {
           this.clickX.push(x);
@@ -71,44 +133,18 @@
 
         CanvasApp.prototype.addClick = function(x, y, dragging)
         {
-          /*this.socket.emit("draw", JSON.stringify({
-            "x" : x,
-            "y" : y,
-            "d" : dragging
-          }));*/
+          
           
           this.clickX.push(x);
           this.clickY.push(y);
           this.clickDrag.push(dragging);
-        }
-
-
-
-        var canvas2  = document.createElement("canvas");
-        var context2 = canvas2.getContext("2d");
-
-        CanvasApp.prototype.redraw = function(){
-          //this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height); 
-          
-          this.context.strokeStyle = "#df4b26";
-          this.context.lineJoin = "round";
-          this.context.lineWidth = 5;
-              
-          for(var i=0; i < this.clickX.length; i++) {    
-            var x = this.context.beginPath();
-            console.log(x);
-            if(this.clickDrag[i] && i){
-              this.context.moveTo(this.clickX[i-1], this.clickY[i-1]);
-             }else{
-               this.context.moveTo(this.clickX[i]-1, this.clickY[i]);
-             }
-             this.context.lineTo(this.clickX[i], this.clickY[i]);
-             this.context.closePath();
-             this.context.stroke();
-          }
-        }
+        }*/
 
       var app = new CanvasApp();
+
+       $("#destroy").click(function(e){
+          app.socket.emit('destroy');     
+        });
     </script>
 </body>
 </html>
