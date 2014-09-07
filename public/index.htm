@@ -5,17 +5,24 @@
   <title>Canvas test</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="js/jscolor/jscolor.js"></script>
 </head>
 <body>
   <button id="destroy">DESTOOOOOOOY</button>
-  <canvas id="canvas" width="490" height="490" style="border: solid black 1px;">
-    <script src="/js/client.js"></script>
-    <script>
-      var app = new CanvasApp();
+  
+  <canvas id="canvas" width="490" height="490" style="border: solid black 1px;"></canvas>
 
-       $("#destroy").click(function(e){
-          app.socket.emit('destroy');     
-        });
-    </script>
+  <div id="colorPicker">
+    <input class="color">
+  </div>
+
+  <script src="/js/client.js"></script>
+  <script>
+    var app = new CanvasApp();
+
+     $("#destroy").click(function(e){
+        app.socket.emit('destroy');     
+      });
+  </script>
 </body>
 </html>

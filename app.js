@@ -3,12 +3,10 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+app.use(express.static(__dirname + '/public'));
+
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
-});
-
-app.get('/js/client.js', function(req, res){
-  res.sendFile(__dirname + '/public/js/client.js');
 });
 
 painting = new Painting();
