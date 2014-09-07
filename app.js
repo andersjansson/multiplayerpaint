@@ -21,8 +21,8 @@ io.on('connection', function(socket){
     io.sockets.emit("new", chatString);
   });
 
-  socket.on("draw", function(msg){
-    socket.broadcast.emit("otherUserDrawing", msg);
+  socket.on("drawLine", function(msg){
+    socket.broadcast.emit("otherUserDrawingLine", msg);
     painting.saveBrushStroke(JSON.parse(msg));
   });
 

@@ -1,5 +1,4 @@
 - byta storlek på brush
-- byta färg på brush
 - rum
 - chat
 - visa hur många som är inne
@@ -7,3 +6,8 @@
 - spara färdig bild
 - html/css runt
 - single click = punkt
+
+
+Bugs:
+
+- canvas målas upp på nytt för alla användare när ny connectar

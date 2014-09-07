@@ -12,9 +12,34 @@ function CanvasApp()
   this.startX;
   this.startY;
 
-  this.socket = io();
-  this.setupListeners();
+  this.init();  
 }
+  CanvasApp.prototype.init = function()
+  {
+    this.socket = io();
+    this.setupListeners();
+    this.setupSocketEvents();
+
+    this.toolKit = new ToolKit(this);
+
+    this.color = "rgb(0,0,0)";
+
+    this.setColor(this.color);
+  }
+
+  CanvasApp.prototype.setupSocketEvents = function()
+  {
+    var _this = this;
+
+    this.socket.on("otherUserDrawingLine", function(data){
+      var d = JSON.parse(data);
+      _this.drawLineOther(d.sX, d.sY, d.eX, d.eY, d.color);
+    });
+
+    this.socket.on("drawFullCanvas", function(data){
+      _this.drawFullCanvas(data);
+    });
+  }
 
   CanvasApp.prototype.setupListeners = function()
   {
@@ -28,28 +53,20 @@ function CanvasApp()
     });
 
     $(this.canvas).mousemove(function(e){
-        _this.drawFrame(e);
+        _this.drawLine(e);
     });
 
     $(this.canvas).mouseup(function(e){
       _this.isPainting = false;
     });
-
-    $(this.canvas).mouseleave(function(e){
-      _this.isPainting = false;
-    });
-
-    this.socket.on("otherUserDrawing", function(data){
-      var d = JSON.parse(data);
-      _this.drawFrameOther(d.sX, d.sY, d.eX, d.eY);
-    });
-
-    this.socket.on("drawFullCanvas", function(data){
-      _this.drawFullCanvas(data);
-    });
   }      
 
-  CanvasApp.prototype.drawFrame = function(e)
+  CanvasApp.prototype.setColor = function(newColor)
+  {
+    this.color = newColor;
+  }
+
+  CanvasApp.prototype.drawLine = function(e)
   {
     if(!this.isPainting)
       return;
@@ -57,46 +74,82 @@ function CanvasApp()
     mouseX = e.pageX - this.canvas.offsetLeft;
     mouseY = e.pageY - this.canvas.offsetTop;
 
-    this.sendData(this.startX, this.startY, mouseX, mouseY);
+    this.sendData(this.startX, this.startY, mouseX, mouseY, this.color);
 
     this.context.beginPath();
-    this.context.moveTo(this.startX, this.startY);
-
-    this.context.lineTo(mouseX, mouseY);
-    this.context.stroke();
+      this.context.strokeStyle = this.color;
+      this.context.moveTo(this.startX, this.startY);
+      this.context.lineTo(mouseX, mouseY);
+      this.context.stroke();
+    this.context.closePath();
 
     this.startX = mouseX;
     this.startY = mouseY;
   }
 
-  CanvasApp.prototype.drawFrameOther = function(sX,sY,eX,eY)
+  CanvasApp.prototype.drawLineOther = function(sX,sY,eX,eY,color)
   {
     this.context.beginPath();
-    this.context.moveTo(sX, sY);
-
-    this.context.lineTo(eX, eY);
-    this.context.stroke();
+      this.context.strokeStyle = color;
+      this.context.moveTo(sX, sY);
+      this.context.lineTo(eX, eY);
+      this.context.stroke();
+    this.context.closePath();
   }
 
-  CanvasApp.prototype.sendData = function(startX,startY,endX,endY)
+  CanvasApp.prototype.sendData = function(sX,sY,eX,eY,color)
   {
-    this.socket.emit("draw", JSON.stringify({
-      "sX" : startX,
-      "sY" : startY,
-      "eX" : endX,
-      "eY" : endY
+    this.socket.emit("drawLine", JSON.stringify({
+      "sX" : sX,
+      "sY" : sY,
+      "eX" : eX,
+      "eY" : eY,
+      "color" : color
     }));
-  }
-
-  CanvasApp.prototype.draw = function(a,b,c,d)
-  {
-
   }
   
   CanvasApp.prototype.drawFullCanvas = function(JSONstring){
     var dataObject = JSON.parse(JSONstring);
 
     for(var i=0; i < dataObject.length; i++) {    
-      this.drawFrameOther(dataObject[i].sX, dataObject[i].sY, dataObject[i].eX, dataObject[i].eY);
+      this.drawLineOther(
+        dataObject[i].sX, 
+        dataObject[i].sY, 
+        dataObject[i].eX, 
+        dataObject[i].eY, 
+        dataObject[i].color
+      );
     }
+  }
+
+
+function ToolKit(canvasApp)
+{
+  this.app = canvasApp;
+  this.color;
+  this.brushSize;
+
+  this.init();
+  this.setupListeners();
+}
+
+  ToolKit.prototype.init = function()
+  {
+    var _this = this;
+
+    this.colorPicker = document.getElementById("cp");
+
+    setTimeout(function(){
+      _this.colorPicker.color.fromString("000");
+      _this.app.setColor(_this.colorPicker.style.backgroundColor);  
+    }, 1);
+  }
+
+  ToolKit.prototype.setupListeners = function()
+  {
+    var _this = this;
+
+    $(this.colorPicker).change(function(){
+      _this.app.setColor(_this.colorPicker.style.backgroundColor);  
+    });
   }
