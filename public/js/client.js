@@ -23,6 +23,8 @@ function CanvasApp()
     this.toolKit = new ToolKit(this);
 
     this.color = "rgb(0,0,0)";
+    this.size  = 5;
+    this.context.lineJoin = "round";
 
     this.setColor(this.color);
   }
@@ -33,7 +35,7 @@ function CanvasApp()
 
     this.socket.on("otherUserDrawingLine", function(data){
       var d = JSON.parse(data);
-      _this.drawLineOther(d.sX, d.sY, d.eX, d.eY, d.color);
+      _this.drawLineOther(d.sX, d.sY, d.eX, d.eY, d.color, d.size);
     });
 
     this.socket.on("drawFullCanvas", function(data){
@@ -66,6 +68,11 @@ function CanvasApp()
     this.color = newColor;
   }
 
+  CanvasApp.prototype.setSize = function(newSize)
+  {
+    this.size = newSize;
+  }
+
   CanvasApp.prototype.drawLine = function(e)
   {
     if(!this.isPainting)
@@ -74,37 +81,51 @@ function CanvasApp()
     mouseX = e.pageX - this.canvas.offsetLeft;
     mouseY = e.pageY - this.canvas.offsetTop;
 
-    this.sendData(this.startX, this.startY, mouseX, mouseY, this.color);
+    
 
     this.context.beginPath();
       this.context.strokeStyle = this.color;
+      this.context.lineWidth   = this.size;
       this.context.moveTo(this.startX, this.startY);
       this.context.lineTo(mouseX, mouseY);
-      this.context.stroke();
     this.context.closePath();
+
+    this.context.stroke();
+    
+    this.sendData(this.startX, this.startY, mouseX, mouseY, this.color, this.size);
 
     this.startX = mouseX;
     this.startY = mouseY;
   }
 
-  CanvasApp.prototype.drawLineOther = function(sX,sY,eX,eY,color)
+  CanvasApp.prototype.drawLineOther = function(sX,sY,eX,eY,color,size)
   {
+    //console.log("incoming size: "+size);
+    //console.log("drawing with size: "+this.context.lineWidth);
+
     this.context.beginPath();
       this.context.strokeStyle = color;
+      this.context.lineWidth   = size;
+      //console.log("drawing with size: "+this.context.lineWidth);
       this.context.moveTo(sX, sY);
       this.context.lineTo(eX, eY);
-      this.context.stroke();
     this.context.closePath();
+
+      this.context.stroke();
+    
   }
 
-  CanvasApp.prototype.sendData = function(sX,sY,eX,eY,color)
+  CanvasApp.prototype.sendData = function(sX,sY,eX,eY,color,size)
   {
+    //console.log("sendData, size: "+size);
+
     this.socket.emit("drawLine", JSON.stringify({
-      "sX" : sX,
-      "sY" : sY,
-      "eX" : eX,
-      "eY" : eY,
-      "color" : color
+      "sX"    : sX,
+      "sY"    : sY,
+      "eX"    : eX,
+      "eY"    : eY,
+      "color" : color,
+      "size"  : size
     }));
   }
   
@@ -117,7 +138,8 @@ function CanvasApp()
         dataObject[i].sY, 
         dataObject[i].eX, 
         dataObject[i].eY, 
-        dataObject[i].color
+        dataObject[i].color,
+        dataObject[i].size
       );
     }
   }
@@ -138,7 +160,17 @@ function ToolKit(canvasApp)
     var _this = this;
 
     this.colorPicker = document.getElementById("cp");
+    this.slider = $(".slider");
+    this.slider.slider({
+      min: 1,
+      max: 50,
+      step: 1,
+      orientation: "horizontal",
+      value: 5,
+      tooltip: "hide"
+    });
 
+    //initializing colorpicker with black
     setTimeout(function(){
       _this.colorPicker.color.fromString("000");
       _this.app.setColor(_this.colorPicker.style.backgroundColor);  
@@ -152,4 +184,13 @@ function ToolKit(canvasApp)
     $(this.colorPicker).change(function(){
       _this.app.setColor(_this.colorPicker.style.backgroundColor);  
     });
+
+    this.slider.on('slide', function(e){
+      _this.app.setSize(_this.slider.val());
+    });
   }
+
+function FancyMousePointer(size)
+{
+
+}

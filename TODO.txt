@@ -6,7 +6,10 @@
 - spara färdig bild
 - html/css runt
 - single click = punkt
+- "loading" medan en pågående canvas laddar
+  - börjar när drawFullCanvas, callback när den är färdig
 
+- fixa så det inte går att highlighta canvas
 
 Bugs:
 
