@@ -1,4 +1,3 @@
-- byta storlek på brush
 - rum
 - chat
 - visa hur många som är inne
@@ -8,7 +7,7 @@
 - single click = punkt
 - "loading" medan en pågående canvas laddar
   - börjar när drawFullCanvas, callback när den är färdig
-
+- undo/redo
 - fixa så det inte går att highlighta canvas
 
 Bugs:

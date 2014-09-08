@@ -8,17 +8,19 @@
   <script src="js/jscolor/jscolor.js"></script>
   <link href="css/slider.css" rel="stylesheet">
 </head>
-<body>
+<body style="user-select: none; -webkit-user-select: none; -moz-user-select: none;">
   <button id="destroy">DESTOOOOOOOY</button>
-  
-  <canvas id="canvas" width="490" height="490" style="border: solid black 1px;"></canvas>
+  <canvas id="canvas" width="490" height="490" style="border: solid black 1px; cursor: crosshair;"></canvas>
   <div id="uiElements">
     <div id="colorPicker">
+      Color:
       <input class="color" id="cp">
     </div><br/>
     <div id="brushSizeSlider">
+      Size:
       <input type="text" class="slider" id="brushSize" />
     </div>
+    <div id="brushDiv" style="border-radius: 100%; width: 10px; height: 10px; background: black; position: absolute; top: 0; left: 0; z-index: 998; pointer-events:none;"></div>
   </div>
   
   <script src="/js/bootstrap-slider.js"></script>  

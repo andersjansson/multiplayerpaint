@@ -24,6 +24,9 @@ function CanvasApp()
 
     this.color = "rgb(0,0,0)";
     this.size  = 5;
+
+    this.pointer = new FancyMousePointer(this);
+
     this.context.lineJoin = "round";
 
     this.setColor(this.color);
@@ -58,6 +61,18 @@ function CanvasApp()
         _this.drawLine(e);
     });
 
+    $(document).mousemove(function(e){
+      _this.pointer.move(e);
+    });
+
+    $(this.canvas).mouseenter(function(e){
+        _this.pointer.show();
+    });
+
+    $(this.canvas).mouseout(function(e){
+        _this.pointer.hide();
+    });
+
     $(this.canvas).mouseup(function(e){
       _this.isPainting = false;
     });
@@ -78,10 +93,8 @@ function CanvasApp()
     if(!this.isPainting)
       return;
 
-    mouseX = e.pageX - this.canvas.offsetLeft;
-    mouseY = e.pageY - this.canvas.offsetTop;
-
-    
+    var mouseX = e.pageX - this.canvas.offsetLeft;
+    var mouseY = e.pageY - this.canvas.offsetTop;
 
     this.context.beginPath();
       this.context.strokeStyle = this.color;
@@ -161,16 +174,17 @@ function ToolKit(canvasApp)
 
     this.colorPicker = document.getElementById("cp");
     this.slider = $(".slider");
+
     this.slider.slider({
       min: 1,
-      max: 50,
+      max: 100,
       step: 1,
       orientation: "horizontal",
       value: 5,
       tooltip: "hide"
     });
 
-    //initializing colorpicker with black
+    //fulfix för att se till att colorpickern börjar med svart
     setTimeout(function(){
       _this.colorPicker.color.fromString("000");
       _this.app.setColor(_this.colorPicker.style.backgroundColor);  
@@ -181,16 +195,71 @@ function ToolKit(canvasApp)
   {
     var _this = this;
 
+    //färgväljaren ändras
     $(this.colorPicker).change(function(){
-      _this.app.setColor(_this.colorPicker.style.backgroundColor);  
+      _this.app.setColor(_this.colorPicker.style.backgroundColor);
+      _this.app.pointer.setColor(_this.colorPicker.style.backgroundColor);
     });
 
-    this.slider.on('slide', function(e){
-      _this.app.setSize(_this.slider.val());
+    //slidern flyttas
+    this.slider.on('slideStop', function(e){
+      setTimeout(function(){
+        _this.app.setSize(_this.slider.val());
+        _this.app.pointer.setSize(_this.slider.val());
+      }, 1);
+      
     });
   }
 
-function FancyMousePointer(size)
+//sköter muspekaren
+function FancyMousePointer(app)
 {
+  this.size;
+  this.color;
+
+  this.div = $("#brushDiv");
+
+  this.app = app;
+  this.init();
 
 }
+  FancyMousePointer.prototype.init = function()
+  {
+    this.setSize(this.app.size);
+    this.setColor(this.app.color);
+
+    this.hide();
+  }
+
+  FancyMousePointer.prototype.show = function(e)
+  {
+    this.div.css("visibility", "visible");
+  }
+
+  FancyMousePointer.prototype.move = function(e)
+  {
+    var mouseX = e.pageX - this.size/2;
+    var mouseY = e.pageY - this.size/2;
+    this.div.css({
+      "top": mouseY,
+      "left": mouseX
+    });
+  }
+
+  FancyMousePointer.prototype.hide = function()
+  {
+    this.div.css("visibility", "hidden");
+  }
+
+  FancyMousePointer.prototype.setSize = function(size)
+  {
+    console.log("changing size");
+    this.size = size;
+    this.div.css({"width": size, "height": size});
+  }
+
+  FancyMousePointer.prototype.setColor = function(color)
+  {
+    this.color = color;
+    this.div.css("background", color);
+  }
