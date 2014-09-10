@@ -58,7 +58,7 @@ function CanvasApp()
     });
 
     $(this.canvas).mousemove(function(e){
-        _this.drawLine(e);
+        _this.drawLineSelf(e);
     });
 
     $(document).mousemove(function(e){
@@ -73,7 +73,8 @@ function CanvasApp()
         _this.pointer.hide();
     });
 
-    $(this.canvas).mouseup(function(e){
+    $(document).mouseup(function(e){
+      _this.singleClick(e);
       _this.isPainting = false;
     });
   }      
@@ -88,11 +89,21 @@ function CanvasApp()
     this.size = newSize;
   }
 
-  CanvasApp.prototype.drawLine = function(e)
+  CanvasApp.prototype.singleClick = function(e)
+  {
+    var endPosX = e.pageX - this.canvas.offsetLeft;
+    var endPosY = e.pageY - this.canvas.offsetTop;
+
+    if(this.isPainting && this.startX == endPosX && this.startY == endPosY){
+      console.log("single Click!");
+    }
+  }
+
+  CanvasApp.prototype.drawLineSelf = function(e)
   {
     if(!this.isPainting)
-      return;
-
+      return
+;
     var mouseX = e.pageX - this.canvas.offsetLeft;
     var mouseY = e.pageY - this.canvas.offsetTop;
 
@@ -113,13 +124,9 @@ function CanvasApp()
 
   CanvasApp.prototype.drawLineOther = function(sX,sY,eX,eY,color,size)
   {
-    //console.log("incoming size: "+size);
-    //console.log("drawing with size: "+this.context.lineWidth);
-
     this.context.beginPath();
       this.context.strokeStyle = color;
       this.context.lineWidth   = size;
-      //console.log("drawing with size: "+this.context.lineWidth);
       this.context.moveTo(sX, sY);
       this.context.lineTo(eX, eY);
     this.context.closePath();
@@ -130,7 +137,6 @@ function CanvasApp()
 
   CanvasApp.prototype.sendData = function(sX,sY,eX,eY,color,size)
   {
-    //console.log("sendData, size: "+size);
 
     this.socket.emit("drawLine", JSON.stringify({
       "sX"    : sX,
@@ -253,7 +259,6 @@ function FancyMousePointer(app)
 
   FancyMousePointer.prototype.setSize = function(size)
   {
-    console.log("changing size");
     this.size = size;
     this.div.css({"width": size, "height": size});
   }
