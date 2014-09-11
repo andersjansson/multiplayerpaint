@@ -10,6 +10,13 @@
 - undo/redo
 - fixa så det inte går att highlighta canvas
 
+- arv toolkit-tools?
 Bugs:
 
 - canvas målas upp på nytt för alla användare när ny connectar
+
+Features?
+
+- Lager?
+  - "New Layer" skapar en ny canvas hos alla, och lägger till i en lagerlista för alla,
+    så man kan rita i varandras lager, ändra ordningen på dem (alt. kunna låsa lager)

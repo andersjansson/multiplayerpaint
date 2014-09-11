@@ -9,6 +9,15 @@
   <link href="css/slider.css" rel="stylesheet">
 </head>
 <body style="user-select: none; -webkit-user-select: none; -moz-user-select: none;">
+  <style>
+    #eyedropper{
+      
+    }
+
+    #eyedropper:hover{
+      cursor: pointer;
+    }
+  </style>
   <button id="destroy">DESTOOOOOOOY</button>
   <canvas id="canvas" width="490" height="490" style="border: solid black 1px; cursor: crosshair;"></canvas>
   <div id="uiElements">
@@ -21,6 +30,7 @@
       <input type="text" class="slider" id="brushSize" />
     </div>
     <div id="brushDiv" style="border-radius: 100%; width: 10px; height: 10px; background: black; position: absolute; top: 0; left: 0; z-index: 998; pointer-events:none;"></div>
+    <img id="eyedropper" src="img/eyedropper.png" style="width: 30px; height: 30px;">
   </div>
   
   <script src="/js/bootstrap-slider.js"></script>  
@@ -31,7 +41,7 @@
 
      $("#destroy").click(function(e){
         app.socket.emit('destroy');
-      });
+     });
   </script>
 </body>
 </html>

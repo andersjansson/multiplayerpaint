@@ -12,6 +12,9 @@ function CanvasApp()
   this.startX;
   this.startY;
 
+  this.clickX;
+  this.clickY;
+
   this.init();  
 }
   CanvasApp.prototype.init = function()
@@ -24,8 +27,6 @@ function CanvasApp()
 
     this.color = "rgb(0,0,0)";
     this.size  = 5;
-
-    this.pointer = new FancyMousePointer(this);
 
     this.context.lineJoin = "round";
 
@@ -53,31 +54,77 @@ function CanvasApp()
     $(this.canvas).mousedown(function(e){
       _this.startX = e.pageX - this.offsetLeft;
       _this.startY = e.pageY - this.offsetTop;
+      _this.clickX = _this.startX;
+      _this.clickY = _this.startY;
 
+      if(!_this.toolKit.pointer.eyeDropper.selected)
       _this.isPainting = true;
+
     });
 
     $(this.canvas).mousemove(function(e){
         _this.drawLineSelf(e);
+
+        //if eyedropper is selected
+        if(_this.toolKit.pointer.eyeDropper.selected){
+          var mouseX = e.pageX - _this.canvas.offsetLeft;
+          var mouseY = e.pageY - _this.canvas.offsetTop;
+          var cData = _this.toolKit.pointer.eyeDropper.getColor(mouseX, mouseY);
+
+          if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0)
+            _this.toolKit.colorPicker.color.fromRGB(1,1,1);
+
+          else
+            _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
+        }
     });
 
     $(document).mousemove(function(e){
-      _this.pointer.move(e);
+      _this.toolKit.pointer.move(e);
     });
 
     $(this.canvas).mouseenter(function(e){
-        _this.pointer.show();
+        _this.toolKit.pointer.show();
     });
 
     $(this.canvas).mouseout(function(e){
-        _this.pointer.hide();
+        _this.toolKit.pointer.hide();
     });
 
     $(document).mouseup(function(e){
-      _this.singleClick(e);
+
+      //if eyedropper is selected
+      if (_this.toolKit.pointer.eyeDropper.selected) {
+        var cData = _this.toolKit.pointer.eyeDropper.getColor(_this.clickX, _this.clickY);
+        var col = "rgb("+cData[0]+","+cData[1]+","+cData[2]+")";
+        
+        if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0){
+          col = "rgb(255,255,255)";
+          _this.toolKit.colorPicker.color.fromRGB(1,1,1);
+        }
+        else
+          _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
+
+        _this.color = col;
+        
+        _this.toolKit.pointer.setColor(col);
+        _this.toolKit.pointer.eyeDropper.selected = false;
+        _this.toolKit.pointer.color = this.color;
+        _this.toolKit.pointer.show();
+      }
+
+      //if eyedropper is not selected
+      else
+        _this.singleClick(e);
+
       _this.isPainting = false;
     });
-  }      
+  }
+
+  CanvasApp.prototype.getColorData = function()
+  {
+
+  }
 
   CanvasApp.prototype.setColor = function(newColor)
   {
@@ -94,16 +141,20 @@ function CanvasApp()
     var endPosX = e.pageX - this.canvas.offsetLeft;
     var endPosY = e.pageY - this.canvas.offsetTop;
 
-    if(this.isPainting && this.startX == endPosX && this.startY == endPosY){
-      console.log("single Click!");
+    if(this.isPainting && this.clickX == endPosX && this.clickY == endPosY){
+      this.context.beginPath();
+      this.context.fillStyle = this.color;
+      this.context.arc(this.clickX, this.clickY, this.size/2, 0, 2*Math.PI);
+      this.context.closePath();
+      this.context.fill();
     }
   }
 
   CanvasApp.prototype.drawLineSelf = function(e)
   {
     if(!this.isPainting)
-      return
-;
+      return;
+
     var mouseX = e.pageX - this.canvas.offsetLeft;
     var mouseY = e.pageY - this.canvas.offsetTop;
 
@@ -180,6 +231,7 @@ function ToolKit(canvasApp)
 
     this.colorPicker = document.getElementById("cp");
     this.slider = $(".slider");
+    this.pointer = new FancyMousePointer(this);
 
     this.slider.slider({
       min: 1,
@@ -204,52 +256,57 @@ function ToolKit(canvasApp)
     //färgväljaren ändras
     $(this.colorPicker).change(function(){
       _this.app.setColor(_this.colorPicker.style.backgroundColor);
-      _this.app.pointer.setColor(_this.colorPicker.style.backgroundColor);
+      _this.pointer.setColor(_this.colorPicker.style.backgroundColor);
     });
 
     //slidern flyttas
     this.slider.on('slideStop', function(e){
       setTimeout(function(){
         _this.app.setSize(_this.slider.val());
-        _this.app.pointer.setSize(_this.slider.val());
+        _this.pointer.setSize(_this.slider.val());
       }, 1);
-      
     });
   }
 
 //sköter muspekaren
-function FancyMousePointer(app)
+function FancyMousePointer(kit)
 {
   this.size;
   this.color;
 
+  this.eyeDropper = new EyeDropper(this);
+
   this.div = $("#brushDiv");
 
-  this.app = app;
+  this.kit = kit;
   this.init();
 
 }
   FancyMousePointer.prototype.init = function()
   {
-    this.setSize(this.app.size);
-    this.setColor(this.app.color);
+    this.setSize(this.kit.app.size);
+    this.setColor(this.kit.app.color);
+
+    this.eyeDropper = new EyeDropper(this);
 
     this.hide();
-  }
-
-  FancyMousePointer.prototype.show = function(e)
-  {
-    this.div.css("visibility", "visible");
   }
 
   FancyMousePointer.prototype.move = function(e)
   {
     var mouseX = e.pageX - this.size/2;
     var mouseY = e.pageY - this.size/2;
+
     this.div.css({
       "top": mouseY,
       "left": mouseX
     });
+  }
+
+  FancyMousePointer.prototype.show = function(e)
+  {
+    if(!this.eyeDropper.selected)
+      this.div.css("visibility", "visible");
   }
 
   FancyMousePointer.prototype.hide = function()
@@ -268,3 +325,31 @@ function FancyMousePointer(app)
     this.color = color;
     this.div.css("background", color);
   }
+
+  FancyMousePointer.prototype.imgCursor = function(img)
+  {
+    this.div.css('background-image', 'url(' + img + ')');
+  }
+
+    function EyeDropper(pointer)
+    {
+      this.pointer = pointer;
+      this.selected = false;
+      this.img = $("#eyedropper");
+
+      this.setupListeners();
+    }
+      EyeDropper.prototype.setupListeners = function()
+      {
+        var _this = this;
+        this.img.click(function(){
+          _this.selected = true;
+          _this.pointer.imgCursor("img/eyedropper.png");
+        });
+      }
+
+      EyeDropper.prototype.getColor = function(x,y)
+      {
+        var c = this.pointer.kit.app.context.getImageData(x,y,1,1).data;
+        return c;
+      }
