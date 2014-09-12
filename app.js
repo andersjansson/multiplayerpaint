@@ -16,6 +16,21 @@ painting = new Painting();
 
 io.on('connection', function(socket){
   console.log('client connected');
+  
+  io.sockets.emit("ClientId", socket.id);
+
+  console.log(socket.id);
+
+
+
+
+  io.sockets.emit("RequestDataURL");
+
+  socket.on("getDataURL", function(data){
+      console.log(data);
+  });
+
+
   io.sockets.emit("drawFullCanvas", painting.getFullPainting());
   socket.on('chatMessage', function(msg){
     var input = JSON.parse(msg);
@@ -27,6 +42,16 @@ io.on('connection', function(socket){
   socket.on("drawLine", function(msg){
     socket.broadcast.emit("otherUserDrawingLine", msg);
     painting.saveBrushStroke(JSON.parse(msg));
+  });
+
+  socket.on("sendDataURL", function(dataurl){
+    socket.broadcast.emit("sendImg", dataurl);
+    console.log(dataurl);
+    
+  });
+
+  socket.on("sendPath", function(path){
+    console.log(path);
   });
 
   socket.on("destroy", function(){

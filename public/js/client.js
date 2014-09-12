@@ -44,6 +44,29 @@ function CanvasApp()
 
     this.socket.on("drawFullCanvas", function(data){
       _this.drawFullCanvas(data);
+      //console.log(_this.canvas.toDataURL());
+
+
+      //istället för att skicka datan
+    });
+    this.socket.on("ClientId", function(socketId){
+     console.log(socketId);
+
+     //console.log(_this.canvas.toDataURL());
+    });
+    
+    this.socket.on("sendImg", function(dataImg){
+     console.log(dataImg);
+
+     //console.log(_this.canvas.toDataURL());
+    });
+    
+    this.socket.on("RequestDataURL", function(data){
+        var lol = _this.canvas.toDataURL();
+        console.log(lol);
+        _this.socket.emit("getDataURL",_this.canvas.toDataURL());
+        console.log(_this.canvas.toDataURL());
+      
     });
   }
 
@@ -77,6 +100,8 @@ function CanvasApp()
           else
             _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
         }
+
+
     });
 
     $(document).mousemove(function(e){
@@ -116,7 +141,7 @@ function CanvasApp()
       //if eyedropper is not selected
       else
         _this.singleClick(e);
-
+        console.log(_this.canvas.toDataURL());
       _this.isPainting = false;
     });
   }
@@ -125,7 +150,7 @@ function CanvasApp()
   {
 
   }
-
+ 
   CanvasApp.prototype.setColor = function(newColor)
   {
     this.color = newColor;
@@ -181,8 +206,11 @@ function CanvasApp()
       this.context.moveTo(sX, sY);
       this.context.lineTo(eX, eY);
     this.context.closePath();
-
+    //console.log(this.context.closePath());
+    
       this.context.stroke();
+      //this.socket.emit("sendPath", this.context.closePath());
+      //console.log(this.canvas.toDataURL());
     
   }
 
@@ -198,9 +226,21 @@ function CanvasApp()
       "size"  : size
     }));
   }
+
+  CanvasApp.prototype.sendDataURL = function()
+  {
+
+    this.socket.emit("sendDataURL", this.canvas.toDataURL());
+  }
+  CanvasApp.prototype.drawFullCanvas2 = function(JSONstring){
+    
+    console.log(this.canvas.toDataURL());
+  }
+
   
   CanvasApp.prototype.drawFullCanvas = function(JSONstring){
     var dataObject = JSON.parse(JSONstring);
+
 
     for(var i=0; i < dataObject.length; i++) {    
       this.drawLineOther(
@@ -212,6 +252,7 @@ function CanvasApp()
         dataObject[i].size
       );
     }
+    console.log(this.canvas.toDataURL());
   }
 
 

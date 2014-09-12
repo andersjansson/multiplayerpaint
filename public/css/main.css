@@ -6,6 +6,9 @@ html {
 }
 body {
   margin-bottom: 60px;
+  user-select: none; 
+  -webkit-user-select: none; 
+  -moz-user-select: none;
 }
 .footer {
   position: absolute;
@@ -45,4 +48,13 @@ canvas {
     height: 100%; 
     overflow: hidden;
     border: none;
+}
+
+ #eyedropper{
+      
+}
+
+#eyedropper:hover{
+  
+  cursor: pointer;
 }
