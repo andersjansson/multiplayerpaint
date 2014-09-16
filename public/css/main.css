@@ -1,38 +1,26 @@
   /* Sticky footer styles
 -------------------------------------------------- */
 
-    #canvas{
-      border: solid black 1px; 
-      cursor: crosshair;
-    }
 
-    #eyedropper{
-      
-    }
+#brushDiv{
+  border-radius: 100%; 
+  width: 10px; 
+  height: 10px; 
+  background: black; 
+  position: absolute; 
+  top: 0; left: 0;
+  z-index: 99; 
+  pointer-events:none;
+}
 
-    #eyedropper:hover{
-      cursor: pointer;
-    }
-
-    #brushDiv{
-      border-radius: 100%; 
-      width: 10px; 
-      height: 10px; 
-      background: black; 
-      position: absolute; 
-      top: 0; left: 0; 
-      z-index: 99; 
-      pointer-events:none;
-    }
-
-    #eyedropperDiv{
-      background: url("img/eyedropper.png");
-      width: 25px;
-      height: 25px;
-      position: absolute;
-      border: solid red 10px;
-      top: 0; left: 0;
-    }
+#eyedropperDiv{
+  background: url("img/eyedropper.png");
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  border: solid red 10px;
+  top: 0; left: 0;
+}
 
 html {
   position: relative;
@@ -79,7 +67,9 @@ code {
 canvas { 
     position: absolute; 
     overflow: hidden;
-    border: none;
+    border: solid gray 1px;
+    cursor: crosshair;
+
 }
 
  #eyedropper{

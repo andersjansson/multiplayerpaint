@@ -4,11 +4,13 @@
 - nicks
 - spara färdig bild
 - html/css runt
-- single click = punkt
 - "loading" medan en pågående canvas laddar
   - börjar när drawFullCanvas, callback när den är färdig
 - undo/redo
-- fixa så det inte går att highlighta canvas
+
+- klicka på brush byter till brush
+
+- klick igen på colorpicker igen avselectar den, selectar brush?
 
 - arv toolkit-tools?
 Bugs:
