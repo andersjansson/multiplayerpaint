@@ -8,8 +8,20 @@
   <script src="js/jscolor/jscolor.js"></script>
   <link href="css/slider.css" rel="stylesheet">
 </head>
-<body style="user-select: none; -webkit-user-select: none; -moz-user-select: none;">
+<body>
   <style>
+
+    body{
+      user-select: none; 
+      -webkit-user-select: none; 
+      -moz-user-select: none;
+    }
+
+    #canvas{
+      border: solid black 1px; 
+      cursor: crosshair;
+    }
+
     #eyedropper{
       
     }
@@ -17,9 +29,30 @@
     #eyedropper:hover{
       cursor: pointer;
     }
+
+    #brushDiv{
+      border-radius: 100%; 
+      width: 10px; 
+      height: 10px; 
+      background: black; 
+      position: absolute; 
+      top: 0; left: 0; 
+      z-index: 99; 
+      pointer-events:none;
+    }
+
+    #eyedropperDiv{
+      background: url("img/eyedropper.png");
+      width: 25px;
+      height: 25px;
+      position: absolute;
+      border: solid red 10px;
+      top: 0; left: 0;
+    }
+
   </style>
   <button id="destroy">DESTOOOOOOOY</button>
-  <canvas id="canvas" width="490" height="490" style="border: solid black 1px; cursor: crosshair;"></canvas>
+  <canvas id="canvas" width="490" height="490"></canvas>
   <div id="uiElements">
     <div id="colorPicker">
       Color:
@@ -29,7 +62,6 @@
       Size:
       <input type="text" class="slider" id="brushSize" />
     </div>
-    <div id="brushDiv" style="border-radius: 100%; width: 10px; height: 10px; background: black; position: absolute; top: 0; left: 0; z-index: 998; pointer-events:none;"></div>
     <img id="eyedropper" src="img/eyedropper.png" style="width: 30px; height: 30px;">
   </div>
   
