@@ -23,10 +23,12 @@ function CanvasApp()
     this.setupListeners();
     this.setupSocketEvents();
 
-    this.toolKit = new ToolKit(this);
-
     this.color = "rgb(0,0,0)";
     this.size  = 5;
+
+    this.toolKit = new ToolKit(this);
+
+    
 
     this.context.lineJoin = "round";
 
@@ -58,8 +60,7 @@ function CanvasApp()
       _this.clickY = _this.startY;
 
       if(!_this.toolKit.pointer.eyeDropper.selected)
-      _this.isPainting = true;
-
+        _this.isPainting = true;
     });
 
     $(this.canvas).mousemove(function(e){
@@ -88,6 +89,7 @@ function CanvasApp()
     });
 
     $(this.canvas).mouseout(function(e){
+      if (!_this.toolKit.pointer.eyeDropper.selected)
         _this.toolKit.pointer.hide();
     });
 
@@ -106,17 +108,12 @@ function CanvasApp()
           _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
 
         _this.color = col;
-        
-        _this.toolKit.pointer.setColor(col);
-        _this.toolKit.pointer.eyeDropper.selected = false;
-        _this.toolKit.pointer.color = this.color;
-        _this.toolKit.pointer.show();
+        _this.toolKit.pointer.brush.setColor(col);
+        _this.toolKit.pointer.setCursor(_this.toolKit.pointer.brush);
       }
 
-      //if eyedropper is not selected
-      else
-        _this.singleClick(e);
-
+      _this.toolKit.pointer.eyeDropper.selected = false;
+      _this.singleClick(e);
       _this.isPainting = false;
     });
   }
@@ -197,8 +194,8 @@ function CanvasApp()
       "color" : color,
       "size"  : size
     }));
-  }
-  
+  }  
+
   CanvasApp.prototype.drawFullCanvas = function(JSONstring){
     var dataObject = JSON.parse(JSONstring);
 
@@ -246,6 +243,7 @@ function ToolKit(canvasApp)
     setTimeout(function(){
       _this.colorPicker.color.fromString("000");
       _this.app.setColor(_this.colorPicker.style.backgroundColor);  
+      _this.pointer.brush.setColor(_this.colorPicker.style.backgroundColor);
     }, 1);
   }
 
@@ -256,14 +254,16 @@ function ToolKit(canvasApp)
     //färgväljaren ändras
     $(this.colorPicker).change(function(){
       _this.app.setColor(_this.colorPicker.style.backgroundColor);
-      _this.pointer.setColor(_this.colorPicker.style.backgroundColor);
+      _this.pointer.brush.setColor(_this.colorPicker.style.backgroundColor);
+      _this.pointer.setCursor(_this.pointer.brush);
     });
 
     //slidern flyttas
     this.slider.on('slideStop', function(e){
       setTimeout(function(){
         _this.app.setSize(_this.slider.val());
-        _this.pointer.setSize(_this.slider.val());
+        _this.pointer.brush.setSize(_this.slider.val());
+        _this.pointer.setCursor(_this.pointer.brush);
       }, 1);
     });
   }
@@ -271,12 +271,8 @@ function ToolKit(canvasApp)
 //sköter muspekaren
 function FancyMousePointer(kit)
 {
-  this.size;
+  this.size = 5;
   this.color;
-
-  this.eyeDropper = new EyeDropper(this);
-
-  this.div = $("#brushDiv");
 
   this.kit = kit;
   this.init();
@@ -284,18 +280,21 @@ function FancyMousePointer(kit)
 }
   FancyMousePointer.prototype.init = function()
   {
-    this.setSize(this.kit.app.size);
-    this.setColor(this.kit.app.color);
-
     this.eyeDropper = new EyeDropper(this);
+    this.brush      = new Brush(this);
+
+    this.brush.setSize(this.kit.app.size);
+    this.brush.setColor(this.kit.app.color);
+
+    this.setCursor(this.brush);
 
     this.hide();
   }
 
   FancyMousePointer.prototype.move = function(e)
   {
-    var mouseX = e.pageX - this.size/2;
-    var mouseY = e.pageY - this.size/2;
+    var mouseX = e.pageX - this.brush.size/2;
+    var mouseY = e.pageY - this.brush.size/2;
 
     this.div.css({
       "top": mouseY,
@@ -305,30 +304,23 @@ function FancyMousePointer(kit)
 
   FancyMousePointer.prototype.show = function(e)
   {
-    if(!this.eyeDropper.selected)
-      this.div.css("visibility", "visible");
+    this.div.css("display", "inline");
   }
 
   FancyMousePointer.prototype.hide = function()
   {
-    this.div.css("visibility", "hidden");
+    this.div.css("display", "none");
   }
 
-  FancyMousePointer.prototype.setSize = function(size)
+  FancyMousePointer.prototype.setCursor = function(tool)
   {
-    this.size = size;
-    this.div.css({"width": size, "height": size});
+    this.div = tool.div;
+    $("#uiElements").append(this.div);
   }
 
-  FancyMousePointer.prototype.setColor = function(color)
+  FancyMousePointer.prototype.removeCursor = function()
   {
-    this.color = color;
-    this.div.css("background", color);
-  }
-
-  FancyMousePointer.prototype.imgCursor = function(img)
-  {
-    this.div.css('background-image', 'url(' + img + ')');
+    this.div.remove();
   }
 
     function EyeDropper(pointer)
@@ -337,6 +329,8 @@ function FancyMousePointer(kit)
       this.selected = false;
       this.img = $("#eyedropper");
 
+      this.div = $("<div id='eyeDropperDiv'>");
+
       this.setupListeners();
     }
       EyeDropper.prototype.setupListeners = function()
@@ -344,7 +338,7 @@ function FancyMousePointer(kit)
         var _this = this;
         this.img.click(function(){
           _this.selected = true;
-          _this.pointer.imgCursor("img/eyedropper.png");
+          _this.pointer.setCursor(_this);
         });
       }
 
@@ -353,3 +347,24 @@ function FancyMousePointer(kit)
         var c = this.pointer.kit.app.context.getImageData(x,y,1,1).data;
         return c;
       }
+
+    function Brush(pointer)
+    {
+      this.div = $("<div id='brushDiv'>");
+
+      this.color;
+      this.size;
+    }
+
+      Brush.prototype.setSize = function(size)
+      {
+        this.size = size;
+        this.div.css({"width": size, "height": size});
+      }
+
+      Brush.prototype.setColor = function(color)
+      {
+        this.color = color;
+        this.div.css("background", color);
+      }
+
