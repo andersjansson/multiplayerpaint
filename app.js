@@ -7,7 +7,6 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 
-
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
 });
@@ -22,12 +21,18 @@ io.on('connection', function(socket){
   console.log(socket.id);
 
 
-
-
   io.sockets.emit("RequestDataURL");
 
   socket.on("getDataURL", function(data){
-      console.log(data);
+      console.log("fått data!!!!!!!");
+  });
+
+   socket.on("sendDataURL", function(dataurl){
+    
+    console.log(dataurl);
+    
+    io.sockets.emit("getDataURLol", dataurl);
+    
   });
 
 
@@ -44,11 +49,7 @@ io.on('connection', function(socket){
     painting.saveBrushStroke(JSON.parse(msg));
   });
 
-  socket.on("sendDataURL", function(dataurl){
-    socket.broadcast.emit("sendImg", dataurl);
-    console.log(dataurl);
-    
-  });
+ 
 
   socket.on("sendPath", function(path){
     console.log(path);
