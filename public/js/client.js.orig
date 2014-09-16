@@ -137,8 +137,15 @@ function CanvasApp()
         _this.toolKit.pointer.setCursor(_this.toolKit.pointer.brush);
       }
 
+<<<<<<< HEAD
       _this.toolKit.pointer.eyeDropper.selected = false;
       _this.singleClick(e);
+=======
+      //if eyedropper is not selected
+      else
+        _this.singleClick(e);
+        console.log(_this.canvas.toDataURL());
+>>>>>>> ba169ea5790ee4ca196f881d288f0210694cfa03
       _this.isPainting = false;
     });
   }
@@ -222,7 +229,11 @@ function CanvasApp()
       "color" : color,
       "size"  : size
     }));
+<<<<<<< HEAD
   }  
+
+=======
+  }
 
   CanvasApp.prototype.sendDataURL = function()
   {
@@ -235,6 +246,7 @@ function CanvasApp()
   }
 
   
+>>>>>>> ba169ea5790ee4ca196f881d288f0210694cfa03
   CanvasApp.prototype.drawFullCanvas = function(JSONstring){
     var dataObject = JSON.parse(JSONstring);
 

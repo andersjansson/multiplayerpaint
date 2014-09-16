@@ -63,10 +63,8 @@
       </div>
     </div>
     <div class="container-fluid">
-        <canvas id="canvas" width="1920" height="1100"></canvas>
+        <canvas id="canvas" width="1024" height="700"></canvas>
     </div>
-
-
      <div class="navbar navbar-default navbar-fixed-bottom" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -76,7 +74,6 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          
         </div>  
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -97,16 +94,19 @@
                     </div>
               </ul>
             </li>
-             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-eyedropper"></i><span class="caret"></span></a>
-              <ul class="dropdown-menu" role="menu">
-                <li class="dropdown-header">Pick A Color</li>
-                <li class="divider"></li>
-                    <div id="uiElements">
+            <li>
+               <div id="uiElements">
                       <div id="colorPicker">
                           <input class="color" id="cp">
                     </div>
-              </ul>
+            </li>
+            <li>
+              <img id="eyedropper" src="img/eyedropper.png" style="width: 30px; height: 30px;">
+            </li>
+             <li>
+
+              <a href="#" class="eyedropper" data-toggle="dropdown"><i class="fa fa-eyedropper"></i><span class="caret"></span></a>
+           
             </li>
             <li><a href="#"><i class="fa fa-eraser"></i></a></li>
             <li></li>
