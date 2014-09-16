@@ -28,8 +28,6 @@ function CanvasApp()
 
     this.toolKit = new ToolKit(this);
 
-    
-
     this.context.lineJoin = "round";
 
     this.setColor(this.color);
@@ -51,6 +49,7 @@ function CanvasApp()
 
       //istället för att skicka datan
     });
+
     this.socket.on("ClientId", function(socketId){
      console.log(socketId);
 
@@ -102,8 +101,6 @@ function CanvasApp()
           else
             _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
         }
-
-
     });
 
     $(document).mousemove(function(e){
@@ -136,6 +133,8 @@ function CanvasApp()
         _this.color = col;
         _this.toolKit.pointer.brush.setColor(col);
         _this.toolKit.pointer.setCursor(_this.toolKit.pointer.brush);
+        _this.toolKit.pointer.hide();
+        _this.toolKit.pointer.show();
       }
       //if eyedropper is not selected
       else
@@ -155,14 +154,10 @@ function CanvasApp()
       _this.toolKit.pointer.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
+
     });
   }
 
-  CanvasApp.prototype.getColorData = function()
-  {
-
-  }
- 
   CanvasApp.prototype.setColor = function(newColor)
   {
     this.color = newColor;
@@ -290,8 +285,10 @@ function ToolKit(canvasApp)
     var _this = this;
 
     this.colorPicker = document.getElementById("cp");
+    console.log(this.colorPicker);
     this.slider = $(".slider");
     this.pointer = new FancyMousePointer(this);
+    this.eraser = $("#eraser");
 
     this.slider.slider({
       min: 1,
@@ -302,12 +299,24 @@ function ToolKit(canvasApp)
       tooltip: "hide"
     });
 
-    //fulfix för att se till att colorpickern börjar med svart
+    //ser till att colorpickern börjar med svart
+    this.setInitialColor("000");
+  }
+
+  ToolKit.prototype.setInitialColor = function(c)
+  {
+    var _this = this;
+
     setTimeout(function(){
-      _this.colorPicker.color.fromString("000");
+      if(_this.colorPicker.color)
+        _this.colorPicker.color.fromString(c);
+      else
+        _this.setInitialColor(c);
+      
       _this.app.setColor(_this.colorPicker.style.backgroundColor);  
       _this.pointer.brush.setColor(_this.colorPicker.style.backgroundColor);
-    }, 1);
+    }, 50);
+    
   }
 
   ToolKit.prototype.setupListeners = function()
@@ -316,9 +325,7 @@ function ToolKit(canvasApp)
 
     //färgväljaren ändras
     $(this.colorPicker).change(function(){
-      _this.app.setColor(_this.colorPicker.style.backgroundColor);
-      _this.pointer.brush.setColor(_this.colorPicker.style.backgroundColor);
-      _this.pointer.setCursor(_this.pointer.brush);
+      _this.setColor(_this.colorPicker.style.backgroundColor);
     });
 
     //slidern flyttas
@@ -329,6 +336,17 @@ function ToolKit(canvasApp)
         _this.pointer.setCursor(_this.pointer.brush);
       }, 1);
     });
+
+    this.eraser.click(function(){
+      _this.setColor("rgb(255,255,255)");
+    });
+  }
+
+  ToolKit.prototype.setColor = function(c)
+  {
+    this.app.setColor(c)
+    this.pointer.brush.setColor(c);
+    this.pointer.setCursor(_this.pointer.brush);
   }
 
 //sköter muspekaren
@@ -367,18 +385,20 @@ function FancyMousePointer(kit)
 
   FancyMousePointer.prototype.show = function(e)
   {
+    console.log("showing pointer");
     this.div.css("display", "inline");
   }
 
   FancyMousePointer.prototype.hide = function()
   {
+    console.log("hiding pointer");
     this.div.css("display", "none");
   }
 
   FancyMousePointer.prototype.setCursor = function(tool)
   {
     this.div = tool.div;
-    $("#uiElements").append(this.div);
+    $("body").append(this.div);
   }
 
   FancyMousePointer.prototype.removeCursor = function()
@@ -430,4 +450,3 @@ function FancyMousePointer(kit)
         this.color = color;
         this.div.css("background", color);
       }
-
