@@ -28,8 +28,6 @@ function CanvasApp()
 
     this.toolKit = new ToolKit(this);
 
-    
-
     this.context.lineJoin = "round";
 
     this.setColor(this.color);
@@ -51,6 +49,7 @@ function CanvasApp()
 
       //istället för att skicka datan
     });
+
     this.socket.on("ClientId", function(socketId){
      console.log(socketId);
 
@@ -101,8 +100,6 @@ function CanvasApp()
           else
             _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
         }
-
-
     });
 
     $(document).mousemove(function(e){
@@ -135,19 +132,17 @@ function CanvasApp()
         _this.color = col;
         _this.toolKit.pointer.brush.setColor(col);
         _this.toolKit.pointer.setCursor(_this.toolKit.pointer.brush);
+        _this.toolKit.pointer.hide();
+        _this.toolKit.pointer.show();
       }
 
       _this.toolKit.pointer.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
+
     });
   }
 
-  CanvasApp.prototype.getColorData = function()
-  {
-
-  }
- 
   CanvasApp.prototype.setColor = function(newColor)
   {
     this.color = newColor;
@@ -391,7 +386,7 @@ function FancyMousePointer(kit)
 
     function Brush(pointer)
     {
-      this.div = $("<div id='brushDiv'>");
+      this.div = $("#uiElements").append("<div id='brushDiv'>");
 
       this.color;
       this.size;
