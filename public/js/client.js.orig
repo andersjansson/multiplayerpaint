@@ -42,30 +42,26 @@ function CanvasApp()
       _this.drawLineOther(d.sX, d.sY, d.eX, d.eY, d.color, d.size);
     });
 
-   /* this.socket.on("drawFullCanvas", function(data){
+    this.socket.on("drawFullCanvas", function(data){
       _this.drawFullCanvas(data);
       //console.log(_this.canvas.toDataURL());
 
 
       //istället för att skicka datan
-<<<<<<< HEAD
     });
 
-=======
-    });*/
->>>>>>> c09fd9aa0893ab3b52a481946df59211bdf48d20
     this.socket.on("ClientId", function(socketId){
      console.log(socketId);
 
      //console.log(_this.canvas.toDataURL());
     });
     
-    this.socket.on("getDataURLol", function(data){
+   /* this.socket.on("getDataURLol", function(data){
      //console.log(dataImg);
       console.log(data);
       _this.drawFullCanvas(data);
      //console.log(_this.canvas.toDataURL());
-    });
+    }); */
     
     this.socket.on("RequestDataURL", function(data){
        // var lol = _this.canvas.toDataURL();
@@ -73,6 +69,10 @@ function CanvasApp()
         _this.socket.emit("getDataURL",_this.canvas.toDataURL());
         //console.log(_this.canvas.toDataURL());
       
+    });
+
+    this.socket.on("drawBackup", function(data){
+      _this.drawBackup(data);
     });
   }
 
@@ -140,12 +140,10 @@ function CanvasApp()
         _this.toolKit.pointer.hide();
         _this.toolKit.pointer.show();
       }
-
       //if eyedropper is not selected
       else
         _this.singleClick(e);
         //console.log(_this.canvas.toDataURL());
-        
         //this.canvassendDataURL();
         //_this.socket.emit("sendDataURL", canvasURL);
         _this.socket.on("RequestDataURL", function(data){
@@ -155,10 +153,8 @@ function CanvasApp()
         console.log(canvasURL);
         _this.socket.emit("getDataURL",canvasURL);
         //console.log(_this.canvas.toDataURL());
-      
         });
         //this.sendDataURL(canvasURL); 
-
       _this.toolKit.pointer.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
@@ -188,6 +184,16 @@ function CanvasApp()
       this.context.closePath();
       this.context.fill();
     }
+    this.sendData("arc",this.clickX, this.clickY, 0, 0, this.color, this.size);
+  }
+
+  CanvasApp.prototype.drawArcOther = function(posX,posY,color,size)
+  {
+    this.context.beginPath();
+    this.context.fillStyle = color;
+    this.context.arc(posX, posY, size/2, 0, 2*Math.PI);
+    this.context.closePath();
+    this.context.fill();
   }
 
   CanvasApp.prototype.drawLineSelf = function(e)
@@ -207,7 +213,7 @@ function CanvasApp()
 
     this.context.stroke();
     
-    this.sendData(this.startX, this.startY, mouseX, mouseY, this.color, this.size);
+    this.sendData("line",this.startX, this.startY, mouseX, mouseY, this.color, this.size);
 
     this.startX = mouseX;
     this.startY = mouseY;
@@ -221,18 +227,14 @@ function CanvasApp()
       this.context.moveTo(sX, sY);
       this.context.lineTo(eX, eY);
     this.context.closePath();
-    //console.log(this.context.closePath());
     
       this.context.stroke();
-      //this.socket.emit("sendPath", this.context.closePath());
-      //console.log(this.canvas.toDataURL());
-    
   }
 
-  CanvasApp.prototype.sendData = function(sX,sY,eX,eY,color,size)
+  CanvasApp.prototype.sendData = function(type,sX,sY,eX,eY,color,size)
   {
-
     this.socket.emit("drawLine", JSON.stringify({
+      "type"  : type,
       "sX"    : sX,
       "sY"    : sY,
       "eX"    : eX,
@@ -251,20 +253,52 @@ function CanvasApp()
     console.log(this.canvas.toDataURL());
   }
 
-  
-  CanvasApp.prototype.drawFullCanvas = function(imgData){
+  CanvasApp.prototype.drawBackup = function(imgData)
+  {
+    var dataObject = JSON.parse(imgData);
 
-    console.log(imgData);
+    for(var i=0; i < dataObject.length; i++) {
+      switch(dataObject[i].type){
+        case "arc":
+          this.drawArcOther(
+            dataObject[i].sX,
+            dataObject[i].sY,
+            dataObject[i].color,
+            dataObject[i].size
+          );
+          break;
+        default:
+          this.drawLineOther(
+            dataObject[i].sX, 
+            dataObject[i].sY, 
+            dataObject[i].eX, 
+            dataObject[i].eY, 
+            dataObject[i].color,
+            dataObject[i].size
+          );
+          break;
+      }
+    }
+  }
+
+  
+  CanvasApp.prototype.drawFullCanvas = function(JSONstring){
+
+    /*console.log(imgData);
     var myImage = new Image();
     myImage.src = imgData;
     this.context.drawImage(myImage, 1024, 700);
     console.log(myImage);
 
-    console.log(this.context);
+<<<<<<< HEAD
     //ctx.drawImage(myImage, 0, 0);
     /*var dataObject = JSON.parse(JSONstring);
+=======
+    console.log(this.context);
+    //ctx.drawImage(myImage, 0, 0);*/
+    var dataObject = JSON.parse(JSONstring);
+>>>>>>> 1bb5e1a57df1b9a56c5a48bbd49d620174d92746
     
-
     for(var i=0; i < dataObject.length; i++) {    
       this.drawLineOther(
         dataObject[i].sX, 
@@ -274,7 +308,7 @@ function CanvasApp()
         dataObject[i].color,
         dataObject[i].size
       );
-    }*/
+    }
     //console.log(this.canvas.toDataURL());
   }
 
@@ -296,6 +330,7 @@ function ToolKit(canvasApp)
     this.colorPicker = document.getElementById("cp");
     this.slider = $(".slider");
     this.pointer = new FancyMousePointer(this);
+    this.eraser = $("#eraser");
 
     this.slider.slider({
       min: 1,
@@ -306,12 +341,24 @@ function ToolKit(canvasApp)
       tooltip: "hide"
     });
 
-    //fulfix för att se till att colorpickern börjar med svart
+    //ser till att colorpickern börjar med svart
+    this.setInitialColor("000");
+  }
+
+  ToolKit.prototype.setInitialColor = function(c)
+  {
+    var _this = this;
+
     setTimeout(function(){
-      _this.colorPicker.color.fromString("000");
+      if(_this.colorPicker.color)
+        _this.colorPicker.color.fromString(c);
+      else
+        _this.setInitialColor(c);
+      
       _this.app.setColor(_this.colorPicker.style.backgroundColor);  
       _this.pointer.brush.setColor(_this.colorPicker.style.backgroundColor);
-    }, 1);
+    }, 50);
+    
   }
 
   ToolKit.prototype.setupListeners = function()
@@ -320,9 +367,7 @@ function ToolKit(canvasApp)
 
     //färgväljaren ändras
     $(this.colorPicker).change(function(){
-      _this.app.setColor(_this.colorPicker.style.backgroundColor);
-      _this.pointer.brush.setColor(_this.colorPicker.style.backgroundColor);
-      _this.pointer.setCursor(_this.pointer.brush);
+      _this.setColor(_this.colorPicker.style.backgroundColor);
     });
 
     //slidern flyttas
@@ -333,6 +378,17 @@ function ToolKit(canvasApp)
         _this.pointer.setCursor(_this.pointer.brush);
       }, 1);
     });
+
+    this.eraser.click(function(){
+      _this.setColor("rgb(255,255,255)");
+    });
+  }
+
+  ToolKit.prototype.setColor = function(c)
+  {
+    this.app.setColor(c)
+    this.pointer.brush.setColor(c);
+    this.pointer.setCursor(_this.pointer.brush);
   }
 
 //sköter muspekaren
@@ -382,7 +438,7 @@ function FancyMousePointer(kit)
   FancyMousePointer.prototype.setCursor = function(tool)
   {
     this.div = tool.div;
-    $("#uiElements").append(this.div);
+    $("body").append(this.div);
   }
 
   FancyMousePointer.prototype.removeCursor = function()
@@ -394,8 +450,8 @@ function FancyMousePointer(kit)
     {
       this.pointer = pointer;
       this.selected = false;
-      this.img = $("#eyedropper");
 
+      this.img = $("#eyedropper");
       this.div = $("<div id='eyeDropperDiv'>");
 
       this.setupListeners();
@@ -417,7 +473,7 @@ function FancyMousePointer(kit)
 
     function Brush(pointer)
     {
-      this.div = $("#uiElements").append("<div id='brushDiv'>");
+      this.div = $("<div id='brushDiv'>");
 
       this.color;
       this.size;
@@ -434,4 +490,3 @@ function FancyMousePointer(kit)
         this.color = color;
         this.div.css("background", color);
       }
-

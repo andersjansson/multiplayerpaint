@@ -42,13 +42,13 @@ function CanvasApp()
       _this.drawLineOther(d.sX, d.sY, d.eX, d.eY, d.color, d.size);
     });
 
-   /* this.socket.on("drawFullCanvas", function(data){
+    this.socket.on("drawFullCanvas", function(data){
       _this.drawFullCanvas(data);
       //console.log(_this.canvas.toDataURL());
 
 
       //istället för att skicka datan
-    });*/
+    });
 
     this.socket.on("ClientId", function(socketId){
      console.log(socketId);
@@ -56,12 +56,12 @@ function CanvasApp()
      //console.log(_this.canvas.toDataURL());
     });
     
-    this.socket.on("getDataURLol", function(data){
+   /* this.socket.on("getDataURLol", function(data){
      //console.log(dataImg);
       console.log(data);
       _this.drawFullCanvas(data);
      //console.log(_this.canvas.toDataURL());
-    });
+    }); */
     
     this.socket.on("RequestDataURL", function(data){
        // var lol = _this.canvas.toDataURL();
@@ -140,12 +140,10 @@ function CanvasApp()
         _this.toolKit.pointer.hide();
         _this.toolKit.pointer.show();
       }
-
       //if eyedropper is not selected
       else
         _this.singleClick(e);
         //console.log(_this.canvas.toDataURL());
-        
         //this.canvassendDataURL();
         //_this.socket.emit("sendDataURL", canvasURL);
         _this.socket.on("RequestDataURL", function(data){
@@ -155,10 +153,8 @@ function CanvasApp()
         console.log(canvasURL);
         _this.socket.emit("getDataURL",canvasURL);
         //console.log(_this.canvas.toDataURL());
-      
         });
         //this.sendDataURL(canvasURL); 
-
       _this.toolKit.pointer.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
@@ -286,18 +282,17 @@ function CanvasApp()
   }
 
   
-  CanvasApp.prototype.drawFullCanvas = function(imgData){
+  CanvasApp.prototype.drawFullCanvas = function(JSONstring){
 
-    console.log(imgData);
+    /*console.log(imgData);
     var myImage = new Image();
     myImage.src = imgData;
     this.context.drawImage(myImage, 1024, 700);
     console.log(myImage);
 
-    //ctx.drawImage(myImage, 0, 0);
-    /*var dataObject = JSON.parse(JSONstring);
+    //ctx.drawImage(myImage, 0, 0);*/
+    var dataObject = JSON.parse(JSONstring);
     
-
     for(var i=0; i < dataObject.length; i++) {    
       this.drawLineOther(
         dataObject[i].sX, 
@@ -307,7 +302,7 @@ function CanvasApp()
         dataObject[i].color,
         dataObject[i].size
       );
-    }*/
+    }
     //console.log(this.canvas.toDataURL());
   }
 
