@@ -39,7 +39,14 @@ function CanvasApp()
 
     this.socket.on("otherUserDrawingLine", function(data){
       var d = JSON.parse(data);
-      _this.drawLineOther(d.sX, d.sY, d.eX, d.eY, d.color, d.size);
+      switch(d.type){
+        case "arc":
+          _this.drawArcOther(d.sX, d.sY, d.color, d.size);
+          break;
+        default:
+          _this.drawLineOther(d.sX, d.sY, d.eX, d.eY, d.color, d.size);
+          break;
+      }
     });
 
     this.socket.on("drawFullCanvas", function(data){
@@ -142,7 +149,7 @@ function CanvasApp()
       }
       //if eyedropper is not selected
       else
-        _this.singleClick(e);
+        //_this.singleClick(e);
         //console.log(_this.canvas.toDataURL());
         //this.canvassendDataURL();
         //_this.socket.emit("sendDataURL", canvasURL);
@@ -190,8 +197,8 @@ function CanvasApp()
   CanvasApp.prototype.drawArcOther = function(posX,posY,color,size)
   {
     this.context.beginPath();
-    this.context.fillStyle = color;
-    this.context.arc(posX, posY, size/2, 0, 2*Math.PI);
+      this.context.fillStyle = color;
+      this.context.arc(posX, posY, size/2, 0, 2*Math.PI);
     this.context.closePath();
     this.context.fill();
   }
