@@ -81,12 +81,16 @@ canvas {
   cursor: pointer;
 }
 
-#uiElement
-{
-       
+.fa {
+  color: black;
+
 }
 
 .fa-rocket{
 
   color:#FF4D4D;
+}
+
+#brushSizeSlider {
+  margin-right: 15px;
 }
