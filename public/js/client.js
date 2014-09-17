@@ -70,6 +70,10 @@ function CanvasApp()
         //console.log(_this.canvas.toDataURL());
       
     });
+
+    this.socket.on("drawBackup", function(data){
+      _this.drawBackup(data);
+    });
   }
 
   CanvasApp.prototype.setupListeners = function()
@@ -184,6 +188,16 @@ function CanvasApp()
       this.context.closePath();
       this.context.fill();
     }
+    this.sendData("arc",this.clickX, this.clickY, 0, 0, this.color, this.size);
+  }
+
+  CanvasApp.prototype.drawArcOther = function(posX,posY,color,size)
+  {
+    this.context.beginPath();
+    this.context.fillStyle = color;
+    this.context.arc(posX, posY, size/2, 0, 2*Math.PI);
+    this.context.closePath();
+    this.context.fill();
   }
 
   CanvasApp.prototype.drawLineSelf = function(e)
@@ -203,7 +217,7 @@ function CanvasApp()
 
     this.context.stroke();
     
-    this.sendData(this.startX, this.startY, mouseX, mouseY, this.color, this.size);
+    this.sendData("line",this.startX, this.startY, mouseX, mouseY, this.color, this.size);
 
     this.startX = mouseX;
     this.startY = mouseY;
@@ -217,18 +231,14 @@ function CanvasApp()
       this.context.moveTo(sX, sY);
       this.context.lineTo(eX, eY);
     this.context.closePath();
-    //console.log(this.context.closePath());
     
       this.context.stroke();
-      //this.socket.emit("sendPath", this.context.closePath());
-      //console.log(this.canvas.toDataURL());
-    
   }
 
-  CanvasApp.prototype.sendData = function(sX,sY,eX,eY,color,size)
+  CanvasApp.prototype.sendData = function(type,sX,sY,eX,eY,color,size)
   {
-
     this.socket.emit("drawLine", JSON.stringify({
+      "type"  : type,
       "sX"    : sX,
       "sY"    : sY,
       "eX"    : eX,
@@ -247,6 +257,34 @@ function CanvasApp()
     console.log(this.canvas.toDataURL());
   }
 
+  CanvasApp.prototype.drawBackup = function(imgData)
+  {
+    var dataObject = JSON.parse(imgData);
+
+    for(var i=0; i < dataObject.length; i++) {
+      switch(dataObject[i].type){
+        case "arc":
+          this.drawArcOther(
+            dataObject[i].sX,
+            dataObject[i].sY,
+            dataObject[i].color,
+            dataObject[i].size
+          );
+          break;
+        default:
+          this.drawLineOther(
+            dataObject[i].sX, 
+            dataObject[i].sY, 
+            dataObject[i].eX, 
+            dataObject[i].eY, 
+            dataObject[i].color,
+            dataObject[i].size
+          );
+          break;
+      }
+    }
+  }
+
   
   CanvasApp.prototype.drawFullCanvas = function(imgData){
 
@@ -256,7 +294,6 @@ function CanvasApp()
     this.context.drawImage(myImage, 1024, 700);
     console.log(myImage);
 
-    console.log(this.context);
     //ctx.drawImage(myImage, 0, 0);
     /*var dataObject = JSON.parse(JSONstring);
     
@@ -290,7 +327,6 @@ function ToolKit(canvasApp)
     var _this = this;
 
     this.colorPicker = document.getElementById("cp");
-    console.log(this.colorPicker);
     this.slider = $(".slider");
     this.pointer = new FancyMousePointer(this);
     this.eraser = $("#eraser");
@@ -390,13 +426,11 @@ function FancyMousePointer(kit)
 
   FancyMousePointer.prototype.show = function(e)
   {
-    console.log("showing pointer");
     this.div.css("display", "inline");
   }
 
   FancyMousePointer.prototype.hide = function()
   {
-    console.log("hiding pointer");
     this.div.css("display", "none");
   }
 
@@ -415,8 +449,8 @@ function FancyMousePointer(kit)
     {
       this.pointer = pointer;
       this.selected = false;
-      this.img = $("#eyedropper");
 
+      this.img = $("#eyedropper");
       this.div = $("<div id='eyeDropperDiv'>");
 
       this.setupListeners();

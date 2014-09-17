@@ -15,7 +15,7 @@
 - arv toolkit-tools?
 Bugs:
 
-- canvas målas upp på nytt för alla användare när ny connectar
+- extra sträck från övre vänstra hörnet? wtf?
 
 Features?
 
