@@ -17,7 +17,8 @@ var clients = [];
 io.on('connection', function(socket){
   console.log('client connected');
   clients[socket.id] = socket;
-  
+  //clients = socket.id;
+  console.log(clients);
   console.log(clients.length);
 
   if(clients.length > 1){
