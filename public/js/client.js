@@ -152,21 +152,7 @@ function CanvasApp()
         _this.toolKit.pointer.hide();
         _this.toolKit.pointer.show();
       }
-      //if eyedropper is not selected
-      else
-        //_this.singleClick(e);
-        //console.log(_this.canvas.toDataURL());
-        //this.canvassendDataURL();
-        //_this.socket.emit("sendDataURL", canvasURL);
-        //_this.socket.on("RequestDataURL", function(data){
-       // var lol = _this.canvas.toDataURL();
-        //console.log(lol);
-        //var canvasURL = _this.canvas.toDataURL();
-        //console.log(canvasURL);
-        //_this.socket.emit("getDataURL",canvasURL);
-        //console.log(_this.canvas.toDataURL());
-        //});
-        //this.sendDataURL(canvasURL); 
+ 
       _this.toolKit.pointer.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
@@ -379,7 +365,7 @@ function ToolKit(canvasApp)
   {
     this.app.setColor(c)
     this.pointer.brush.setColor(c);
-    this.pointer.setCursor(_this.pointer.brush);
+    this.pointer.setCursor(this.pointer.brush);
   }
 
 //sköter muspekaren
