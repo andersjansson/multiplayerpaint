@@ -29,12 +29,6 @@ painting = new Painting();
 var clientCount = 0;
 
 var clients = [];
-<<<<<<< HEAD
-var ClientsConnected = 0;
-io.on('connection', function(socket){
-  
-  console.log('client connected');
-=======
 var clientList = [];
 
 io.on('connection', function(socket){
@@ -42,7 +36,6 @@ io.on('connection', function(socket){
   clientCount++;
 
   clientList.push(socket.id);
->>>>>>> cd259beebf308f0eddb6760c8a0279bcb7c0c6a8
   clients[socket.id] = socket;
 
 
@@ -70,22 +63,6 @@ io.on('connection', function(socket){
     clientCount--;
   });
 
-<<<<<<< HEAD
-
-  io.sockets.emit("RequestDataURL");
-
-   socket.on("sendDataURL", function(dataurl){
-    
-    console.log(dataurl);
-    
-    io.sockets.emit("getDataURL", dataurl);
-    
-  });
-
-  socket.on("drawLine", function(msg){
-    socket.broadcast.emit("otherUserDrawingLine", msg);
-    painting.saveBrushStroke(JSON.parse(msg));
-=======
   socket.on("Client.drawLine", function(msg){
     socket.broadcast.emit("Server.otherUserDrawingLine", msg);
     painting.saveBrushStroke(JSON.parse(msg));
@@ -98,8 +75,6 @@ io.on('connection', function(socket){
     console.log(typeof bla);
     console.log("got dat URL doe");
     clients[clientList[clientList.length-1]].emit("Server.sendDataURL", bla);
-
->>>>>>> cd259beebf308f0eddb6760c8a0279bcb7c0c6a8
   });
 
 });
