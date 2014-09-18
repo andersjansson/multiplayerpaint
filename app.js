@@ -75,7 +75,6 @@ io.on('connection', function(socket){
     console.log(typeof bla);
     console.log("got dat URL doe");
     clients[clientList[clientList.length-1]].emit("Server.sendDataURL", bla);
-
   });
 
 });
