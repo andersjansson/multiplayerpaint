@@ -37,7 +37,7 @@ function CanvasApp()
   {
     var _this = this;
 
-    this.socket.on("otherUserDrawingLine", function(data){
+    this.socket.on("Server.otherUserDrawingLine", function(data){
       var d = JSON.parse(data);
       switch(d.type){
         case "arc":
@@ -70,15 +70,20 @@ function CanvasApp()
      //console.log(_this.canvas.toDataURL());
     }); */
     
-    this.socket.on("RequestDataURL", function(data){
-       // var lol = _this.canvas.toDataURL();
+    this.socket.on("Server.RequestDataURL", function(data){
+      console.log("lol got a request from server");
+        var lol = _this.canvas.toDataURL();
         //console.log(lol);
-        _this.socket.emit("getDataURL",_this.canvas.toDataURL());
+        _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
         //console.log(_this.canvas.toDataURL());
       
     });
 
-    this.socket.on("drawBackup", function(data){
+    this.socket.on("Server.sendDataURL", function(dataURL){
+      _this.drawCanvasFromDataURL(dataURL);
+    });
+
+    this.socket.on("Server.drawBackup", function(data){
       _this.drawBackup(data);
     });
   }
@@ -153,14 +158,14 @@ function CanvasApp()
         //console.log(_this.canvas.toDataURL());
         //this.canvassendDataURL();
         //_this.socket.emit("sendDataURL", canvasURL);
-        _this.socket.on("RequestDataURL", function(data){
+        //_this.socket.on("RequestDataURL", function(data){
        // var lol = _this.canvas.toDataURL();
         //console.log(lol);
-        var canvasURL = _this.canvas.toDataURL();
-        console.log(canvasURL);
-        _this.socket.emit("getDataURL",canvasURL);
+        //var canvasURL = _this.canvas.toDataURL();
+        //console.log(canvasURL);
+        //_this.socket.emit("getDataURL",canvasURL);
         //console.log(_this.canvas.toDataURL());
-        });
+        //});
         //this.sendDataURL(canvasURL); 
       _this.toolKit.pointer.eyeDropper.selected = false;
       _this.singleClick(e);
@@ -240,7 +245,7 @@ function CanvasApp()
 
   CanvasApp.prototype.sendData = function(type,sX,sY,eX,eY,color,size)
   {
-    this.socket.emit("drawLine", JSON.stringify({
+    this.socket.emit("Client.drawLine", JSON.stringify({
       "type"  : type,
       "sX"    : sX,
       "sY"    : sY,
@@ -250,15 +255,6 @@ function CanvasApp()
       "size"  : size
     }));
   }  
-
-  CanvasApp.prototype.sendDataURL = function(canvasURL)
-  {
-    this.socket.emit("sendDataURL", canvasURL);
-  }
-  CanvasApp.prototype.drawFullCanvas2 = function(JSONstring){
-    
-    console.log(this.canvas.toDataURL());
-  }
 
   CanvasApp.prototype.drawBackup = function(imgData)
   {
@@ -289,27 +285,21 @@ function CanvasApp()
   }
 
   
-  CanvasApp.prototype.drawFullCanvas = function(JSONstring){
+  CanvasApp.prototype.drawCanvasFromDataURL = function(dataURL){
 
-    /*console.log(imgData);
+    console.log("yay! I got me some dataURL");
+    //console.log(dataURL);
+    //console.log(imgData);
+    var _this = this;
     var myImage = new Image();
-    myImage.src = imgData;
-    this.context.drawImage(myImage, 1024, 700);
-    console.log(myImage);
-
-    //ctx.drawImage(myImage, 0, 0);*/
-    var dataObject = JSON.parse(JSONstring);
+    myImage.src = dataURL;
+    //console.log(myImage);
+      console.log("draw that image!");
+      _this.context.drawImage(myImage, 0, 0);
     
-    for(var i=0; i < dataObject.length; i++) {    
-      this.drawLineOther(
-        dataObject[i].sX, 
-        dataObject[i].sY, 
-        dataObject[i].eX, 
-        dataObject[i].eY, 
-        dataObject[i].color,
-        dataObject[i].size
-      );
-    }
+    //console.log(myImage);
+
+    //ctx.drawImage(myImage, 0, 0);
     //console.log(this.canvas.toDataURL());
   }
 

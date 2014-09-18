@@ -3,7 +3,6 @@
 - visa hur många som är inne
 - nicks
 - spara färdig bild
-- html/css runt
 - "loading" medan en pågående canvas laddar
   - börjar när drawFullCanvas, callback när den är färdig
 - undo/redo
