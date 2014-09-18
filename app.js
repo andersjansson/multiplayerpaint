@@ -12,27 +12,65 @@ app.get('/', function(req, res){
 
 painting = new Painting();
 
+
+
+/*
+*  1. Ny användare ansluter
+   2. Kolla om det finns andra användare
+    if(yes)
+      1. skicka "reguestdataurl" till första i listan av andra användare
+      2. klienten svarar med "senddataurl"
+      3. servern skickar vidare till nya klienten
+    else
+      skicka backupen
+*
+*
+*/
+var clientCount = 0;
+
 var clients = [];
+<<<<<<< HEAD
 var ClientsConnected = 0;
 io.on('connection', function(socket){
   
   console.log('client connected');
+=======
+var clientList = [];
+
+io.on('connection', function(socket){
+  console.log('client connected: '+socket.id);
+  clientCount++;
+
+  clientList.push(socket.id);
+>>>>>>> cd259beebf308f0eddb6760c8a0279bcb7c0c6a8
   clients[socket.id] = socket;
 
-  if(clients.length > 1){
-    clients[0].emit("Server.RequestDataURL");
+
+  console.log(clientList);
+  console.log(clientCount);
+
+  if(clientCount > 1){
+    clients[clientList[0]].emit("Server.RequestDataURL");
     console.log("requesting dataURL");
-    console.log(clients[0].id);
+    //console.log(clients.socket.id);
   }
 
   else
-    io.sockets.emit("drawBackup", painting.getFullPainting());
+  {
+    console.log("only one client connected, sending backup");
+    io.sockets.emit("Server.drawBackup", painting.getFullPainting());
+  }
 
   socket.on('disconnect', function(){
+    console.log("client disconnected: "+ socket.id);
     var pos = clients.indexOf(socket.id);
-    clients.splice(pos);
+    var listPos = clientList.indexOf(socket.id);
+    clients.splice(pos,1);
+    clientList.splice(listPos,1);
+    clientCount--;
   });
 
+<<<<<<< HEAD
 
   io.sockets.emit("RequestDataURL");
 
@@ -47,6 +85,21 @@ io.on('connection', function(socket){
   socket.on("drawLine", function(msg){
     socket.broadcast.emit("otherUserDrawingLine", msg);
     painting.saveBrushStroke(JSON.parse(msg));
+=======
+  socket.on("Client.drawLine", function(msg){
+    socket.broadcast.emit("Server.otherUserDrawingLine", msg);
+    painting.saveBrushStroke(JSON.parse(msg));
+  });
+
+  socket.on("Client.sendDataURL", function(dataURL){
+    
+    var bla = dataURL;
+    //console.log(bla);
+    console.log(typeof bla);
+    console.log("got dat URL doe");
+    clients[clientList[clientList.length-1]].emit("Server.sendDataURL", bla);
+
+>>>>>>> cd259beebf308f0eddb6760c8a0279bcb7c0c6a8
   });
 
 });
