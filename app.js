@@ -43,11 +43,14 @@ io.on('connection', function(socket){
   console.log(clientCount);
 
   if(clientCount > 1){
-    clients[clientList[0]].emit("Server.RequestDataURL");
-    console.log("requesting dataURL");
-    //console.log(clients.socket.id);
+    for(var i = 0; i < clientCount; i++)
+    {
+      if(clientList[i] !== socket.id){
+        clients[clientList[i]].emit("Server.RequestDataURL");
+        console.log("requesting dataURL");
+      }
+    }
   }
-
   else
   {
     console.log("only one client connected, sending backup");
