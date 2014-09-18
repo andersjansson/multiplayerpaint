@@ -13,13 +13,11 @@ app.get('/', function(req, res){
 painting = new Painting();
 
 var clients = [];
-
+var ClientsConnected = 0;
 io.on('connection', function(socket){
+  
   console.log('client connected');
   clients[socket.id] = socket;
-  
-  console.log(clients);
-  console.log(clients.length);
 
   if(clients.length > 1){
     clients[0].emit("Server.RequestDataURL");
@@ -35,43 +33,21 @@ io.on('connection', function(socket){
     clients.splice(pos);
   });
 
-  io.sockets.emit("ClientId", socket.id);
-
-  //console.log(socket.id);
-
 
   io.sockets.emit("RequestDataURL");
-
-  socket.on("getDataURL", function(data){
-      //console.log("fått data!!!!!!!");
-      //console.log(data);
-  });
 
    socket.on("sendDataURL", function(dataurl){
     
     console.log(dataurl);
     
-    io.sockets.emit("getDataURLol", dataurl);
+    io.sockets.emit("getDataURL", dataurl);
     
   });
-
-
-  
 
   socket.on("drawLine", function(msg){
     socket.broadcast.emit("otherUserDrawingLine", msg);
     painting.saveBrushStroke(JSON.parse(msg));
   });
-
- 
-
-  /*socket.on("sendPath", function(path){
-    console.log(path);
-  });*/
-
-  /*socket.on("destroy", function(){
-    painting.removeAll();
-  });*/
 
 });
 
