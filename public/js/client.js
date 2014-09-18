@@ -98,7 +98,7 @@ function CanvasApp()
       _this.clickX = _this.startX;
       _this.clickY = _this.startY;
 
-      if(!_this.toolKit.pointer.eyeDropper.selected)
+      if(!_this.toolKit.eyeDropper.selected)
         _this.isPainting = true;
     });
 
@@ -106,10 +106,10 @@ function CanvasApp()
         _this.drawLineSelf(e);
 
         //if eyedropper is selected
-        if(_this.toolKit.pointer.eyeDropper.selected){
+        if(_this.toolKit.eyeDropper.selected){
           var mouseX = e.pageX - _this.canvas.offsetLeft;
           var mouseY = e.pageY - _this.canvas.offsetTop;
-          var cData = _this.toolKit.pointer.eyeDropper.getColor(mouseX, mouseY);
+          var cData = _this.toolKit.eyeDropper.getColor(mouseX, mouseY);
 
           if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0)
             _this.toolKit.colorPicker.color.fromRGB(1,1,1);
@@ -120,23 +120,23 @@ function CanvasApp()
     });
 
     $(document).mousemove(function(e){
-      _this.toolKit.pointer.move(e);
+      _this.toolKit.moveCursor(e);
     });
 
     $(this.canvas).mouseenter(function(e){
-        _this.toolKit.pointer.show();
+        _this.toolKit.showCursor();
     });
 
     $(this.canvas).mouseout(function(e){
-      if (!_this.toolKit.pointer.eyeDropper.selected)
-        _this.toolKit.pointer.hide();
+      if (!_this.toolKit.eyeDropper.selected)
+        _this.toolKit.hideCursor();
     });
 
     $(document).mouseup(function(e){
 
       //if eyedropper is selected
-      if (_this.toolKit.pointer.eyeDropper.selected) {
-        var cData = _this.toolKit.pointer.eyeDropper.getColor(_this.clickX, _this.clickY);
+      if (_this.toolKit.eyeDropper.selected) {
+        var cData = _this.toolKit.eyeDropper.getColor(_this.clickX, _this.clickY);
         var col = "rgb("+cData[0]+","+cData[1]+","+cData[2]+")";
         
         if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0){
@@ -147,13 +147,13 @@ function CanvasApp()
           _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
 
         _this.color = col;
-        _this.toolKit.pointer.brush.setColor(col);
-        _this.toolKit.pointer.setCursor(_this.toolKit.pointer.brush);
-        _this.toolKit.pointer.hide();
-        _this.toolKit.pointer.show();
+        _this.toolKit.brush.setColor(col);
+        _this.toolKit.setCursor(_this.toolKit.brush);
+        _this.toolKit.hideCursor();
+        _this.toolKit.showCursor();
       }
  
-      _this.toolKit.pointer.eyeDropper.selected = false;
+      _this.toolKit.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
 
@@ -297,7 +297,6 @@ function ToolKit(canvasApp)
   this.brushSize;
 
   this.init();
-  this.setupListeners();
 }
 
   ToolKit.prototype.init = function()
@@ -306,9 +305,6 @@ function ToolKit(canvasApp)
 
     this.colorPicker = document.getElementById("cp");
     this.slider = $(".slider");
-    this.pointer = new FancyMousePointer(this);
-    this.eraser = $("#eraser");
-
     this.slider.slider({
       min: 1,
       max: 100,
@@ -317,23 +313,32 @@ function ToolKit(canvasApp)
       value: 5,
       tooltip: "hide"
     });
+    this.brush = new Brush(this, 5);
+    this.eraser = new Eraser(this);
+    this.eyeDropper = new EyeDropper(this);
 
-    //ser till att colorpickern börjar med svart
+    this.setupListeners();
     this.setInitialColor("000");
+
+    this.brush.setSize(this.app.size);
+    this.pointerDiv = (this.brush.div);
+    this.setCursor(this.brush);
+    this.hideCursor();
   }
 
+  //FIXA BÄTTRE
   ToolKit.prototype.setInitialColor = function(c)
   {
     var _this = this;
 
     setTimeout(function(){
-      if(_this.colorPicker.color)
+      if(_this.colorPicker.color){
         _this.colorPicker.color.fromString(c);
+        _this.app.setColor(_this.colorPicker.style.backgroundColor);  
+        _this.brush.setColor(_this.colorPicker.style.backgroundColor);
+      }
       else
         _this.setInitialColor(c);
-      
-      _this.app.setColor(_this.colorPicker.style.backgroundColor);  
-      _this.pointer.brush.setColor(_this.colorPicker.style.backgroundColor);
     }, 50);
     
   }
@@ -344,126 +349,139 @@ function ToolKit(canvasApp)
 
     //färgväljaren ändras
     $(this.colorPicker).change(function(){
-      _this.setColor(_this.colorPicker.style.backgroundColor);
+      _this.setColor(_this.colorPicker.style.backgroundColor, false);
+      _this.setCursor(_this.brush, false);
     });
 
     //slidern flyttas
     this.slider.on('slideStop', function(e){
       setTimeout(function(){
         _this.app.setSize(_this.slider.val());
-        _this.pointer.brush.setSize(_this.slider.val());
-        _this.pointer.setCursor(_this.pointer.brush);
+        _this.brush.setSize(_this.slider.val());
       }, 1);
     });
-
-    this.eraser.click(function(){
-      _this.setColor("rgb(255,255,255)");
-    });
   }
 
-  ToolKit.prototype.setColor = function(c)
+  ToolKit.prototype.setColor = function(c, eraser)
   {
     this.app.setColor(c)
-    this.pointer.brush.setColor(c);
-    this.pointer.setCursor(this.pointer.brush);
+    this.brush.setColor(c);
+    this.setCursor(this.brush, eraser);
   }
 
-//sköter muspekaren
-function FancyMousePointer(kit)
-{
-  this.size = 5;
-  this.color;
-
-  this.kit = kit;
-  this.init();
-
-}
-  FancyMousePointer.prototype.init = function()
+  ToolKit.prototype.setCursor = function(tool, eraser)
   {
-    this.eyeDropper = new EyeDropper(this);
-    this.brush      = new Brush(this);
+    this.pointerDiv = tool.div;
+    $("body").append(this.pointerDiv);
+    $(".tool-icon").removeClass("active");
 
-    this.brush.setSize(this.kit.app.size);
-    this.brush.setColor(this.kit.app.color);
-
-    this.setCursor(this.brush);
-
-    this.hide();
+    if(eraser){
+      this.eraser.icon.addClass("active");
+    }
+    else{
+      tool.icon.addClass("active");
+    }
+      
   }
 
-  FancyMousePointer.prototype.move = function(e)
+  ToolKit.prototype.removeCursor = function()
+  {
+    this.pointerDiv.remove();
+  }
+
+  ToolKit.prototype.showCursor = function(e)
+  {
+    this.pointerDiv.css("display", "inline");
+  }
+
+  ToolKit.prototype.hideCursor = function()
+  {
+    this.pointerDiv.css("display", "none");
+  }
+
+  ToolKit.prototype.moveCursor = function(e)
   {
     var mouseX = e.pageX - this.brush.size/2;
     var mouseY = e.pageY - this.brush.size/2;
 
-    this.div.css({
+    this.pointerDiv.css({
       "top": mouseY,
       "left": mouseX
     });
   }
 
-  FancyMousePointer.prototype.show = function(e)
+function EyeDropper(kit)
+{
+  this.kit = kit;
+  this.selected = false;
+
+  this.icon = $("#eyedropper");
+  this.div = $("<div id='eyeDropperDiv'>");
+
+  this.setupListeners();
+}
+  EyeDropper.prototype.setupListeners = function()
   {
-    this.div.css("display", "inline");
+    var _this = this;
+    this.icon.click(function(e){
+      _this.selected = true;
+      _this.kit.setCursor(_this);
+    });
   }
 
-  FancyMousePointer.prototype.hide = function()
+  EyeDropper.prototype.getColor = function(x,y)
   {
-    this.div.css("display", "none");
+    var c = this.kit.app.context.getImageData(x,y,1,1).data;
+    return c;
   }
 
-  FancyMousePointer.prototype.setCursor = function(tool)
+function Brush(kit, size)
+{
+  this.kit = kit;
+  this.color;
+  this.size = size;
+
+  this.icon = $("#brush");
+  this.div = $("<div id='brushDiv'>");
+
+  this.setupListeners();
+}
+
+  Brush.prototype.setupListeners = function()
   {
-    this.div = tool.div;
-    $("body").append(this.div);
+    var _this = this;
+    this.icon.click(function(e){
+      _this.kit.setCursor(_this, false);
+      _this.kit.setColor($(_this.kit.colorPicker).css("background-color"), false);
+    });
   }
 
-  FancyMousePointer.prototype.removeCursor = function()
+  Brush.prototype.setSize = function(size)
   {
-    this.div.remove();
+    this.size = size;
+    this.div.css({"width": size, "height": size});
   }
 
-    function EyeDropper(pointer)
-    {
-      this.pointer = pointer;
-      this.selected = false;
+  Brush.prototype.setColor = function(color)
+  {
+    this.color = color;
+    this.div.css("background", color);
+  }
 
-      this.img = $("#eyedropper");
-      this.div = $("<div id='eyeDropperDiv'>");
+function Eraser(kit)
+{
+  this.kit = kit;
+  this.div = $("<div id='brushDiv'>");
+  this.icon = $("#eraser");
 
-      this.setupListeners();
-    }
-      EyeDropper.prototype.setupListeners = function()
-      {
-        var _this = this;
-        this.img.click(function(){
-          _this.selected = true;
-          _this.pointer.setCursor(_this);
-        });
-      }
+  this.setupListeners();
+}
 
-      EyeDropper.prototype.getColor = function(x,y)
-      {
-        var c = this.pointer.kit.app.context.getImageData(x,y,1,1).data;
-        return c;
-      }
-
-    function Brush(pointer)
-    {
-      this.div = $("<div id='brushDiv'>");
-
-      this.color;
-      this.size;
-    }
-
-      Brush.prototype.setSize = function(size)
-      {
-        this.size = size;
-        this.div.css({"width": size, "height": size});
-      }
-
-      Brush.prototype.setColor = function(color)
-      {
-        this.color = color;
-        this.div.css("background", color);
-      }
+  Eraser.prototype.setupListeners = function()
+  {
+    var _this = this;
+    this.icon.click(function(e){
+      _this.kit.setCursor(_this, true);
+      _this.kit.setColor("white", true);
+    });
+  }
