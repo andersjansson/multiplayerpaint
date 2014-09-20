@@ -74,12 +74,17 @@ io.on('connection', function(socket){
   socket.on("Client.sendDataURL", function(dataURL){
     
     var bla = dataURL;
-    //console.log(bla);
     console.log(typeof bla);
     console.log("got dat URL doe");
     clients[clientList[clientList.length-1]].emit("Server.sendDataURL", bla);
   });
+  
+  socket.on("Client.clearCanvas", function(){
 
+      socket.broadcast.emit("Server.trashPainting");
+      painting.removeAll();
+      console.log("Server har precis get order om att cleara canvas till clienten!");
+  }); 
 });
 
 function Painting()

@@ -2,7 +2,6 @@ function CanvasApp()
 {
   this.canvas = document.getElementById('canvas');
   this.context = this.canvas.getContext("2d");
-  
   this.isPainting = false;
 
   this.clickX = new Array();
@@ -51,25 +50,12 @@ function CanvasApp()
 
     this.socket.on("drawFullCanvas", function(data){
       _this.drawFullCanvas(data);
-      //console.log(_this.canvas.toDataURL());
-
-
-      //istället för att skicka datan
     });
 
     this.socket.on("ClientId", function(socketId){
      console.log(socketId);
-
-     //console.log(_this.canvas.toDataURL());
     });
-    
-   /* this.socket.on("getDataURLol", function(data){
-     //console.log(dataImg);
-      console.log(data);
-      _this.drawFullCanvas(data);
-     //console.log(_this.canvas.toDataURL());
-    }); */
-    
+        
     this.socket.on("Server.RequestDataURL", function(data){
       console.log("lol got a request from server");
         var lol = _this.canvas.toDataURL();
@@ -86,11 +72,23 @@ function CanvasApp()
     this.socket.on("Server.drawBackup", function(data){
       _this.drawBackup(data);
     });
+
+    this.socket.on("Server.trashPainting", function(data){
+      console.log("clienten fått order om att cleara canvas!");
+      _this.clearCanvas();
+    });
   }
 
   CanvasApp.prototype.setupListeners = function()
   {
     var _this = this;
+
+    $("#trash").click(function(e){
+      console.log("trash clicked!");
+      _this.socket.emit("Client.clearCanvas");
+      _this.clearCanvas();
+
+    });
 
     $(this.canvas).mousedown(function(e){
       _this.startX = e.pageX - this.offsetLeft;
@@ -158,6 +156,13 @@ function CanvasApp()
       _this.isPainting = false;
 
     });
+  }
+
+  CanvasApp.prototype.clearCanvas = function()
+  {
+    //
+    console.log("canvasen ska clearats nu!" + this.canvas.height + this.canvas.width);
+    this.context.clearRect ( 0 , 0 ,  this.canvas.width , this.canvas.height );
   }
 
   CanvasApp.prototype.setColor = function(newColor)
@@ -274,19 +279,12 @@ function CanvasApp()
   CanvasApp.prototype.drawCanvasFromDataURL = function(dataURL){
 
     console.log("yay! I got me some dataURL");
-    //console.log(dataURL);
-    //console.log(imgData);
     var _this = this;
     var myImage = new Image();
     myImage.src = dataURL;
-    //console.log(myImage);
       console.log("draw that image!");
       _this.context.drawImage(myImage, 0, 0);
-    
-    //console.log(myImage);
-
-    //ctx.drawImage(myImage, 0, 0);
-    //console.log(this.canvas.toDataURL());
+  
   }
 
 
