@@ -18,9 +18,15 @@ function CanvasApp()
 }
   CanvasApp.prototype.init = function()
   {
-    this.socket = io();
+    var _this = this;
+
+    this.socket = io('http://localhost');
+    this.socket.on('connect',function(){
+      _this.setupSocketEvents();
+      console.log(_this.socket);
+    });
+
     this.setupListeners();
-    this.setupSocketEvents();
 
     this.color = "rgb(0,0,0)";
     this.size  = 5;
@@ -34,9 +40,11 @@ function CanvasApp()
 
   CanvasApp.prototype.setupSocketEvents = function()
   {
+    console.log("Setting up socket events");
     var _this = this;
-
+    
     this.socket.on("Server.otherUserDrawingLine", function(data){
+      console.log("other user drawing");
       var d = JSON.parse(data);
       switch(d.type){
         case "arc":
@@ -48,16 +56,8 @@ function CanvasApp()
       }
     });
 
-    this.socket.on("drawFullCanvas", function(data){
-      _this.drawFullCanvas(data);
-    });
-
-    this.socket.on("ClientId", function(socketId){
-     console.log(socketId);
-    });
-        
     this.socket.on("Server.RequestDataURL", function(data){
-      console.log("lol got a request from server");
+      console.log("got a request from server");
         var lol = _this.canvas.toDataURL();
         //console.log(lol);
         _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
@@ -66,10 +66,12 @@ function CanvasApp()
     });
 
     this.socket.on("Server.sendDataURL", function(dataURL){
+      console.log("server sending dataURL");
       _this.drawCanvasFromDataURL(dataURL);
     });
 
     this.socket.on("Server.drawBackup", function(data){
+      console.log("server sending backup");
       _this.drawBackup(data);
     });
 
@@ -156,6 +158,12 @@ function CanvasApp()
       _this.isPainting = false;
 
     });
+
+    /*
+    window.onunload=function(){
+      _this.socket.emit("Client.manualDisconnect");
+    };
+    */
   }
 
   CanvasApp.prototype.clearCanvas = function()

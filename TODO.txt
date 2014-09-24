@@ -1,3 +1,17 @@
+
+
+- arv toolkit-tools?
+Bugs:
+
+Moar Features:
+
+- Lager?
+  - "New Layer" skapar en ny canvas hos alla, och lägger till i en lagerlista för alla,
+    så man kan rita i varandras lager, ändra ordningen på dem (alt. kunna låsa lager)
+
+- Resync-knapp för hosten?
+- Hämta backup fr. den som varit ansluten längst?
+- Automagisk backup 1 gång / minut?
 - rum
 - chat
 - visa hur många som är inne
@@ -6,18 +20,3 @@
 - "loading" medan en pågående canvas laddar
   - börjar när drawFullCanvas, callback när den är färdig
 - undo/redo
-
-- klicka på brush byter till brush
-
-- klick igen på colorpicker igen avselectar den, selectar brush?
-
-- arv toolkit-tools?
-Bugs:
-
-- extra sträck från övre vänstra hörnet? wtf?
-
-Features?
-
-- Lager?
-  - "New Layer" skapar en ny canvas hos alla, och lägger till i en lagerlista för alla,
-    så man kan rita i varandras lager, ändra ordningen på dem (alt. kunna låsa lager)

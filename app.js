@@ -1,18 +1,42 @@
 var express = require('express');
 var app = express();
 
-app.use(express.static(__dirname + '/public'));
+//var users = require('./routes/users');
 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+
+//var bodyParser = require('body-parser');
+
+app.use(express.static(__dirname + '/public'));
+//app.use(express.logger('dev'));
+//app.use(bodyParser.json());
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
 });
 
-painting = new Painting();
+/*app.get('/users', users.findAll);
+app.get('/users/:id', users.findById);
+app.post('/users', users.addUser);
+app.put('/users/:id', users.updateUser);
+app.delete('/users/:id', users.deleteUser);
+*/
 
 
+
+/*
+var tester = new Test({
+  name: 'ALEXUHNDRRRRR'
+})
+
+tester.save(function(err, tester){
+  if(err) return console.error(err);
+
+  console.log("saving tester");
+})
+*/
+//console.log(tester.name);
 
 /*
 *  1. Ny användare ansluter
@@ -26,66 +50,110 @@ painting = new Painting();
 *
 *
 */
-var clientCount = 0;
 
-var clients = [];
-var clientList = [];
-
-io.on('connection', function(socket){
-  console.log('client connected: '+socket.id);
-  clientCount++;
-
-  clientList.push(socket.id);
-  clients[socket.id] = socket;
+http.listen(8080, function(){
+  console.log(timeStamp() + ' Server listening on port 8080');
+});
 
 
-  console.log(clientList);
-  console.log(clientCount);
+function SocketHandler(io)
+{
+  this.painting = new Painting();
+  this.clientCount = 0;
+  this.clients = [];
+  this.clientList = [];
+  this.gotDataURL = false;
 
-  if(clientCount > 1){
-    for(var i = 0; i < clientCount; i++)
-    {
-      if(clientList[i] !== socket.id){
-        clients[clientList[i]].emit("Server.RequestDataURL");
-        console.log("requesting dataURL");
+  this.io = io;
+
+  this.init();
+}
+
+  SocketHandler.prototype.init = function()
+  {
+    this.setupSocketEvents();
+  }
+
+  SocketHandler.prototype.addClient = function(socket)
+  {
+    this.clientCount++;
+
+    this.clientList.push(socket.id);
+    this.clients[socket.id] = socket;
+  }
+
+  SocketHandler.prototype.removeClient = function(socket)
+  {
+    var pos = this.clients.indexOf(socket.id);
+    var listPos = this.clientList.indexOf(socket.id);
+    this.clients.splice(pos,1);
+    this.clientList.splice(listPos,1);
+    this.clientCount--;
+  }
+
+  SocketHandler.prototype.updateClientCanvas = function(socket)
+  {
+    if(this.clientCount > 1){
+        for(var i = 0; i < this.clientCount; i++){
+          if(this.clientList[i] !== socket.id){
+
+            //Här behövs callback som kollar så att vi verkligen fått dataURL, annars
+            //kör vi ingen return
+            this.clients[this.clientList[i]].emit("Server.RequestDataURL");
+            console.log(timeStamp() + " requesting dataURL");
+            return;
+          }
+        }
       }
+
+    else{
+      console.log(timeStamp() + " only one client connected, sending backup");
+      this.io.sockets.emit("Server.drawBackup", this.painting.getFullPainting());
     }
   }
-  else
+
+  SocketHandler.prototype.setupSocketEvents = function()
   {
-    console.log("only one client connected, sending backup");
-    io.sockets.emit("Server.drawBackup", painting.getFullPainting());
-  }
+    var _this = this;
 
-  socket.on('disconnect', function(){
-    console.log("client disconnected: "+ socket.id);
-    var pos = clients.indexOf(socket.id);
-    var listPos = clientList.indexOf(socket.id);
-    clients.splice(pos,1);
-    clientList.splice(listPos,1);
-    clientCount--;
-  });
+    this.io.sockets.on('connection', function(socket){
+      console.log(timeStamp() + ' client connected: '+socket.id);
+      _this.addClient(socket);
+      _this.updateClientCanvas(socket);
 
-  socket.on("Client.drawLine", function(msg){
-    socket.broadcast.emit("Server.otherUserDrawingLine", msg);
-    painting.saveBrushStroke(JSON.parse(msg));
-  });
+      socket.on('disconnect', function(){
+        console.log(timeStamp() + " client disconnected: "+ socket.id);
+        _this.removeClient(socket);
+      });
 
-  socket.on("Client.sendDataURL", function(dataURL){
-    
-    var bla = dataURL;
-    console.log(typeof bla);
-    console.log("got dat URL doe");
-    clients[clientList[clientList.length-1]].emit("Server.sendDataURL", bla);
-  });
-  
-  socket.on("Client.clearCanvas", function(){
+      socket.on("Client.drawLine", function(msg){
+        //console.log(timeStamp() + " client drawing");
+        _this.painting.saveBrushStroke(JSON.parse(msg));
+        
+        //finns ingen anledning att broadcasta om vi bara har en klient
+        if(_this.clientCount > 1)
+          socket.broadcast.emit("Server.otherUserDrawingLine", msg);
+          
+      });
 
-      socket.broadcast.emit("Server.trashPainting");
-      painting.removeAll();
-      console.log("Server har precis get order om att cleara canvas till clienten!");
-  }); 
-});
+      socket.on("Client.sendDataURL", function(dataURL){
+        var dURL = dataURL;
+        //skickar till sista klienten i listan, dvs den som senaste connectade
+        _this.clients[_this.clientList[_this.clientList.length-1]].emit("Server.sendDataURL", dURL);
+      });
+      
+      socket.on("Client.clearCanvas", function(){
+
+          socket.broadcast.emit("Server.trashPainting");
+          _this.painting.removeAll();
+          console.log(timeStamp() + " Server har precis get order om att cleara canvas till clienten!");
+      }); 
+
+      /*socket.on("Client.manualDisconnect", function(){
+        console.log(timeStamp() + " manual disconnect from " + socket.id);
+      });*/
+    });
+  }  
 
 function Painting()
 {
@@ -107,6 +175,18 @@ function Painting()
     this.paintArray = [];
   }
 
-http.listen(8080, function(){
-  console.log('listening on port 8080');
-});
+/* Utility functions */
+function timeStamp()
+{
+  var d = new Date();
+
+  return d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDay()) + " " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+}
+
+function addZero(number)
+{
+  var nr = (number < 10) ? "0"+number : number;
+  return nr;
+}
+
+var socketHandler = new SocketHandler(io);
