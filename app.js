@@ -95,6 +95,8 @@ function SocketHandler(io)
 
   SocketHandler.prototype.handleDataUrlRequest = function(socket)
   {
+    var _this = this;
+
     //Om det finns flera klienter, fråga en av de andra efter dataURL, skicka sedan
     if(this.clientCount > 1){
       for(var i = 0; i < this.clientCount; i++){
@@ -106,7 +108,8 @@ function SocketHandler(io)
             }
             else{
               console.log(timeStamp() + " getting dataURL from client, sending to "+socket.id);
-              socket.emit("Server.sendDataURL", dataURL);  
+              socket.emit("Server.sendDataURL", dataURL);
+              _this.painting.saveDataURL(dataURL);
             }
           });
 
