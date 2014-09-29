@@ -63,6 +63,7 @@ function SocketHandler(io)
   this.clients = [];
   this.clientList = [];
   this.gotDataURL = false;
+  this.chat = new Chat();
 
   this.io = io;
 
@@ -77,7 +78,7 @@ function SocketHandler(io)
   SocketHandler.prototype.addClient = function(socket)
   {
     this.clientCount++;
-
+    this.io.sockets.emit("Server.updateClientCount", this.clientCount);
     this.clientList.push(socket.id);
     this.clients[socket.id] = socket;
   }
@@ -89,26 +90,41 @@ function SocketHandler(io)
     this.clients.splice(pos,1);
     this.clientList.splice(listPos,1);
     this.clientCount--;
+    this.io.sockets.emit("Server.updateClientCount", this.clientCount);
   }
 
-  SocketHandler.prototype.updateClientCanvas = function(socket)
+  SocketHandler.prototype.handleDataUrlRequest = function(socket)
   {
+    //Om det finns flera klienter, fråga en av de andra efter dataURL, skicka sedan
     if(this.clientCount > 1){
-        for(var i = 0; i < this.clientCount; i++){
-          if(this.clientList[i] !== socket.id){
+      for(var i = 0; i < this.clientCount; i++){
+        if(this.clientList[i] !== socket.id){
+          console.log(timeStamp() + " Asking other client for dataURL");
+          this.clients[this.clientList[i]].emit("Server.requestDataURL", {}, function(error, dataURL){
+            if(error){
+              console.log(timeStamp() + " Problem receiving dataURL from client");
+            }
+            else{
+              console.log(timeStamp() + " getting dataURL from client, sending to "+socket.id);
+              socket.emit("Server.sendDataURL", dataURL);  
+            }
+          });
 
-            //Här behövs callback som kollar så att vi verkligen fått dataURL, annars
-            //kör vi ingen return
-            this.clients[this.clientList[i]].emit("Server.RequestDataURL");
-            console.log(timeStamp() + " requesting dataURL");
-            return;
-          }
+          return;
         }
       }
+     }
 
     else{
-      console.log(timeStamp() + " only one client connected, sending backup");
-      this.io.sockets.emit("Server.drawBackup", this.painting.getFullPainting());
+      console.log(timeStamp() + " Only one client connected, sending backup");
+      if(this.painting.hasDataURL){
+        console.log(timeStamp() + " dataURL exists");
+        socket.emit("Server.sendDataURL", this.painting.dataURL);
+      }
+      else{
+        console.log(timeStamp() + " no dataURL exists, sending backup")
+        socket.emit("Server.drawBackup", this.painting.getFullPainting());
+      }
     }
   }
 
@@ -119,50 +135,96 @@ function SocketHandler(io)
     this.io.sockets.on('connection', function(socket){
       console.log(timeStamp() + ' client connected: '+socket.id);
       _this.addClient(socket);
-      _this.updateClientCanvas(socket);
 
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
         _this.removeClient(socket);
       });
 
+      /* Canvas-related events */
+
       socket.on("Client.drawLine", function(msg){
-        //console.log(timeStamp() + " client drawing");
-        _this.painting.saveBrushStroke(JSON.parse(msg));
-        
-        //finns ingen anledning att broadcasta om vi bara har en klient
+        _this.painting.saveBrushStroke(msg);
         if(_this.clientCount > 1)
           socket.broadcast.emit("Server.otherUserDrawingLine", msg);
-          
       });
 
       socket.on("Client.sendDataURL", function(dataURL){
-        var dURL = dataURL;
-        //skickar till sista klienten i listan, dvs den som senaste connectade
-        _this.clients[_this.clientList[_this.clientList.length-1]].emit("Server.sendDataURL", dURL);
+        console.log(timeStamp() + " Receiving dataURL from client");
+        _this.painting.saveDataURL(dataURL);
+      });
+
+      socket.on("Client.requestDataURL", function(){
+        console.log(timeStamp() + " Client requesting dataURL");
+        _this.handleDataUrlRequest(socket);
       });
       
       socket.on("Client.clearCanvas", function(){
+        socket.broadcast.emit("Server.trashPainting");
+        _this.painting.removeAll();
+        console.log(timeStamp() + " Clearing all canvases");
+      });
 
-          socket.broadcast.emit("Server.trashPainting");
-          _this.painting.removeAll();
-          console.log(timeStamp() + " Server har precis get order om att cleara canvas till clienten!");
-      }); 
+      /* Chat-related events */
 
-      /*socket.on("Client.manualDisconnect", function(){
-        console.log(timeStamp() + " manual disconnect from " + socket.id);
-      });*/
+      socket.on("Client.sendChatMessage", function(data){
+        socket.broadcast.emit("Server.chatMessage", data);
+        var msg = JSON.parse(data);
+        _this.chat.log(msg);
+        console.log(timeStamp() + " New chat message from "+socket.id+": "+msg.text);
+      });
+
+      /* Other events */
+
+      socket.on("Client.requestClientCount", function(){
+        console.log(timeStamp() + " Client requesting client count");
+        socket.emit("Server.updateClientCount", _this.clientCount);
+      });
+
+      
+
     });
   }  
+
+function Chat()
+{
+  this.chatLog = [];
+}
+
+  Chat.prototype.log = function(msg)
+  {
+    this.chatLog.push(msg);
+  }
+
+  Chat.prototype.getLog = function()
+  {
+    return JSON.stringify(this.chatLog);
+  }
+
+function Message(type, text)
+{
+  this.type = type;
+  this.text = text;
+  this.time = timeStamp();
+}
 
 function Painting()
 {
   this.paintArray = new Array();
+  this.dataURL;
+  this.hasDataURL = false;
 }
+
+  Painting.prototype.saveDataURL = function(dataURL)
+  {
+    console.log(timeStamp() + " Saving dataURL");
+    this.dataURL = dataURL;
+    this.hasDataURL = true;
+  }
 
   Painting.prototype.saveBrushStroke = function(data)
   {
-    this.paintArray.push(data);
+    this.paintArray.push(JSON.parse(data));
   }
 
   Painting.prototype.getFullPainting = function()
@@ -173,6 +235,7 @@ function Painting()
   Painting.prototype.removeAll = function()
   {
     this.paintArray = [];
+    this.dataURL = null;
   }
 
 /* Utility functions */
@@ -180,7 +243,12 @@ function timeStamp()
 {
   var d = new Date();
 
-  return d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDay()) + " " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+  return d.getFullYear() 
+  + "-" + addZero(d.getMonth()+1) 
+  + "-" + addZero(d.getDay()) 
+  + " " + addZero(d.getHours()) 
+  + ":" + addZero(d.getMinutes()) 
+  + ":" + addZero(d.getSeconds());
 }
 
 function addZero(number)

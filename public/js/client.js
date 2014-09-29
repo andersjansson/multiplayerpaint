@@ -14,16 +14,20 @@ function CanvasApp()
   this.clickX;
   this.clickY;
 
+  this.clientCount;
+
   this.init();  
 }
   CanvasApp.prototype.init = function()
   {
     var _this = this;
 
-    this.socket = io('http://localhost');
+    this.socket = io();
     this.socket.on('connect',function(){
       _this.setupSocketEvents();
-      console.log(_this.socket);
+      _this.socket.emit("Client.requestClientCount");
+      console.log("Requesting dataURL");
+      _this.socket.emit("Client.requestDataURL");
     });
 
     this.setupListeners();
@@ -32,6 +36,7 @@ function CanvasApp()
     this.size  = 5;
 
     this.toolKit = new ToolKit(this);
+    this.chat    = new ChatApp($("#chat-window"));
 
     this.context.lineJoin = "round";
 
@@ -40,7 +45,6 @@ function CanvasApp()
 
   CanvasApp.prototype.setupSocketEvents = function()
   {
-    console.log("Setting up socket events");
     var _this = this;
     
     this.socket.on("Server.otherUserDrawingLine", function(data){
@@ -56,11 +60,11 @@ function CanvasApp()
       }
     });
 
-    this.socket.on("Server.RequestDataURL", function(data){
+    this.socket.on("Server.requestDataURL", function(data, callback){
       console.log("got a request from server");
         var lol = _this.canvas.toDataURL();
-        //console.log(lol);
-        _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
+        callback(null, _this.canvas.toDataURL());
+        //_this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
         //console.log(_this.canvas.toDataURL());
       
     });
@@ -79,6 +83,10 @@ function CanvasApp()
       console.log("clienten fått order om att cleara canvas!");
       _this.clearCanvas();
     });
+
+    this.socket.on("Server.updateClientCount", function(data){
+      _this.clientCount = data;
+    });
   }
 
   CanvasApp.prototype.setupListeners = function()
@@ -86,10 +94,8 @@ function CanvasApp()
     var _this = this;
 
     $("#trash").click(function(e){
-      console.log("trash clicked!");
       _this.socket.emit("Client.clearCanvas");
       _this.clearCanvas();
-
     });
 
     $(this.canvas).mousedown(function(e){
@@ -152,24 +158,22 @@ function CanvasApp()
         _this.toolKit.hideCursor();
         _this.toolKit.showCursor();
       }
- 
+      
       _this.toolKit.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
-
     });
 
-    /*
-    window.onunload=function(){
-      _this.socket.emit("Client.manualDisconnect");
-    };
-    */
+    $(this.canvas).mouseup(function(e){
+      if(_this.clientCount == 1 && !_this.toolKit.eyeDropper.selected){
+        console.log("I AM SO ALONE! SENDING DATAURL!");
+        _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
+      }
+    })
   }
 
   CanvasApp.prototype.clearCanvas = function()
   {
-    //
-    console.log("canvasen ska clearats nu!" + this.canvas.height + this.canvas.width);
     this.context.clearRect ( 0 , 0 ,  this.canvas.width , this.canvas.height );
   }
 
@@ -288,11 +292,11 @@ function CanvasApp()
 
     console.log("yay! I got me some dataURL");
     var _this = this;
-    var myImage = new Image();
-    myImage.src = dataURL;
-      console.log("draw that image!");
-      _this.context.drawImage(myImage, 0, 0);
-  
+    var img = new Image();
+    img.onload = function(){
+      _this.context.drawImage(img, 0, 0);
+    }
+    img.src = dataURL;
   }
 
 
@@ -490,4 +494,34 @@ function Eraser(kit)
       _this.kit.setCursor(_this, true);
       _this.kit.setColor("white", true);
     });
+  }
+
+function ChatApp()
+{
+
+}
+
+  ChatApp.prototype.init = function()
+  {
+
+  }
+
+  ChatApp.prototype.setupListeners = function()
+  {
+
+  }
+
+  ChatApp.prototype.setupSocketEvents = function()
+  {
+
+  }
+
+  ChatApp.prototype.sendMessage = function()
+  {
+
+  }
+
+  ChatApp.prototype.receiveMessage = function()
+  {
+
   }
