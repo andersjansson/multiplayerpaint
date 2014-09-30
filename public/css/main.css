@@ -175,6 +175,7 @@ canvas {
 #chat-window p{
   padding: 0;
   margin: 0;
+  word-break: break-all;
 }
 
 .chat-name{
@@ -186,5 +187,13 @@ canvas {
 }
 
 .chat-time{
+  color: #A1A1A1;
+}
+
+.chat-status-text{
+  color: #A1A1A1;
+}
+
+.chat-status-name{
   color: #A1A1A1;
 }

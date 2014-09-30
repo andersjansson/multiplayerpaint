@@ -64,9 +64,6 @@ function CanvasApp()
       console.log("got a request from server");
         var lol = _this.canvas.toDataURL();
         callback(null, _this.canvas.toDataURL());
-        //_this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
-        //console.log(_this.canvas.toDataURL());
-      
     });
 
     this.socket.on("Server.sendDataURL", function(dataURL){
@@ -520,6 +517,7 @@ function ChatApp(div, socket)
       if (e.keyCode === 13 && !e.shiftKey) {
         if($.trim(this.value).length > 0)
           _this.sendMessage("chat", $.trim(this.value), _this.nick.val());
+          //_this.sendMessage("chat", encodeURI($.trim(this.value)), encodeURI(_this.nick.val()));
       }
     });
     this.nick.keyup(function(e){
@@ -536,6 +534,14 @@ function ChatApp(div, socket)
     this.socket.on("Server.chatMessage", function(msg){
       _this.receiveMessage(msg);
     });
+
+    this.socket.on("Server.addClient", function(id){
+      _this.printMessage({type: "status", sender: id.substring(0,7), text: " has connected"});
+    });
+
+    this.socket.on("Server.removeClient", function(id){
+      _this.printMessage({type: "status", sender: id.substring(0,7), text: " has discconnected"});
+    });
   }
 
   ChatApp.prototype.sendMessage = function(type, message, sender)
@@ -545,7 +551,11 @@ function ChatApp(div, socket)
     
     this.socket.emit("Client.sendChatMessage", JSON.stringify(msg));
     this.input.val('');
-    this.printMessage(msg);
+    this.printMessage({
+      type: "chat",
+      text: escapeHTML(message),
+      sender: escapeHTML(sentBy)
+    });
   }
 
   ChatApp.prototype.receiveMessage = function(message)
@@ -563,10 +573,20 @@ function ChatApp(div, socket)
       case "chat":
         this.output.append(
           "<p><span class='chat-time'>["
-          +message.timeStamp
+          +timeStamp()
           +"]</span> <span class='chat-name'>"
           +message.sender
           +"</span>: <span class='chat-text'>" 
+          +message.text
+          +"</span></p>");
+        break;
+      case "status":
+        this.output.append(
+          "<p><span class='chat-time'>["
+          +timeStamp()
+          +"]</span> <span class='chat-status-name'>"
+          +message.sender
+          +"</span> <span class='chat-status-text'>" 
           +message.text
           +"</span></p>");
         break;
@@ -616,4 +636,8 @@ function addZero(number)
 {
   var nr = (number < 10) ? "0"+number : number;
   return nr;
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }

@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var validator = require('validator');
 
 //var users = require('./routes/users');
 
@@ -78,7 +79,7 @@ function SocketHandler(io)
   SocketHandler.prototype.addClient = function(socket)
   {
     this.clientCount++;
-    this.io.sockets.emit("Server.updateClientCount", this.clientCount);
+    this.io.sockets.emit("Server.addClient", socket.id);
     this.clientList.push(socket.id);
     this.clients[socket.id] = socket;
   }
@@ -90,7 +91,7 @@ function SocketHandler(io)
     this.clients.splice(pos,1);
     this.clientList.splice(listPos,1);
     this.clientCount--;
-    this.io.sockets.emit("Server.updateClientCount", this.clientCount);
+    this.io.sockets.emit("Server.removeClient", socket.id);
   }
 
   SocketHandler.prototype.handleDataUrlRequest = function(socket)
@@ -138,7 +139,6 @@ function SocketHandler(io)
     this.io.sockets.on('connection', function(socket){
       console.log(timeStamp() + ' client connected: '+socket.id);
       _this.addClient(socket);
-      socket.send(socket.id);
 
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
@@ -171,10 +171,15 @@ function SocketHandler(io)
 
       /* Chat-related events */
 
+      //<div style="width: 100px; height: 100px; background: red;">
+
       socket.on("Client.sendChatMessage", function(data){
-        socket.broadcast.emit("Server.chatMessage", data);
         var msg = JSON.parse(data);
-        _this.chat.log(msg);
+        for(var prop in msg){
+          msg[prop] = validator.escape(msg[prop]);
+        }
+        socket.broadcast.emit("Server.chatMessage", JSON.stringify(msg));
+        
         console.log(timeStamp() + " New chat message from "+msg.sender+": "+msg.text);
       });
 
