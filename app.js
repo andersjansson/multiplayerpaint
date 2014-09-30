@@ -138,6 +138,7 @@ function SocketHandler(io)
     this.io.sockets.on('connection', function(socket){
       console.log(timeStamp() + ' client connected: '+socket.id);
       _this.addClient(socket);
+      socket.send(socket.id);
 
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
@@ -174,7 +175,7 @@ function SocketHandler(io)
         socket.broadcast.emit("Server.chatMessage", data);
         var msg = JSON.parse(data);
         _this.chat.log(msg);
-        console.log(timeStamp() + " New chat message from "+socket.id+": "+msg.text);
+        console.log(timeStamp() + " New chat message from "+msg.sender+": "+msg.text);
       });
 
       /* Other events */
@@ -203,13 +204,6 @@ function Chat()
   {
     return JSON.stringify(this.chatLog);
   }
-
-function Message(type, text)
-{
-  this.type = type;
-  this.text = text;
-  this.time = timeStamp();
-}
 
 function Painting()
 {

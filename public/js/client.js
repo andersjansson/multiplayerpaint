@@ -36,7 +36,7 @@ function CanvasApp()
     this.size  = 5;
 
     this.toolKit = new ToolKit(this);
-    this.chat    = new ChatApp($("#chat-window"));
+    this.chat    = new ChatApp($("#chat-window"), this.socket);
 
     this.context.lineJoin = "round";
 
@@ -496,32 +496,124 @@ function Eraser(kit)
     });
   }
 
-function ChatApp()
+function ChatApp(div, socket)
 {
-
+  this.output = div;
+  this.socket = socket;
+  this.init();
 }
 
   ChatApp.prototype.init = function()
   {
-
+    this.input = $("#chat-input");
+    this.nick  = $("#nick-input");
+    this.statusBar = $("#chat-status");
+    this.setupListeners();
+    this.setupSocketEvents();
   }
 
   ChatApp.prototype.setupListeners = function()
   {
+    var _this = this;
 
+    this.input.keyup(function(e){
+      if (e.keyCode === 13 && !e.shiftKey) {
+        if($.trim(this.value).length > 0)
+          _this.sendMessage("chat", $.trim(this.value), _this.nick.val());
+      }
+    });
+    this.nick.keyup(function(e){
+      if (e.keyCode === 13) {
+        this.blur();
+      }
+    });
   }
 
   ChatApp.prototype.setupSocketEvents = function()
   {
+    var _this = this;
 
+    this.socket.on("Server.chatMessage", function(msg){
+      _this.receiveMessage(msg);
+    });
   }
 
-  ChatApp.prototype.sendMessage = function()
+  ChatApp.prototype.sendMessage = function(type, message, sender)
   {
-
+    var sentBy = ($.trim(sender) != "") ? sender : this.socket.io.engine.id.substring(0,7);
+    var msg = new Message(type, message, sentBy);
+    
+    this.socket.emit("Client.sendChatMessage", JSON.stringify(msg));
+    this.input.val('');
+    this.printMessage(msg);
   }
 
-  ChatApp.prototype.receiveMessage = function()
+  ChatApp.prototype.receiveMessage = function(message)
   {
-
+    var msg = JSON.parse(message);
+    this.printMessage(msg);
   }
+
+  ChatApp.prototype.printMessage = function(message)
+  {
+    var scrolled = this.isScrolledDown();
+
+    switch(message.type)
+    {
+      case "chat":
+        this.output.append(
+          "<p><span class='chat-time'>["
+          +message.timeStamp
+          +"]</span> <span class='chat-name'>"
+          +message.sender
+          +"</span>: <span class='chat-text'>" 
+          +message.text
+          +"</span></p>");
+        break;
+    }
+
+    if(scrolled)
+      this.scrollDown();
+  }
+
+  ChatApp.prototype.isScrolledDown = function()
+  {
+    //1. kolla om vi redan är nerscrollade
+    var div = this.output.get(0);
+
+    if((div.clientHeight + div.scrollTop) == div.scrollHeight){
+      return true;
+    }
+    return false;
+  }
+
+  ChatApp.prototype.scrollDown = function()
+  {
+    var div = this.output.get(0);
+    div.scrollTop = div.clientHeight+div.scrollTop;
+  }
+
+function Message(type, input, sender)
+{
+  this.type = type;
+  this.text = input;
+  this.sender = sender;
+  this.timeStamp = timeStamp();
+}
+
+
+/* Utility functions */
+function timeStamp()
+{
+  var d = new Date();
+
+  return addZero(d.getHours()) 
+  + ":" + addZero(d.getMinutes()) 
+  + ":" + addZero(d.getSeconds());
+}
+
+function addZero(number)
+{
+  var nr = (number < 10) ? "0"+number : number;
+  return nr;
+}

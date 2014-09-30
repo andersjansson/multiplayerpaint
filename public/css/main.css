@@ -1,25 +1,7 @@
-  /* Sticky footer styles
--------------------------------------------------- */
-
-
-#brushDiv{
-  border-radius: 100%; 
-  width: 10px; 
-  height: 10px; 
-  background: black; 
-  position: absolute; 
-  top: 0; left: 0;
-  z-index: 99; 
-  pointer-events:none;
-}
-
-#eyedropperDiv{
-  background: url("img/eyedropper.png");
-  width: 25px;
-  height: 25px;
-  position: absolute;
-  border: solid red 10px;
-  top: 0; left: 0;
+* { 
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 html {
@@ -68,38 +50,6 @@ code {
   position: relative;
   overflow: hidden;
 }
-canvas { 
-  position: absolute; 
-  overflow: hidden;
-  border: solid gray 1px;
-  cursor: crosshair;
-}
-
-#chat-container{
-  height: 702px;
-  min-width: 250px;
-  max-width: 600px;
-  overflow: hidden;
-  margin-left: 1024px;
-  
-  padding-left: 20px;
-  position: relative;
-}
-
-#chat-window{
-  border: solid gray 1px;
-  width: 100%;
-  height: 100%;
-}
-
- #eyedropper{
-      
-}
-
-#eyedropper:hover{
-  
-  cursor: pointer;
-}
 
 .fa {
   color: black;
@@ -109,6 +59,46 @@ canvas {
 .fa-rocket{
 
   color:#FF4D4D;
+}
+
+/*=================================================================================================================================== 
+ #Canvas / Canvas Intefrace
+======================================================================================================================================*/
+
+canvas { 
+  position: absolute; 
+  overflow: hidden;
+  border: solid gray 1px;
+  cursor: crosshair;
+}
+
+#brushDiv{
+  border-radius: 100%; 
+  width: 10px; 
+  height: 10px; 
+  background: black; 
+  position: absolute; 
+  top: 0; left: 0;
+  z-index: 99; 
+  pointer-events:none;
+}
+
+#eyedropperDiv{
+  background: url("img/eyedropper.png");
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  border: solid red 10px;
+  top: 0; left: 0;
+}
+
+#eyedropper{
+      
+}
+
+#eyedropper:hover{
+  
+  cursor: pointer;
 }
 
 .tool-icon{
@@ -128,4 +118,73 @@ canvas {
 
 #brushSizeSlider {
   margin-right: 15px;
+}
+
+/*=================================================================================================================================== 
+ #Chat
+======================================================================================================================================*/
+
+#chat-container{
+  height: 702px;
+  min-width: 250px;
+  max-width: 600px;
+  overflow: hidden;
+  margin-left: 1044px;
+  position: relative;
+  border: solid gray 1px;
+}
+
+#chat-status{
+  height: 0px;
+  width: 100%;
+}
+
+#chat-window{
+  padding: 5px;
+  width: 100%;
+  height: 572px;
+  overflow: auto;
+}
+
+#chat-input-container{
+  width: 100%;
+  position: relative;
+}
+
+#chat-input{
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin: 0;
+  height: 80px;
+  width: 100%;
+  overflow: auto;
+  resize: none;
+  border: none;
+  border-top: solid gray 1px;
+  border-bottom: solid gray 1px;
+  padding: 5px;
+}
+
+#nick-input{
+  margin: 5px 0 0 10px;
+  padding-left: 5px;
+}
+
+#chat-window p{
+  padding: 0;
+  margin: 0;
+}
+
+.chat-name{
+  font-weight: bold;
+}
+
+.chat-text{
+
+}
+
+.chat-time{
+  color: #A1A1A1;
 }
