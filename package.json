@@ -6,6 +6,15 @@
     "logger": "0.0.1",
     "mongodb": "^1.4.12",
     "mongoose": "^3.8.16",
-    "socket.io": "^1.0.6"
+    "socket.io": "^1.0.6",
+    "morgan": "~1.1.1",
+    "method-override" : "~2.1.1",
+    "passport" : "~0.1.17",     
+    "passport-local" : "~0.1.6",
+    "bcrypt-nodejs" : "latest",
+    "cookie-parser": "~1.0.0",
+    "express-session": "~1.0.0",
+    "connect-flash" : "~0.1.1",
+    "ejs" : "~0.8.5"    
   }
 }

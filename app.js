@@ -1,55 +1,113 @@
 var express = require('express');
 var app = express();
 
-//var users = require('./routes/users');
-
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var mongoose = require('mongoose');
+var morgan  = require('morgan');
+var bodyParser = require('body-parser');
 
-//var bodyParser = require('body-parser');
+var configDB = require('./config/database.js');
+mongoose.connect(configDB.url);
 
+app.use(morgan('dev')); // logga allt i consolen
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // ger oss info från html forms
+app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
-//app.use(express.logger('dev'));
-//app.use(bodyParser.json());
+
+var Painting = require('./models/painting');
+var router = express.Router();
+
+
+/* API ROUTES */
+
+router.use(function(req, res, next) {
+
+  console.log('API request just happened.');
+  next(); 
+});
+
+
+router.get('/', function(req, res) {
+  res.json({ message: 'hooray! welcome to our api!' }); 
+});
+
+router.route('/paintings')
+
+ 
+  .post(function(req, res) {
+    
+    var painting = new Painting();  
+    painting.name = req.body.name;  
+    console.log(req.body);
+    painting.save(function(err) {
+      if (err)
+        res.send(err);
+
+      res.json({ message: 'painting created!' });
+    });
+
+    
+  })
+
+  .get(function(req, res) {
+    Painting.find(function(err, paintings) {
+      if (err)
+        res.send(err);
+
+      res.json(paintings);
+    });
+  });
+
+router.route('/paintings/:painting_id')
+
+  .get(function(req, res) {
+    Painting.findById(req.params.painting_id, function(err, painting) {
+      if (err)
+        res.send(err);
+      res.json(painting);
+    });
+  })
+
+  .put(function(req, res) {
+    Painting.findById(req.params.painting_id, function(err, painting) {
+
+      if (err)
+        res.send(err);
+
+      painting.name = req.body.name;
+      painting.save(function(err) {
+        if (err)
+          res.send(err);
+
+        res.json({ message: 'painting updated!' });
+      });
+
+    });
+  })
+
+  .delete(function(req, res) {
+    Painting.remove({
+      _id: req.params.painting_id
+    }, function(err, painting) {
+      if (err)
+        res.send(err);
+
+      res.json({ message: 'Successfully deleted' });
+    });
+  });
+
+app.use('/api', router);
+
+/* SLUTAR API ROUTES YO */
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
 });
 
-/*app.get('/users', users.findAll);
-app.get('/users/:id', users.findById);
-app.post('/users', users.addUser);
-app.put('/users/:id', users.updateUser);
-app.delete('/users/:id', users.deleteUser);
-*/
 
 
-
-/*
-var tester = new Test({
-  name: 'ALEXUHNDRRRRR'
-})
-
-tester.save(function(err, tester){
-  if(err) return console.error(err);
-
-  console.log("saving tester");
-})
-*/
-//console.log(tester.name);
-
-/*
-*  1. Ny användare ansluter
-   2. Kolla om det finns andra användare
-    if(yes)
-      1. skicka "reguestdataurl" till första i listan av andra användare
-      2. klienten svarar med "senddataurl"
-      3. servern skickar vidare till nya klienten
-    else
-      skicka backupen
-*
-*
-*/
 
 http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
