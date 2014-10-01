@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-
+var validator = require('validator')
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
