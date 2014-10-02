@@ -229,8 +229,6 @@ function SocketHandler(io)
 
       /* Chat-related events */
 
-      //<div style="width: 100px; height: 100px; background: red;">
-
       socket.on("Client.sendChatMessage", function(data){
         var msg = JSON.parse(data);
         for(var prop in msg){
@@ -271,6 +269,7 @@ function Chat()
 function Painting()
 {
   this.paintArray = new Array();
+  console.log(this.paintArray);
   this.dataURL;
   this.hasDataURL = false;
 }
@@ -284,6 +283,9 @@ function Painting()
 
   Painting.prototype.saveBrushStroke = function(data)
   {
+    if(!this.paintArray)
+      this.paintArray = new Array();
+
     this.paintArray.push(JSON.parse(data));
   }
 
@@ -296,6 +298,7 @@ function Painting()
   {
     this.paintArray = [];
     this.dataURL = null;
+    this.hasDataURL = false;
   }
 
 /* Utility functions */
@@ -313,8 +316,7 @@ function timeStamp()
 
 function addZero(number)
 {
-  var nr = (number < 10) ? "0"+number : number;
-  return nr;
+  return (number < 10) ? "0"+number : number;
 }
 
 var socketHandler = new SocketHandler(io);

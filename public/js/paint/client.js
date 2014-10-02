@@ -1,5 +1,7 @@
-function CanvasApp()
+function CanvasApp(io)
 {
+  this.socket = io;
+
   this.canvas = document.getElementById('canvas');
   this.context = this.canvas.getContext("2d");
   this.isPainting = false;
@@ -22,7 +24,6 @@ function CanvasApp()
   {
     var _this = this;
 
-    this.socket = io();
     this.socket.on('connect',function(){
       _this.setupSocketEvents();
       _this.socket.emit("Client.requestClientCount");
