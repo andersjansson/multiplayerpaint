@@ -94,7 +94,10 @@ function CanvasApp()
       _this.socket.emit("Client.clearCanvas");
       _this.clearCanvas();
     });
-
+    $("#saveImage").click(function(e){
+      console.log("Ber servern att spara bilden");
+      _this.socket.emit("Client.saveDataURL",_this.canvas.toDataURL());
+    });
     $(this.canvas).mousedown(function(e){
       _this.startX = e.pageX - this.offsetLeft;
       _this.startY = e.pageY - this.offsetTop;

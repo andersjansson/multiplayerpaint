@@ -17,13 +17,13 @@ app.use(bodyParser.json()); // ger oss info från html forms
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
-var Painting = require('./models/painting');
+var PaintingModel = require('./models/painting');
 var router = express.Router();
 
 
 /* API ROUTES */
 
-router.use(function(req, res, next) {
+/*router.use(function(req, res, next) {
 
   console.log('API request just happened.');
   next(); 
@@ -216,9 +216,17 @@ function SocketHandler(io)
         _this.painting.saveDataURL(dataURL);
       });
 
-      socket.on("Client.requestDataURL", function(){
+      socket.on("Client.requestDataURL", function(dataURL){
         console.log(timeStamp() + " Client requesting dataURL");
-        _this.handleDataUrlRequest(socket);
+      });
+
+
+      socket.on("Client.saveDataURL", function(dataURL){
+        console.log(timeStamp() + " Receiving order to save dataURL from client");
+        _this.painting.saveDataURLtoMongo(dataURL);
+        console.log(timeStamp() + " DataURL just got stored in mongodb!");
+
+
       });
       
       socket.on("Client.clearCanvas", function(){
@@ -268,13 +276,22 @@ function Chat()
     return JSON.stringify(this.chatLog);
   }
 
-function Painting()
+function Painting(PaintingModel)
 {
   this.paintArray = new Array();
   this.dataURL;
   this.hasDataURL = false;
-}
 
+}
+  Painting.prototype.saveDataURLtoMongo = function(dataURL)
+  {
+    this.dataURL = dataURL;
+    var PaintM = new PaintingModel();
+    PaintM.name = this.dataURL;
+    PaintM.save();
+    console.log(timeStamp() + " Saving dataURL in mongoDB");    
+  }
+  
   Painting.prototype.saveDataURL = function(dataURL)
   {
     console.log(timeStamp() + " Saving dataURL");
@@ -284,6 +301,9 @@ function Painting()
 
   Painting.prototype.saveBrushStroke = function(data)
   {
+    if(!this.paintArray)
+      this.paintArray = new Array();
+
     this.paintArray.push(JSON.parse(data));
   }
 
