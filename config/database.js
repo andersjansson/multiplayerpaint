@@ -1,5 +1,5 @@
 module.exports = {
 
-	'url' : 'mongodb://localhost/rita'
+	'url' : 'mongodb://rita:ritalol@kahana.mongohq.com:10076/rita'
 
 };
