@@ -218,6 +218,7 @@ function SocketHandler(io)
 
       socket.on("Client.requestDataURL", function(dataURL){
         console.log(timeStamp() + " Client requesting dataURL");
+        _this.handleDataUrlRequest(socket);
       });
 
 

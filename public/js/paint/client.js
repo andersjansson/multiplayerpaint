@@ -24,6 +24,15 @@ function CanvasApp(io)
   {
     var _this = this;
 
+    this.color = "rgb(0,0,0)";
+    this.size  = 5;
+
+    this.toolKit = new ToolKit(this);
+
+    this.context.lineJoin = "round";
+
+    this.setColor(this.color);
+
     this.socket.on('connect',function(){
       _this.setupSocketEvents();
       _this.socket.emit("Client.requestClientCount");
@@ -33,15 +42,10 @@ function CanvasApp(io)
 
     this.setupListeners();
 
-    this.color = "rgb(0,0,0)";
-    this.size  = 5;
-
-    this.toolKit = new ToolKit(this);
+    
     this.chat    = new ChatApp($("#chat-window"), this.socket);
 
-    this.context.lineJoin = "round";
-
-    this.setColor(this.color);
+    
   }
 
   CanvasApp.prototype.setupSocketEvents = function()
@@ -137,9 +141,15 @@ function CanvasApp(io)
     $(this.canvas).mouseout(function(e){
       if (!_this.toolKit.eyeDropper.selected)
         _this.toolKit.hideCursor();
+      else{
+        console.log("colorpicker selected");
+        console.log(_this.color);
+        _this.toolKit.brush.setColor(_this.color);
+      }
+        
     });
 
-    $(document).mouseup(function(e){
+    $(this.canvas).mouseup(function(e){
 
       //if eyedropper is selected
       if (_this.toolKit.eyeDropper.selected) {
@@ -170,7 +180,7 @@ function CanvasApp(io)
         console.log("I AM SO ALONE! SENDING DATAURL!");
         _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
       }
-    })
+    });
   }
 
   CanvasApp.prototype.clearCanvas = function()
@@ -340,6 +350,7 @@ function ToolKit(canvasApp)
   //FIXA BÄTTRE
   ToolKit.prototype.setInitialColor = function(c)
   {
+    console.log("fixin up dat colorPicker");
     var _this = this;
 
     setTimeout(function(){
@@ -464,6 +475,7 @@ function Brush(kit, size)
     this.icon.click(function(e){
       _this.kit.setCursor(_this, false);
       _this.kit.setColor($(_this.kit.colorPicker).css("background-color"), false);
+      _this.kit.eyeDropper.selected = false;
     });
   }
 
@@ -494,6 +506,7 @@ function Eraser(kit)
     this.icon.click(function(e){
       _this.kit.setCursor(_this, true);
       _this.kit.setColor("white", true);
+      _this.kit.eyeDropper.selected = false;
     });
   }
 
@@ -521,7 +534,6 @@ function ChatApp(div, socket)
       if (e.keyCode === 13 && !e.shiftKey) {
         if($.trim(this.value).length > 0)
           _this.sendMessage("chat", $.trim(this.value), _this.nick.val());
-          //_this.sendMessage("chat", encodeURI($.trim(this.value)), encodeURI(_this.nick.val()));
       }
     });
     this.nick.keyup(function(e){
