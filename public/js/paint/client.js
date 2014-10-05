@@ -1,6 +1,6 @@
-function CanvasApp(io)
+function CanvasApp()
 {
-  this.socket = io;
+  this.toolKit = new ToolKit(this);
 
   this.canvas = document.getElementById('canvas');
   this.context = this.canvas.getContext("2d");
@@ -17,28 +17,24 @@ function CanvasApp(io)
   this.clickY;
 
   this.clientCount;
-
-  this.init();  
 }
-  CanvasApp.prototype.init = function()
+  CanvasApp.prototype.init = function(io)
   {
     var _this = this;
+
+    this.socket = io;
+
+    _this.setupSocketEvents();
+    _this.socket.emit("Client.requestClientCount");
+    console.log("Requesting dataURL");
+    _this.socket.emit("Client.requestDataURL");
 
     this.color = "rgb(0,0,0)";
     this.size  = 5;
 
-    this.toolKit = new ToolKit(this);
-
     this.context.lineJoin = "round";
 
     this.setColor(this.color);
-
-    this.socket.on('connect',function(){
-      _this.setupSocketEvents();
-      _this.socket.emit("Client.requestClientCount");
-      console.log("Requesting dataURL");
-      _this.socket.emit("Client.requestDataURL");
-    });
 
     this.setupListeners();
 
@@ -120,13 +116,8 @@ function CanvasApp(io)
         if(_this.toolKit.eyeDropper.selected){
           var mouseX = e.pageX - _this.canvas.offsetLeft;
           var mouseY = e.pageY - _this.canvas.offsetTop;
-          var cData = _this.toolKit.eyeDropper.getColor(mouseX, mouseY);
-
-          if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0)
-            _this.toolKit.colorPicker.color.fromRGB(1,1,1);
-
-          else
-            _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
+          var cData = _this.context.getImageData(mouseX, mouseY,1,1).data;
+          _this.toolKit.eyeDropper.setColor(cData);
         }
     });
 
@@ -141,11 +132,7 @@ function CanvasApp(io)
     $(this.canvas).mouseout(function(e){
       if (!_this.toolKit.eyeDropper.selected)
         _this.toolKit.hideCursor();
-      else{
-        console.log("colorpicker selected");
-        console.log(_this.color);
-        _this.toolKit.brush.setColor(_this.color);
-      }
+
         
     });
 
@@ -153,16 +140,9 @@ function CanvasApp(io)
 
       //if eyedropper is selected
       if (_this.toolKit.eyeDropper.selected) {
-        var cData = _this.toolKit.eyeDropper.getColor(_this.clickX, _this.clickY);
-        var col = "rgb("+cData[0]+","+cData[1]+","+cData[2]+")";
+        var cData = _this.context.getImageData(e.pageX - this.offsetLeft, e.pageY - this.offsetTop,1,1).data;
+        var col = _this.toolKit.eyeDropper.setColor(cData);
         
-        if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0){
-          col = "rgb(255,255,255)";
-          _this.toolKit.colorPicker.color.fromRGB(1,1,1);
-        }
-        else
-          _this.toolKit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
-
         _this.color = col;
         _this.toolKit.brush.setColor(col);
         _this.toolKit.setCursor(_this.toolKit.brush);
@@ -173,9 +153,7 @@ function CanvasApp(io)
       _this.toolKit.eyeDropper.selected = false;
       _this.singleClick(e);
       _this.isPainting = false;
-    });
 
-    $(this.canvas).mouseup(function(e){
       if(_this.clientCount == 1 && !_this.toolKit.eyeDropper.selected){
         console.log("I AM SO ALONE! SENDING DATAURL!");
         _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
@@ -451,10 +429,18 @@ function EyeDropper(kit)
     });
   }
 
-  EyeDropper.prototype.getColor = function(x,y)
+  EyeDropper.prototype.setColor = function(cData)
   {
-    var c = this.kit.app.context.getImageData(x,y,1,1).data;
-    return c;
+    var col = "rgb("+cData[0]+","+cData[1]+","+cData[2]+")";
+        
+    if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0){
+      col = "rgb(255,255,255)";
+      this.kit.colorPicker.color.fromRGB(1,1,1);
+    }
+    else
+      this.kit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
+
+    return col;
   }
 
 function Brush(kit, size)

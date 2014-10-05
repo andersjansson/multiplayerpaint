@@ -993,5 +993,9 @@ var jscolor = {
 
 };
 
+define(function () {
+    //Do setup work here
+    return jscolor;
+});
 
-jscolor.install();
+

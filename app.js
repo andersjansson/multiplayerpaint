@@ -9,7 +9,7 @@ var morgan  = require('morgan');
 var bodyParser = require('body-parser');
 
 var configDB = require('./config/database.js');
-mongoose.connect(configDB.url);
+//mongoose.connect(configDB.url);
 
 app.use(morgan('dev')); // logga allt i consolen
 app.use(bodyParser.urlencoded({ extended: true }));
