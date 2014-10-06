@@ -20,7 +20,7 @@ app.use(express.static(__dirname + '/public'));
 var PaintingModel = require('./models/painting');
 var router = express.Router();
 
-
+ 
 /* API ROUTES */
 
 /*router.use(function(req, res, next) {
@@ -107,13 +107,9 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
 });
 
-
-
-
 http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
-
 
 function SocketHandler(io)
 {
@@ -122,7 +118,6 @@ function SocketHandler(io)
   this.clients = [];
   this.clientList = [];
   this.gotDataURL = false;
-  this.chat = new Chat();
 
   this.io = io;
 
@@ -155,6 +150,8 @@ function SocketHandler(io)
   SocketHandler.prototype.handleDataUrlRequest = function(socket)
   {
     var _this = this;
+    var reply = false;
+    var cancel = false;
 
     //Om det finns flera klienter, fråga en av de andra efter dataURL, skicka sedan
     if(this.clientCount > 1){
@@ -162,32 +159,61 @@ function SocketHandler(io)
         if(this.clientList[i] !== socket.id){
           console.log(timeStamp() + " Asking other client for dataURL");
           this.clients[this.clientList[i]].emit("Server.requestDataURL", {}, function(error, dataURL){
-            if(error){
-              console.log(timeStamp() + " Problem receiving dataURL from client");
+            if(!cancel){
+              if(error){
+                console.log(timeStamp() + " Problem receiving dataURL from client");
+              }
+              else{
+                reply = true;
+                console.log(timeStamp() + " Got dataURL from client, sending to "+socket.id);
+                socket.emit("Server.sendDataURL", dataURL, _this.sendDataURLCallback);
+                _this.painting.saveDataURL(dataURL);
+              }  
             }
-            else{
-              console.log(timeStamp() + " getting dataURL from client, sending to "+socket.id);
-              socket.emit("Server.sendDataURL", dataURL);
-              _this.painting.saveDataURL(dataURL);
-            }
+            
           });
 
-          return;
+          break;
         }
       }
-     }
 
-    else{
-      console.log(timeStamp() + " Only one client connected, sending backup");
-      if(this.painting.hasDataURL){
-        console.log(timeStamp() + " dataURL exists");
-        socket.emit("Server.sendDataURL", this.painting.dataURL);
-      }
-      else{
-        console.log(timeStamp() + " no dataURL exists, sending backup")
-        socket.emit("Server.drawBackup", this.painting.getFullPainting());
-      }
+      //Wait one second, if client is too slow in responding, send backup
+      setTimeout(function(){
+        if(!reply){
+          console.log(timeStamp() + " No reply received, or socket too slow in responding");
+          cancel = true;
+          this.sendPaintingBackup(socket);
+        }
+      },1000);
+      
+        
     }
+
+    else
+      this.sendPaintingBackup(socket);
+
+  }
+  SocketHandler.prototype.sendPaintingBackup = function(socket)
+  {
+    if(this.painting.hasDataURL){
+      console.log(timeStamp() + " Sending Painting-dataURL");
+      socket.emit("Server.sendDataURL", this.painting.dataURL, this.sendDataURLCallback);
+    }
+    else{
+      console.log(timeStamp() + " No dataURL exists, sending Painting-backup");
+      socket.emit("Server.drawBackup", this.painting.getFullPainting(), this.sendDataURLCallback);
+    }
+  }
+
+  SocketHandler.prototype.sendDataURLCallback = function(success)
+  {
+    if(success){
+      this.broadcast.emit("Server.stopLoader");
+      this.emit("Server.stopLoader");
+    }
+      
+    else
+      console.log(timeStamp() + " Problem sending dataURL to client");
   }
 
   SocketHandler.prototype.setupSocketEvents = function()
@@ -218,16 +244,14 @@ function SocketHandler(io)
 
       socket.on("Client.requestDataURL", function(dataURL){
         console.log(timeStamp() + " Client requesting dataURL");
+        _this.io.emit("Server.startLoader", "Synchronizing... Please wait");
         _this.handleDataUrlRequest(socket);
       });
-
 
       socket.on("Client.saveDataURL", function(dataURL){
         console.log(timeStamp() + " Receiving order to save dataURL from client");
         _this.painting.saveDataURLtoMongo(dataURL);
         console.log(timeStamp() + " DataURL just got stored in mongodb!");
-
-
       });
       
       socket.on("Client.clearCanvas", function(){
@@ -254,26 +278,8 @@ function SocketHandler(io)
         console.log(timeStamp() + " Client requesting client count");
         socket.emit("Server.updateClientCount", _this.clientCount);
       });
-
-      
-
     });
   }  
-
-function Chat()
-{
-  this.chatLog = [];
-}
-
-  Chat.prototype.log = function(msg)
-  {
-    this.chatLog.push(msg);
-  }
-
-  Chat.prototype.getLog = function()
-  {
-    return JSON.stringify(this.chatLog);
-  }
 
 function Painting(PaintingModel)
 {

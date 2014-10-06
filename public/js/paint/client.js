@@ -1,8 +1,12 @@
-function CanvasApp()
+function CanvasApp(io)
 {
+  this.canvas = document.getElementById('canvas');
+  this.loader = new Loader(this.canvas);
   this.toolKit = new ToolKit(this);
 
-  this.canvas = document.getElementById('canvas');
+  this.socket = io;
+
+  
   this.context = this.canvas.getContext("2d");
   this.isPainting = false;
 
@@ -17,17 +21,21 @@ function CanvasApp()
   this.clickY;
 
   this.clientCount;
+
+  this.init();
 }
   CanvasApp.prototype.init = function(io)
   {
     var _this = this;
 
-    this.socket = io;
 
-    _this.setupSocketEvents();
-    _this.socket.emit("Client.requestClientCount");
-    console.log("Requesting dataURL");
-    _this.socket.emit("Client.requestDataURL");
+
+    this.socket.on('connect', function(){
+      _this.setupSocketEvents();
+      _this.socket.emit("Client.requestClientCount");
+      console.log("Requesting dataURL");
+      _this.socket.emit("Client.requestDataURL");
+    });
 
     this.color = "rgb(0,0,0)";
     this.size  = 5;
@@ -37,11 +45,8 @@ function CanvasApp()
     this.setColor(this.color);
 
     this.setupListeners();
-
     
-    this.chat    = new ChatApp($("#chat-window"), this.socket);
-
-    
+    this.chat   = new ChatApp($("#chat-window"), this.socket);
   }
 
   CanvasApp.prototype.setupSocketEvents = function()
@@ -67,14 +72,16 @@ function CanvasApp()
         callback(null, _this.canvas.toDataURL());
     });
 
-    this.socket.on("Server.sendDataURL", function(dataURL){
+    this.socket.on("Server.sendDataURL", function(dataURL, callback){
       console.log("server sending dataURL");
       _this.drawCanvasFromDataURL(dataURL);
+      callback(true);
     });
 
-    this.socket.on("Server.drawBackup", function(data){
+    this.socket.on("Server.drawBackup", function(data, callback){
       console.log("server sending backup");
       _this.drawBackup(data);
+      callback(true);
     });
 
     this.socket.on("Server.trashPainting", function(data){
@@ -84,6 +91,14 @@ function CanvasApp()
 
     this.socket.on("Server.updateClientCount", function(data){
       _this.clientCount = data;
+    });
+
+    this.socket.on("Server.startLoader", function(msg){
+      _this.loader.start(msg);
+    });
+
+    this.socket.on("Server.stopLoader", function(msg){
+      _this.loader.stop();
     });
   }
 
@@ -117,7 +132,8 @@ function CanvasApp()
           var mouseX = e.pageX - _this.canvas.offsetLeft;
           var mouseY = e.pageY - _this.canvas.offsetTop;
           var cData = _this.context.getImageData(mouseX, mouseY,1,1).data;
-          _this.toolKit.eyeDropper.setColor(cData);
+          //skicka med bool till setColor, som avgör om den ska ändra på riktigt eller bara färgen i colorpickern?
+          _this.toolKit.eyeDropper.setColorFromCData(cData);
         }
     });
 
@@ -132,7 +148,8 @@ function CanvasApp()
     $(this.canvas).mouseout(function(e){
       if (!_this.toolKit.eyeDropper.selected)
         _this.toolKit.hideCursor();
-
+      else
+        _this.toolKit.colorPicker.color.fromString(_this.color);
         
     });
 
@@ -141,7 +158,7 @@ function CanvasApp()
       //if eyedropper is selected
       if (_this.toolKit.eyeDropper.selected) {
         var cData = _this.context.getImageData(e.pageX - this.offsetLeft, e.pageY - this.offsetTop,1,1).data;
-        var col = _this.toolKit.eyeDropper.setColor(cData);
+        var col = _this.toolKit.eyeDropper.setColorFromCData(cData);
         
         _this.color = col;
         _this.toolKit.brush.setColor(col);
@@ -152,12 +169,14 @@ function CanvasApp()
       
       _this.toolKit.eyeDropper.selected = false;
       _this.singleClick(e);
-      _this.isPainting = false;
 
       if(_this.clientCount == 1 && !_this.toolKit.eyeDropper.selected){
         console.log("I AM SO ALONE! SENDING DATAURL!");
         _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
       }
+    });
+    $(document).mouseup(function(){
+      _this.isPainting = false;
     });
   }
 
@@ -288,6 +307,38 @@ function CanvasApp()
     img.src = dataURL;
   }
 
+function Loader(divToCover)
+{
+  this.div = divToCover;
+  this.cover;
+  this.init();
+}
+
+  Loader.prototype.init = function()
+  {
+    var cover = "<div id='loader' style='"
+      +"width: "+this.div.offsetWidth+"px;"
+      +"height: "+this.div.offsetHeight+"px;"
+      +"left: "+this.div.offsetLeft+"px;"
+      +"top: "+this.div.offsetTop+"px;'>";
+
+    this.cover = $("body").prepend(cover).children(":first");
+    this.cover.append("<img src='img/loading.gif'>");
+    this.cover.append("<div id='loader-text'>");
+  }
+
+  Loader.prototype.start = function(msg)
+  {
+    console.log("Starting loader with msg: "+msg);
+    $("#loader-text").html(msg);
+    this.cover.show();
+  }
+
+  Loader.prototype.stop = function(msg)
+  {
+    console.log("Stopping loader.");
+    this.cover.hide();
+  }
 
 function ToolKit(canvasApp)
 {
@@ -364,7 +415,7 @@ function ToolKit(canvasApp)
 
   ToolKit.prototype.setColor = function(c, eraser)
   {
-    this.app.setColor(c)
+    this.app.setColor(c);
     this.brush.setColor(c);
     this.setCursor(this.brush, eraser);
   }
@@ -429,16 +480,15 @@ function EyeDropper(kit)
     });
   }
 
-  EyeDropper.prototype.setColor = function(cData)
+  EyeDropper.prototype.setColorFromCData = function(cData)
   {
-    var col = "rgb("+cData[0]+","+cData[1]+","+cData[2]+")";
-        
-    if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0){
-      col = "rgb(255,255,255)";
-      this.kit.colorPicker.color.fromRGB(1,1,1);
-    }
-    else
-      this.kit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
+    var col = rgbToHex(cData[0],cData[1],cData[2]);
+    
+    //canvas background registers as black, we want it as white
+    if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0)
+      col = "#FFFFFF";
+
+    this.kit.colorPicker.color.fromString(col);
 
     return col;
   }
@@ -642,4 +692,13 @@ function addZero(number)
 
 function escapeHTML(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
 }

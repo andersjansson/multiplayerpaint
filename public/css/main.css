@@ -53,16 +53,16 @@ code {
 
 .fa {
   color: black;
-
+  font-size: 1.4em;
 }
 
 .fa-rocket{
-
+  font-size: 1em;
   color:#FF4D4D;
 }
 
 /*=================================================================================================================================== 
- #Canvas / Canvas Intefrace
+ #Canvas / Canvas Interface
 ======================================================================================================================================*/
 
 canvas { 
@@ -103,9 +103,8 @@ canvas {
 
 .tool-icon{
   margin-top: 8px;
-  padding-left: 7px;
-  padding-right: 7px;
-  font-size: 1.4em;
+  padding: 4px 7px 3px 7px;
+  border-radius: 3px;
 }
 
 .tool-icon:hover{
@@ -113,11 +112,17 @@ canvas {
 }
 
 .tool-icon.active{
+  
   background: #C4C4C4;
+
 }
 
 #brushSizeSlider {
   margin-right: 15px;
+}
+
+.color{
+  margin-right: 5px;
 }
 
 /*=================================================================================================================================== 
@@ -146,9 +151,6 @@ canvas {
   height: 572px;
   overflow: auto;
   z-index: 2;
-  user-select: text; 
-  -webkit-user-select: text; 
-  -moz-user-select: text;
 }
 
 #chat-input-container{
@@ -205,4 +207,29 @@ canvas {
 
 .chat-status-name{
   color: #A1A1A1;
+}
+
+/*=================================================================================================================================== 
+ #Loader
+======================================================================================================================================*/
+
+#loader{
+  position: fixed;
+  z-index: 10000;
+  display: none;
+  text-align: center;
+}
+
+#loader img, #loader-text{
+  position: relative;
+  top: 320px;
+}
+
+#loader-text{
+  color: white;
+  text-shadow:
+   -1px -1px 0 #000,  
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+     1px 1px 0 #000;
 }
