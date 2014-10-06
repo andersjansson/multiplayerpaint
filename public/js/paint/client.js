@@ -1,10 +1,12 @@
 function CanvasApp(io)
 {
+  this.canvas = document.getElementById('canvas');
+  this.loader = new Loader(this.canvas);
   this.toolKit = new ToolKit(this);
 
   this.socket = io;
 
-  this.canvas = document.getElementById('canvas');
+  
   this.context = this.canvas.getContext("2d");
   this.isPainting = false;
 
@@ -26,6 +28,8 @@ function CanvasApp(io)
   {
     var _this = this;
 
+
+
     this.socket.on('connect', function(){
       _this.setupSocketEvents();
       _this.socket.emit("Client.requestClientCount");
@@ -42,9 +46,7 @@ function CanvasApp(io)
 
     this.setupListeners();
     
-    this.chat    = new ChatApp($("#chat-window"), this.socket);
-
-    
+    this.chat   = new ChatApp($("#chat-window"), this.socket);
   }
 
   CanvasApp.prototype.setupSocketEvents = function()
@@ -70,14 +72,16 @@ function CanvasApp(io)
         callback(null, _this.canvas.toDataURL());
     });
 
-    this.socket.on("Server.sendDataURL", function(dataURL){
+    this.socket.on("Server.sendDataURL", function(dataURL, callback){
       console.log("server sending dataURL");
       _this.drawCanvasFromDataURL(dataURL);
+      callback(true);
     });
 
-    this.socket.on("Server.drawBackup", function(data){
+    this.socket.on("Server.drawBackup", function(data, callback){
       console.log("server sending backup");
       _this.drawBackup(data);
+      callback(true);
     });
 
     this.socket.on("Server.trashPainting", function(data){
@@ -87,6 +91,14 @@ function CanvasApp(io)
 
     this.socket.on("Server.updateClientCount", function(data){
       _this.clientCount = data;
+    });
+
+    this.socket.on("Server.startLoader", function(msg){
+      _this.loader.start(msg);
+    });
+
+    this.socket.on("Server.stopLoader", function(msg){
+      _this.loader.stop();
     });
   }
 
@@ -295,6 +307,38 @@ function CanvasApp(io)
     img.src = dataURL;
   }
 
+function Loader(divToCover)
+{
+  this.div = divToCover;
+  this.cover;
+  this.init();
+}
+
+  Loader.prototype.init = function()
+  {
+    var cover = "<div id='loader' style='"
+      +"width: "+this.div.offsetWidth+"px;"
+      +"height: "+this.div.offsetHeight+"px;"
+      +"left: "+this.div.offsetLeft+"px;"
+      +"top: "+this.div.offsetTop+"px;'>";
+
+    this.cover = $("body").prepend(cover).children(":first");
+    this.cover.append("<img src='img/loading.gif'>");
+    this.cover.append("<div id='loader-text'>");
+  }
+
+  Loader.prototype.start = function(msg)
+  {
+    console.log("Starting loader with msg: "+msg);
+    $("#loader-text").html(msg);
+    this.cover.show();
+  }
+
+  Loader.prototype.stop = function(msg)
+  {
+    console.log("Stopping loader.");
+    this.cover.hide();
+  }
 
 function ToolKit(canvasApp)
 {

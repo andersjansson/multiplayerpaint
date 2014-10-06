@@ -21,5 +21,6 @@ function($, io, jscolor,app) {
     jscolor.init();
     var socket = io.connect();
     var app = new CanvasApp(socket);
+    app.loader.start("Loading, please wait...");
   });
 });
