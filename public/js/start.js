@@ -14,15 +14,12 @@ requirejs.config({
 });
 
 // Start the main app logic.
-requirejs(['jquery', 'socket.io','jscolor','bootstrap','bootstrap-slider','client'],
-function($, io, jscolor) {
+requirejs(['jquery', 'socket.io','jscolor','client','bootstrap','bootstrap-slider'],
+function($, io, jscolor,app) {
   $(function(){
     jscolor.install();
     jscolor.init();
     var socket = io.connect();
-    socket.on('connect', function(){
-      var app = new CanvasApp();
-      app.init(socket);
-    });
+    var app = new CanvasApp(socket);
   });
 });

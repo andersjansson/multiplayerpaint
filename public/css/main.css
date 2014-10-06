@@ -62,7 +62,7 @@ code {
 }
 
 /*=================================================================================================================================== 
- #Canvas / Canvas Intefrace
+ #Canvas / Canvas Interface
 ======================================================================================================================================*/
 
 canvas { 
@@ -106,6 +106,7 @@ canvas {
   padding-left: 7px;
   padding-right: 7px;
   font-size: 1.4em;
+  border-radius: 3px;
 }
 
 .tool-icon:hover{
@@ -113,11 +114,15 @@ canvas {
 }
 
 .tool-icon.active{
-  background: #F3F3F3;
+  background: #D1D1D1;
 }
 
 #brushSizeSlider {
   margin-right: 15px;
+}
+
+.color{
+  margin-right: 5px;
 }
 
 /*=================================================================================================================================== 
@@ -146,9 +151,6 @@ canvas {
   height: 572px;
   overflow: auto;
   z-index: 2;
-  user-select: text; 
-  -webkit-user-select: text; 
-  -moz-user-select: text;
 }
 
 #chat-input-container{

@@ -1,6 +1,8 @@
-function CanvasApp()
+function CanvasApp(io)
 {
   this.toolKit = new ToolKit(this);
+
+  this.socket = io;
 
   this.canvas = document.getElementById('canvas');
   this.context = this.canvas.getContext("2d");
@@ -17,17 +19,19 @@ function CanvasApp()
   this.clickY;
 
   this.clientCount;
+
+  this.init();
 }
   CanvasApp.prototype.init = function(io)
   {
     var _this = this;
 
-    this.socket = io;
-
-    _this.setupSocketEvents();
-    _this.socket.emit("Client.requestClientCount");
-    console.log("Requesting dataURL");
-    _this.socket.emit("Client.requestDataURL");
+    this.socket.on('connect', function(){
+      _this.setupSocketEvents();
+      _this.socket.emit("Client.requestClientCount");
+      console.log("Requesting dataURL");
+      _this.socket.emit("Client.requestDataURL");
+    });
 
     this.color = "rgb(0,0,0)";
     this.size  = 5;
@@ -37,7 +41,6 @@ function CanvasApp()
     this.setColor(this.color);
 
     this.setupListeners();
-
     
     this.chat    = new ChatApp($("#chat-window"), this.socket);
 
@@ -117,7 +120,8 @@ function CanvasApp()
           var mouseX = e.pageX - _this.canvas.offsetLeft;
           var mouseY = e.pageY - _this.canvas.offsetTop;
           var cData = _this.context.getImageData(mouseX, mouseY,1,1).data;
-          _this.toolKit.eyeDropper.setColor(cData);
+          //skicka med bool till setColor, som avgör om den ska ändra på riktigt eller bara färgen i colorpickern?
+          _this.toolKit.eyeDropper.setColorFromCData(cData);
         }
     });
 
@@ -132,7 +136,8 @@ function CanvasApp()
     $(this.canvas).mouseout(function(e){
       if (!_this.toolKit.eyeDropper.selected)
         _this.toolKit.hideCursor();
-
+      else
+        _this.toolKit.colorPicker.color.fromString(_this.color);
         
     });
 
@@ -141,7 +146,7 @@ function CanvasApp()
       //if eyedropper is selected
       if (_this.toolKit.eyeDropper.selected) {
         var cData = _this.context.getImageData(e.pageX - this.offsetLeft, e.pageY - this.offsetTop,1,1).data;
-        var col = _this.toolKit.eyeDropper.setColor(cData);
+        var col = _this.toolKit.eyeDropper.setColorFromCData(cData);
         
         _this.color = col;
         _this.toolKit.brush.setColor(col);
@@ -152,12 +157,14 @@ function CanvasApp()
       
       _this.toolKit.eyeDropper.selected = false;
       _this.singleClick(e);
-      _this.isPainting = false;
 
       if(_this.clientCount == 1 && !_this.toolKit.eyeDropper.selected){
         console.log("I AM SO ALONE! SENDING DATAURL!");
         _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
       }
+    });
+    $(document).mouseup(function(){
+      _this.isPainting = false;
     });
   }
 
@@ -364,7 +371,7 @@ function ToolKit(canvasApp)
 
   ToolKit.prototype.setColor = function(c, eraser)
   {
-    this.app.setColor(c)
+    this.app.setColor(c);
     this.brush.setColor(c);
     this.setCursor(this.brush, eraser);
   }
@@ -429,16 +436,15 @@ function EyeDropper(kit)
     });
   }
 
-  EyeDropper.prototype.setColor = function(cData)
+  EyeDropper.prototype.setColorFromCData = function(cData)
   {
-    var col = "rgb("+cData[0]+","+cData[1]+","+cData[2]+")";
-        
-    if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0){
-      col = "rgb(255,255,255)";
-      this.kit.colorPicker.color.fromRGB(1,1,1);
-    }
-    else
-      this.kit.colorPicker.color.fromRGB(cData[0]/255, cData[1]/255, cData[2]/255);
+    var col = rgbToHex(cData[0],cData[1],cData[2]);
+    
+    //canvas background registers as black, we want it as white
+    if(cData[0] == 0 && cData[1] == 0 && cData[2] == 0 && cData[3] == 0)
+      col = "#FFFFFF";
+
+    this.kit.colorPicker.color.fromString(col);
 
     return col;
   }
@@ -642,4 +648,13 @@ function addZero(number)
 
 function escapeHTML(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
 }

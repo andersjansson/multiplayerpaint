@@ -20,7 +20,7 @@ app.use(express.static(__dirname + '/public'));
 var PaintingModel = require('./models/painting');
 var router = express.Router();
 
-
+ 
 /* API ROUTES */
 
 /*router.use(function(req, res, next) {
@@ -107,13 +107,9 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
 });
 
-
-
-
 http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
-
 
 function SocketHandler(io)
 {
@@ -155,6 +151,7 @@ function SocketHandler(io)
   SocketHandler.prototype.handleDataUrlRequest = function(socket)
   {
     var _this = this;
+    var reply = false;
 
     //Om det finns flera klienter, fråga en av de andra efter dataURL, skicka sedan
     if(this.clientCount > 1){
@@ -166,27 +163,37 @@ function SocketHandler(io)
               console.log(timeStamp() + " Problem receiving dataURL from client");
             }
             else{
+              reply = true;
               console.log(timeStamp() + " getting dataURL from client, sending to "+socket.id);
               socket.emit("Server.sendDataURL", dataURL);
               _this.painting.saveDataURL(dataURL);
             }
           });
 
-          return;
+          break;
         }
       }
-     }
 
+      if(!reply){
+        console.log(timeStamp() + " No reply received");
+        this.sendPaintingBackup(socket);
+      }
+        
+    }
+
+    else
+      this.sendPaintingBackup(socket);
+
+  }
+  SocketHandler.prototype.sendPaintingBackup = function(socket)
+  {
+    if(this.painting.hasDataURL){
+      console.log(timeStamp() + " Sending Painting-dataURL");
+      socket.emit("Server.sendDataURL", this.painting.dataURL);
+    }
     else{
-      console.log(timeStamp() + " Only one client connected, sending backup");
-      if(this.painting.hasDataURL){
-        console.log(timeStamp() + " dataURL exists");
-        socket.emit("Server.sendDataURL", this.painting.dataURL);
-      }
-      else{
-        console.log(timeStamp() + " no dataURL exists, sending backup")
-        socket.emit("Server.drawBackup", this.painting.getFullPainting());
-      }
+      console.log(timeStamp() + " Sending Painting-backup")
+      socket.emit("Server.drawBackup", this.painting.getFullPainting());
     }
   }
 
