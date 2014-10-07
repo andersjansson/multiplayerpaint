@@ -478,8 +478,8 @@ function EyeDropper(kit)
       _this.selected = true;
       _this.kit.setCursor(_this);
     });
-    
-    $(document).keyup(function(e) {
+
+    $(document).keydown(function(e) {
        if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
             console.log("Chat has all the focus man");
         } else {   
@@ -526,7 +526,7 @@ function Brush(kit, size)
       _this.kit.eyeDropper.selected = false;
     });
 
-     $(document).keyup(function(e) {
+     $(document).keydown(function(e) {
        if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
             console.log("Chat has all the focus man");
         } else {   
@@ -573,7 +573,7 @@ function Eraser(kit)
 
     
 
-    $(document).keyup(function(e) {
+    $(document).keydown(function(e) {
        if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
             console.log("Chat has all the focus man");
         } else {   
