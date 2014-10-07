@@ -478,6 +478,18 @@ function EyeDropper(kit)
       _this.selected = true;
       _this.kit.setCursor(_this);
     });
+    
+    $(document).keyup(function(e) {
+       if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
+            console.log("Chat has all the focus man");
+        } else {   
+         if (e.keyCode == 73) {
+            console.log("Keyboard I is pressed!");
+            _this.selected = true;
+            _this.kit.setCursor(_this);
+          }
+        }    
+    })
   }
 
   EyeDropper.prototype.setColorFromCData = function(cData)
@@ -513,6 +525,19 @@ function Brush(kit, size)
       _this.kit.setColor($(_this.kit.colorPicker).css("background-color"), false);
       _this.kit.eyeDropper.selected = false;
     });
+
+     $(document).keyup(function(e) {
+       if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
+            console.log("Chat has all the focus man");
+        } else {   
+          if (e.keyCode == 66) {
+            console.log("Keyboard B is pressed!");
+            _this.kit.setCursor(_this, false);
+            _this.kit.setColor($(_this.kit.colorPicker).css("background-color"), false);
+            _this.kit.eyeDropper.selected = false;
+          }
+        }    
+    })
   }
 
   Brush.prototype.setSize = function(size)
@@ -544,6 +569,22 @@ function Eraser(kit)
       _this.kit.setColor("white", true);
       _this.kit.eyeDropper.selected = false;
     });
+    
+
+    
+
+    $(document).keyup(function(e) {
+       if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
+            console.log("Chat has all the focus man");
+        } else {   
+          if (e.keyCode == 69) {
+              console.log("Keyboard E is pressed!");
+              _this.kit.setCursor(_this, true);
+              _this.kit.setColor("white", true);
+              _this.kit.eyeDropper.selected = false;
+          }
+        }    
+    }) 
   }
 
 function ChatApp(div, socket)
