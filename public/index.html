@@ -64,7 +64,9 @@
         <canvas id="canvas" width="1024" height="700"></canvas>
         <div id="chat-container">
           <div id="chat-status"></div>
-          <div id="chat-window"></div>
+          <div id="chat-window">
+            <div id="chat-client-list"></div>
+          </div>
           <div id="chat-input-container">
             <textarea id="chat-input" placeholder="Type here to chat..." maxlength="255"></textarea>
             <input type="text" id="nick-input" placeholder="Type your name here..." maxlength="20"/>
@@ -97,13 +99,13 @@
                   </div>
                 </p>    
             </li>
-            <li id="brush" class="tool-icon">
+            <li id="brush" class="tool-icon" title="Hotkey: (B)">
               <i class="fa fa-paint-brush"></i>
             </li>
-             <li id="eyedropper" class="tool-icon">
+             <li id="eyedropper" class="tool-icon" title="Hotkey: (I)">
               <i class="fa fa-eyedropper"></i>
             </li>
-            <li id="eraser" class="tool-icon">
+            <li id="eraser" class="tool-icon" title="Hotkey: (E)">
               <i class="fa fa-eraser"></i>
             </li>
           </ul>

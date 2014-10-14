@@ -28,13 +28,15 @@ function CanvasApp(io)
   {
     var _this = this;
 
-
-
     this.socket.on('connect', function(){
       _this.setupSocketEvents();
       _this.socket.emit("Client.requestClientCount");
+
       console.log("Requesting dataURL");
+      
       _this.socket.emit("Client.requestDataURL");
+    
+
     });
 
     this.color = "rgb(0,0,0)";
@@ -295,7 +297,6 @@ function CanvasApp(io)
     }
   }
 
-  
   CanvasApp.prototype.drawCanvasFromDataURL = function(dataURL){
 
     console.log("yay! I got me some dataURL");
@@ -380,18 +381,9 @@ function ToolKit(canvasApp)
   ToolKit.prototype.setInitialColor = function(c)
   {
     console.log("fixin up dat colorPicker");
-    var _this = this;
-
-    setTimeout(function(){
-      if(_this.colorPicker.color){
-        _this.colorPicker.color.fromString(c);
-        _this.app.setColor(_this.colorPicker.style.backgroundColor);  
-        _this.brush.setColor(_this.colorPicker.style.backgroundColor);
-      }
-      else
-        _this.setInitialColor(c);
-    }, 50);
-    
+    this.colorPicker.color.fromString(c);
+    this.app.setColor(this.colorPicker.style.backgroundColor);  
+    this.brush.setColor(this.colorPicker.style.backgroundColor);
   }
 
   ToolKit.prototype.setupListeners = function()
@@ -407,9 +399,40 @@ function ToolKit(canvasApp)
     //slidern flyttas
     this.slider.on('slideStop', function(e){
       setTimeout(function(){
+        console.log(_this.slider.val());
         _this.app.setSize(_this.slider.val());
         _this.brush.setSize(_this.slider.val());
       }, 1);
+
+
+    });
+
+    $(document).keydown(function(e) {
+     if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) 
+        console.log("Chat has all the focus man");
+      
+      else {
+        switch(e.keyCode)
+        {
+          case 73: //I, Eyedropper
+            console.log("Keyboard I is pressed!");
+            _this.eyeDropper.selected = true;
+            _this.setCursor(_this.eyeDropper);
+            break;
+          case 66: //B, Brush
+            console.log("Keyboard B is pressed!");
+            _this.setCursor(_this.brush, false);
+            _this.setColor($(_this.colorPicker).css("background-color"), false);
+            _this.eyeDropper.selected = false;
+            break;
+          case 69: //E, Eraser
+            console.log("Keyboard E is pressed!");
+            _this.setCursor(_this, true);
+            _this.setColor("white", true);
+            _this.eyeDropper.selected = false;
+            break;
+        }
+      }    
     });
   }
 
@@ -479,17 +502,7 @@ function EyeDropper(kit)
       _this.kit.setCursor(_this);
     });
 
-    $(document).keydown(function(e) {
-       if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
-            console.log("Chat has all the focus man");
-        } else {   
-         if (e.keyCode == 73) {
-            console.log("Keyboard I is pressed!");
-            _this.selected = true;
-            _this.kit.setCursor(_this);
-          }
-        }    
-    })
+    
   }
 
   EyeDropper.prototype.setColorFromCData = function(cData)
@@ -526,18 +539,7 @@ function Brush(kit, size)
       _this.kit.eyeDropper.selected = false;
     });
 
-     $(document).keydown(function(e) {
-       if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
-            console.log("Chat has all the focus man");
-        } else {   
-          if (e.keyCode == 66) {
-            console.log("Keyboard B is pressed!");
-            _this.kit.setCursor(_this, false);
-            _this.kit.setColor($(_this.kit.colorPicker).css("background-color"), false);
-            _this.kit.eyeDropper.selected = false;
-          }
-        }    
-    })
+     
   }
 
   Brush.prototype.setSize = function(size)
@@ -569,22 +571,8 @@ function Eraser(kit)
       _this.kit.setColor("white", true);
       _this.kit.eyeDropper.selected = false;
     });
-    
 
     
-
-    $(document).keydown(function(e) {
-       if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) {
-            console.log("Chat has all the focus man");
-        } else {   
-          if (e.keyCode == 69) {
-              console.log("Keyboard E is pressed!");
-              _this.kit.setCursor(_this, true);
-              _this.kit.setColor("white", true);
-              _this.kit.eyeDropper.selected = false;
-          }
-        }    
-    }) 
   }
 
 function ChatApp(div, socket)
@@ -599,8 +587,11 @@ function ChatApp(div, socket)
     this.input = $("#chat-input");
     this.nick  = $("#nick-input");
     this.statusBar = $("#chat-status");
+    this.clientList = $("#chat-client-list");
     this.setupListeners();
     this.setupSocketEvents();
+
+    this.socket.emit("Client.requestClientList");
   }
 
   ChatApp.prototype.setupListeners = function()
@@ -634,6 +625,11 @@ function ChatApp(div, socket)
 
     this.socket.on("Server.removeClient", function(id){
       _this.printMessage({type: "status", sender: id.substring(0,7), text: " has discconnected"});
+    });
+
+    this.socket.on("Server.updateClientList", function(list){
+      console.log("Received Client List");
+      _this.updateClientList(list);
     });
   }
 
@@ -691,7 +687,6 @@ function ChatApp(div, socket)
 
   ChatApp.prototype.isScrolledDown = function()
   {
-    //1. kolla om vi redan är nerscrollade
     var div = this.output.get(0);
 
     if((div.clientHeight + div.scrollTop) == div.scrollHeight){
@@ -704,6 +699,16 @@ function ChatApp(div, socket)
   {
     var div = this.output.get(0);
     div.scrollTop = div.clientHeight+div.scrollTop;
+  }
+
+  ChatApp.prototype.updateClientList = function(list)
+  {
+    //var newList = JSON.parse(list);
+    //var html = "<ul>";
+    //$(newList).each(function(client){
+    //  html += ""
+    //});
+    //this.clientListDiv.html(html);
   }
 
 function Message(type, input, sender)
