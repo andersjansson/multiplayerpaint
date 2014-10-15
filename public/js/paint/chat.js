@@ -20,7 +20,13 @@ function ChatApp(div, socket)
     this.id;
 
     this.setupSocketEvents();
-    this.socket.emit("Client.requestClientList");
+    
+    this.socket.on("connect", function(){
+      _this.id = _this.socket.io.engine.id;
+      _this.name = _this.id.substr(0,7);
+      _this.socket.emit("Client.requestClientList");
+    })
+    
   }
 
   ChatApp.prototype.setupListeners = function()
@@ -30,12 +36,13 @@ function ChatApp(div, socket)
     this.textInput.keyup(function(e){
       if (e.keyCode === 13 && !e.shiftKey) {
         if($.trim(this.value).length > 0)
-          _this.sendMessage("chat", $.trim(this.value), _this.nameInput.val());
+          _this.sendMessage("chat", $.trim(this.value), _this.name);
       }
     });
     this.nameInput.keyup(function(e){
       if (e.keyCode === 13) {
         _this.socket.emit("Client.changeName", this.value);
+        _this.name = this.value;
         this.blur();
       }
     });
@@ -81,7 +88,7 @@ function ChatApp(div, socket)
 
   ChatApp.prototype.sendMessage = function(type, message, sender)
   {
-    var sentBy = ($.trim(sender) != "") ? sender : this.id.substring(0,7);
+    var sentBy = ($.trim(sender) != "") ? sender : this.name;
     var msg = new Message(type, message, sentBy);
     
     this.socket.emit("Client.sendChatMessage", JSON.stringify(msg));
@@ -145,10 +152,6 @@ function ChatApp(div, socket)
     else
       var newList = list;
 
-    // Make sure this.id is set and if not, grab from socket
-    if(typeof this.id === 'undefined')
-      this.id = this.socket.io.engine.id;
-    
     var html = "";
     var count = 0;
 
