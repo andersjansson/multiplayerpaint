@@ -220,6 +220,10 @@ canvas {
   word-break: break-all;
 }
 
+.chat-status-name{
+  word-break: normal;
+}
+
 .chat-name,.chat-text,.chat-time{
   z-index: 999;
 }

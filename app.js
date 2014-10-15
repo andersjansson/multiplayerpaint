@@ -150,7 +150,6 @@ function SocketHandler(io)
     delete this.clients[socket.id];
     delete this.clientSocket[socket.id];
     this.clientCount--;
-    this.io.sockets.emit("Server.removeClient", socket.id);
   }
 
   SocketHandler.prototype.clientNameChange = function(socket, newName)
@@ -239,6 +238,7 @@ function SocketHandler(io)
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
         _this.removeClient(socket);
+        _this.io.emit("Server.removeClient", socket.id);
       });
 
       /* Canvas-related events */

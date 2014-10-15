@@ -25,6 +25,8 @@ function ChatApp(div, socket)
       _this.id = _this.socket.io.engine.id;
       _this.name = _this.id.substr(0,7);
       _this.socket.emit("Client.requestClientList");
+      _this.textInput.val('');
+      _this.nameInput.val('');
     })
     
   }
@@ -68,7 +70,7 @@ function ChatApp(div, socket)
     });
 
     this.socket.on("Server.removeClient", function(id){
-      _this.printMessage({type: "status", sender: id.substring(0,7), text: " has discconnected"});
+      _this.printMessage({type: "status", sender: _this.clients[id].name, text: " has disconnected"});
       _this.removeClient(id);
       _this.renderClientList();
     });
@@ -79,7 +81,6 @@ function ChatApp(div, socket)
     });
 
     this.socket.on("Server.updateClientList", function(list){
-      console.log(list);
       var l = JSON.parse(list);
       _this.renderClientList(l);
       _this.clients = l;
@@ -187,8 +188,11 @@ function ChatApp(div, socket)
   ChatApp.prototype.updateClient = function(client)
   {
     var c = JSON.parse(client);
-    console.log(c);
-    console.log(this.clients[c.id]);
+    this.printMessage({
+      type: "status", 
+      sender: this.clients[c.id].name, 
+      text: " has changed name to <span class='chat-status-name'>"+c.name+"</span>"
+    });
     this.clients[c.id] = c;
   }
 
