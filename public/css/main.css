@@ -152,11 +152,6 @@ canvas {
   z-index: 1;
 }
 
-#chat-status{
-  height: 0px;
-  width: 100%;
-}
-
 #chat-window{
   padding: 5px;
   width: 100%;
@@ -186,6 +181,34 @@ canvas {
   padding: 5px;
 }
 
+#chat-client-list-wrap{
+  width: 100%;
+  padding: 0 5px 0 5px;
+  margin-right: 255px;
+}
+
+#chat-client-list{
+  width: 100%;
+  position: absolute;
+  margin-right: 50px;
+  word-break: normal;
+  padding: 1px 5px 2px 5px;
+  border-bottom: solid gray 1px;
+}
+
+#chat-client-list ul, li{
+  padding: 0;
+  margin: 0;
+}
+
+#chat-client-list li{
+  display: inline;
+}
+
+#chat-client-list li:not(:last-child):after{
+  content: ", ";
+}
+
 #nick-input{
   margin: 5px 0 0 10px;
   padding-left: 5px;
@@ -195,6 +218,10 @@ canvas {
   padding: 0;
   margin: 0;
   word-break: break-all;
+}
+
+.chat-status-name{
+  word-break: normal;
 }
 
 .chat-name,.chat-text,.chat-time{

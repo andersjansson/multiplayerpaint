@@ -64,7 +64,7 @@ var passport = require('passport');
 var flash    = require('connect-flash');
 
 var configDB = require('./config/database.js');
-mongoose.connect(configDB.url);
+//mongoose.connect(configDB.url);
 
 app.use(morgan('dev')); // logga allt i consolen
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -178,20 +178,24 @@ app.use('/api', router);
 /*http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
+<<<<<<< HEAD
 */
-function Client(socket, name)
+//function Client(socket, name)
+
+
+function Client(id, name)
+
 {
-  this.socket = socket;
-  this.id = this.socket.id;
-  this.name = (typeof name === 'undefined') ? this.id : name;
+  this.id = id;
+  this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
 }
 
 function SocketHandler(io)
 {
   this.painting = new Painting();
   this.clientCount = 0;
-  this.clients = [];
-  this.clientList = [];
+  this.clients = {};
+  this.clientSocket = {};
   this.gotDataURL = false;
 
   this.io = io;
@@ -207,24 +211,25 @@ function SocketHandler(io)
   SocketHandler.prototype.addClient = function(socket)
   {
     this.clientCount++;
-    this.io.sockets.emit("Server.addClient", socket.id);
-    var client = new Client(socket);
-    this.clients.push(client);
+    var client = new Client(socket.id);
+    this.clients[socket.id] = client;
+    this.clientSocket[socket.id] = socket;
     this.io.sockets.emit("Server.updateClientCount", this.clientCount);
+    this.io.sockets.emit("Server.addClient", JSON.stringify(client));
   }
 
   SocketHandler.prototype.removeClient = function(socket)
   {
-    for(var i = 0; i < this.clientCount; i++){
-      if(this.clients[i].id == socket.id){
-        this.clients.splice(i,1);
-        this.clientCount--;
-        break;
-      }
-        
-    }
+    delete this.clients[socket.id];
+    delete this.clientSocket[socket.id];
+    this.clientCount--;
+  }
 
-    this.io.sockets.emit("Server.removeClient", socket.id);
+  SocketHandler.prototype.clientNameChange = function(socket, newName)
+  {
+    this.clients[socket.id].name = newName;
+
+    return this.clients[socket.id];
   }
 
   SocketHandler.prototype.handleDataUrlRequest = function(socket)
@@ -235,18 +240,18 @@ function SocketHandler(io)
 
     //Om det finns flera klienter, fråga en av de andra efter dataURL, skicka sedan
     if(this.clientCount > 1){
-      for(var i = 0; i < this.clientCount; i++){
-        if(this.clients[i].id !== socket.id){
+      for(var key in this.clients){
+        if(this.clients[key].id !== socket.id){
 
           console.log(timeStamp() + " Asking other client for dataURL");
-          this.clients[i].socket.emit("Server.requestDataURL", {}, function(error, dataURL){
+          this.clientSocket[key].emit("Server.requestDataURL", {}, function(error, dataURL){
             if(!cancel){
               if(error){
                 console.log(timeStamp() + " Problem receiving dataURL from client");
               }
               else{
                 reply = true;
-                console.log(timeStamp() + " Got dataURL from client, sending to "+socket.id);
+                console.log(timeStamp() + " Got dataURL from "+_this.clients[key].id+", sending to "+socket.id);
                 socket.emit("Server.sendDataURL", dataURL, _this.sendDataURLCallback);
                 _this.painting.saveDataURL(dataURL);
               }  
@@ -266,8 +271,6 @@ function SocketHandler(io)
           _this.sendPaintingBackup(socket);
         }
       },2000);
-      
-        
     }
 
     else
@@ -308,6 +311,7 @@ function SocketHandler(io)
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
         _this.removeClient(socket);
+        _this.io.emit("Server.removeClient", socket.id);
       });
 
       /* Canvas-related events */
@@ -355,8 +359,14 @@ function SocketHandler(io)
 
       socket.on("Client.requestClientList", function(){
         console.log(timeStamp() + " Client requesting clientList");
-        socket.emit("Server.updateClientList", "bajs, bajs, bajs");
+        socket.emit("Server.updateClientList", JSON.stringify(_this.clients));
       });
+
+      socket.on("Client.changeName", function(newName){
+        console.log(timeStamp() + socket.id + " changed name to "+newName);
+        var changed = _this.clientNameChange(socket, newName);
+        _this.io.emit("Server.updateClient", JSON.stringify(changed));
+      });      
 
       /* Other events */
 
@@ -389,7 +399,6 @@ function Painting(PaintingModel)
     console.log(timeStamp() + " Saving dataURL");
     this.dataURL = dataURL;
     this.hasDataURL = true;
-    this.saveDataURLtoMongo(dataURL);
   }
 
   Painting.prototype.saveBrushStroke = function(data)
