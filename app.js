@@ -1,4 +1,56 @@
-var express = require('express');
+
+var express  = require('express');
+var app      = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var port     = process.env.PORT || 8080;
+var mongoose = require('mongoose');
+var passport = require('passport');
+var flash    = require('connect-flash');
+
+var morgan       = require('morgan');
+var cookieParser = require('cookie-parser');
+var bodyParser   = require('body-parser');
+var session      = require('express-session');
+
+var configDB = require('./config/database.js');
+
+// configuration ===============================================================
+mongoose.connect(configDB.url); // connect to our database
+
+// require('./config/passport')(passport); // pass passport for configuration
+
+// set up our express application
+app.use(morgan('dev')); // log every request to the console
+app.use(cookieParser()); // read cookies (needed for auth)
+//app.use(bodyParser()); // get information from html forms
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // ger oss info från html forms
+app.set('view engine', 'ejs'); // set up ejs for templating
+app.use(express.static(__dirname + '/public'));
+// required for passport
+app.use(session({ secret: 'ilovescotchscotchyscotchscotch' })); // session secret
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+app.use(flash()); // use connect-flash for flash messages stored in session
+
+// routes ======================================================================
+require('./routes/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+var PaintingModel = require('./models/painting');
+
+// launch ======================================================================
+http.listen(8080, function(){
+  console.log(timeStamp() + ' Server listening on port 8080');
+});
+
+
+
+
+/*var express = require('express');
 var app = express();
 var validator = require('validator')
 
@@ -7,6 +59,9 @@ var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 var morgan  = require('morgan');
 var bodyParser = require('body-parser');
+var session      = require('express-session');
+var passport = require('passport');
+var flash    = require('connect-flash');
 
 var configDB = require('./config/database.js');
 mongoose.connect(configDB.url);
@@ -17,10 +72,23 @@ app.use(bodyParser.json()); // ger oss info från html forms
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
+
+//app.use(session({ secret: 'secrettextdonttellanyonemkay' })); // session secret
+app.use(passport.initialize());
+//app.use(passport.session()); // persistent login sessions
+app.use(flash());
+
 var PaintingModel = require('./models/painting');
 var router = express.Router();
 
- 
+
+app.get('/login', function(req, res) {
+    res.render('login.ejs'); 
+  });
+*/
+
+
+
 /* API ROUTES */
 
 /*router.use(function(req, res, next) {
@@ -103,14 +171,14 @@ app.use('/api', router);
 
 /* SLUTAR API ROUTES YO */
 
-app.get('/', function(req, res){
+/*app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.htm');
 });
 
-http.listen(8080, function(){
+/*http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
-
+*/
 function Client(socket, name)
 {
   this.socket = socket;
