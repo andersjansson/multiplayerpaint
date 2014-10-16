@@ -1,7 +1,7 @@
-function CanvasApp(io)
+function CanvasApp(io, loader)
 {
   this.canvas = document.getElementById('canvas');
-  this.loader = new Loader(this.canvas);
+  this.loader = loader;
   this.toolKit = new ToolKit(this);
 
   this.socket = io;
@@ -306,39 +306,6 @@ function CanvasApp(io)
     img.src = dataURL;
   }
 
-function Loader(divToCover)
-{
-  this.div = divToCover;
-  this.cover;
-  this.init();
-}
-
-  Loader.prototype.init = function()
-  {
-    var cover = "<div id='loader' style='"
-      +"width: "+this.div.offsetWidth+"px;"
-      +"height: "+this.div.offsetHeight+"px;"
-      +"left: "+this.div.offsetLeft+"px;"
-      +"top: "+this.div.offsetTop+"px;'>";
-
-    this.cover = $("body").prepend(cover).children(":first");
-    this.cover.append("<img src='img/loading.gif'>");
-    this.cover.append("<div id='loader-text'>");
-  }
-
-  Loader.prototype.start = function(msg)
-  {
-    console.log("Starting loader with msg: "+msg);
-    $("#loader-text").html(msg);
-    this.cover.show();
-  }
-
-  Loader.prototype.stop = function(msg)
-  {
-    console.log("Stopping loader.");
-    this.cover.hide();
-  }
-
 function ToolKit(canvasApp)
 {
   this.app = canvasApp;
@@ -568,37 +535,5 @@ function Eraser(kit)
       _this.kit.setCursor(_this, true);
       _this.kit.setColor("white", true);
       _this.kit.eyeDropper.selected = false;
-    });
-
-    
+    }); 
   }
-
-
-/* Utility functions */
-function timeStamp()
-{
-  var d = new Date();
-
-  return addZero(d.getHours()) 
-  + ":" + addZero(d.getMinutes()) 
-  + ":" + addZero(d.getSeconds());
-}
-
-function addZero(number)
-{
-  var nr = (number < 10) ? "0"+number : number;
-  return nr;
-}
-
-function escapeHTML(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function rgbToHex(r, g, b) {
-  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-}
-
-function componentToHex(c) {
-  var hex = c.toString(16);
-  return hex.length == 1 ? "0" + hex : hex;
-}
