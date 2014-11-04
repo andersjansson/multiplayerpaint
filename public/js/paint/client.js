@@ -340,10 +340,8 @@ function ToolKit(canvasApp)
     this.hideCursor();
   }
 
-  //FIXA BÄTTRE
   ToolKit.prototype.setInitialColor = function(c)
   {
-    console.log("fixin up dat colorPicker");
     this.colorPicker.color.fromString(c);
     this.app.setColor(this.colorPicker.style.backgroundColor);  
     this.brush.setColor(this.colorPicker.style.backgroundColor);
@@ -362,34 +360,24 @@ function ToolKit(canvasApp)
     //slidern flyttas
     this.slider.on('slideStop', function(e){
       setTimeout(function(){
-        console.log(_this.slider.val());
         _this.app.setSize(_this.slider.val());
         _this.brush.setSize(_this.slider.val());
       }, 1);
-
-
     });
 
     $(document).keydown(function(e) {
-     if ($("#chat-input").is(":focus") || $("#nick-input").is(":focus")) 
-        console.log("Chat has all the focus man");
-      
-      else {
-        switch(e.keyCode)
-        {
+     if (!$("#chat-input").is(":focus") && !$("#nick-input").is(":focus")){
+        switch(e.keyCode){
           case 73: //I, Eyedropper
-            console.log("Keyboard I is pressed!");
             _this.eyeDropper.selected = true;
             _this.setCursor(_this.eyeDropper);
             break;
           case 66: //B, Brush
-            console.log("Keyboard B is pressed!");
             _this.setCursor(_this.brush, false);
             _this.setColor($(_this.colorPicker).css("background-color"), false);
             _this.eyeDropper.selected = false;
             break;
           case 69: //E, Eraser
-            console.log("Keyboard E is pressed!");
             _this.setCursor(_this, true);
             _this.setColor("white", true);
             _this.eyeDropper.selected = false;

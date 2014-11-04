@@ -139,7 +139,6 @@ app.use('/api', router);
 
 
 function Client(id, name)
-
 {
   this.id = id;
   this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
