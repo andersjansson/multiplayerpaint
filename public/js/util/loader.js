@@ -20,13 +20,11 @@ function Loader(divToCover)
 
   Loader.prototype.start = function(msg)
   {
-    console.log("Starting loader with msg: "+msg);
     $("#loader-text").html(msg);
     this.cover.show();
   }
 
-  Loader.prototype.stop = function(msg)
+  Loader.prototype.stop = function()
   {
-    console.log("Stopping loader.");
     this.cover.hide();
   }

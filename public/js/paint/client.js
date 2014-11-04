@@ -5,7 +5,6 @@ function CanvasApp(io, loader)
   this.toolKit = new ToolKit(this);
 
   this.socket = io;
-
   
   this.context = this.canvas.getContext("2d");
   this.isPainting = false;
@@ -132,7 +131,6 @@ function CanvasApp(io, loader)
           var mouseX = e.pageX - _this.canvas.offsetLeft;
           var mouseY = e.pageY - _this.canvas.offsetTop;
           var cData = _this.context.getImageData(mouseX, mouseY,1,1).data;
-          //skicka med bool till setColor, som avgör om den ska ändra på riktigt eller bara färgen i colorpickern?
           _this.toolKit.eyeDropper.setColorFromCData(cData);
         }
     });
