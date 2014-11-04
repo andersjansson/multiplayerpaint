@@ -176,6 +176,24 @@ function CanvasApp(io, loader)
     $(document).mouseup(function(){
       _this.isPainting = false;
     });
+
+    $(this.canvas).bind('mousewheel DOMMouseScroll', function(event){
+      if(_this.toolKit.brush.icon.hasClass("active")){
+
+        var mySlider = _this.toolKit.slider;
+        var newValue = mySlider.data('slider').getValue();
+
+        if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
+          mySlider.slider('setValue', newValue+3);
+        }
+        else {
+          mySlider.slider('setValue', newValue-3);
+        }
+
+        _this.setSize(newValue);
+          _this.toolKit.brush.setSize(newValue);
+      }
+    });
   }
 
   CanvasApp.prototype.clearCanvas = function()
@@ -294,13 +312,14 @@ function CanvasApp(io, loader)
   }
 
   CanvasApp.prototype.drawCanvasFromDataURL = function(dataURL){
-
     console.log("yay! I got me some dataURL");
     var _this = this;
     var img = new Image();
+
     img.onload = function(){
       _this.context.drawImage(img, 0, 0);
     }
+
     img.src = dataURL;
   }
 
