@@ -109,6 +109,7 @@ function ChatApp(div, socket)
 
   ChatApp.prototype.printMessage = function(message)
   {
+    console.log(message);
     var scrolled = this.isScrolledDown();
     var html = "<p><span class='chat-time'>["+timeStamp()+"] </span>";
 
@@ -148,6 +149,8 @@ function ChatApp(div, socket)
 
   ChatApp.prototype.renderClientList = function(list)
   {
+    var scrolled = this.isScrolledDown();
+
     if(typeof list === 'undefined')
       var newList = this.clients;
     else
@@ -167,6 +170,9 @@ function ChatApp(div, socket)
     this.clientListDiv.html("<ul>"+pre+html+"</ul>");
 
     this.resizeChat();
+
+    if(scrolled)
+      this.scrollDown();
   }
 
   ChatApp.prototype.resizeChat = function()
