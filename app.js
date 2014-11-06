@@ -251,46 +251,6 @@ function SocketHandler(io)
       this.sendPaintingBackup(socket);
   }
 
-    //Om det finns flera klienter, fråga en av de andra efter dataURL, skicka sedan
-    //if(this.clientCount > 1){
-      /*for(var key in this.clients){
-        if(this.clients[key].id !== socket.id){
-
-          console.log(timeStamp() + " Asking other client for dataURL");
-          this.clientSocket[key].emit("Server.requestDataURL", {}, function(error, dataURL){
-            if(!cancel){
-              if(error){
-                console.log(timeStamp() + " Problem receiving dataURL from client");
-              }
-              else{
-                reply = true;
-                console.log(timeStamp() + " Got dataURL from "+_this.clients[key].id+", sending to "+socket.id);
-                socket.emit("Server.sendDataURL", dataURL, _this.sendDataURLCallback);
-                _this.painting.saveDataURL(dataURL);
-              }  
-            }
-            
-          });
-
-          break;
-        }
-      }*/
-
-      //Wait one second, if client is too slow in responding, send backup
-      /*
-      setTimeout(function(){
-        if(!reply){
-          console.log(timeStamp() + " No reply received, or socket too slow in responding");
-          cancel = true;
-          _this.sendPaintingBackup(socket);
-        }
-      },2000);
-    }
-
-    else
-      this.sendPaintingBackup(socket);*/
-
-  //}
   SocketHandler.prototype.sendPaintingBackup = function(socket)
   {
     if(this.painting.hasDataURL){
@@ -356,6 +316,11 @@ function SocketHandler(io)
       socket.on("Client.clearCanvas", function(){
         socket.broadcast.emit("Server.trashPainting");
         _this.painting.removeAll();
+        _this.io.emit("Server.chatMessage", JSON.stringify({
+          type: "status",
+          text: " has cleared the canvas.",
+          sender: _this.clients[socket.id].name
+        }));
         console.log(timeStamp() + " Clearing all canvases");
       });
 
