@@ -3,6 +3,8 @@ var LocalStrategy  = require('passport-local').Strategy;
 var User = require('../models/user');
 
 var configAuth = require('./auth'); 
+var bodyParser   = require('body-parser');
+var validator = require('validator');
 
 module.exports = function(passport) {
 
@@ -23,21 +25,26 @@ module.exports = function(passport) {
         passReqToCallback : true 
     },
     function(req, email, password, done) {
-        if (email)
-            email = email.toLowerCase(); 
-
+        if (validator.isEmail(email) || validator.isNull(email)){
+            email = email.toLowerCase();
+            console.log(password);
+            console.log(email);
+            console.log(validator.isNull(email));
+            //console.log(req.user.password);
+        }    
+        else {
+            console.log(email);
+            console.log(validator.isEmail(email));
+            return done(null, false, req.flash('loginMessage', 'Invalid email'));
+        }
         process.nextTick(function() {
             User.findOne({ 'local.email' :  email }, function(err, user) {
                
                 if (err)
                     return done(err);
 
-                if (!user)
-                    return done(null, false, req.flash('loginMessage', 'No user found.'));
-
-                if (!user.validPassword(password))
-                    return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
-
+                if (!user || !user.validPassword(password))
+                    return done(null, false, req.flash('loginMessage', 'Derp, something didnt match, test again.'));
                 else
                     return done(null, user);
             });
@@ -51,8 +58,16 @@ module.exports = function(passport) {
         passReqToCallback : true 
     },
     function(req, email, password, done) {
-        if (email)
-            email = email.toLowerCase(); 
+        if (validator.isEmail(email)){
+            email = email.toLowerCase();
+
+        }    
+        else {
+            console.log(password);
+            console.log(email);
+            console.log(validator.isEmail(email));
+            return done(null, false, req.flash('signupMessage', 'Invalid email!'));
+        }
 
         process.nextTick(function() {
             
@@ -70,7 +85,7 @@ module.exports = function(passport) {
                         
                         var newUser = new User();
 
-                        newUser.local.email = email;
+                        newUser.local.email = validator.escape(email);
                         newUser.local.password = newUser.generateHash(password);
 
                         newUser.save(function(err) {
@@ -92,7 +107,7 @@ module.exports = function(passport) {
                         return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
                     } else {
                         var user = req.user;
-                        user.local.email = email;
+                        user.local.email = validator.escape(email);
                         user.local.password = user.generateHash(password);
                         user.save(function (err) {
                             if (err)

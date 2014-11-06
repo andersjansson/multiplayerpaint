@@ -12,6 +12,7 @@ var LocalStrategy    = require('passport-local').Strategy;
 var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
+var validator = require('validator');
 var session      = require('express-session');
 
 var configDB = require('./config/database.js');
@@ -36,6 +37,8 @@ require('./routes/routes.js')(app, passport);
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.html');
 });
+
+
 
 var PaintingModel = require('./models/painting');
 
