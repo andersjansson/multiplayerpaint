@@ -27,14 +27,8 @@ module.exports = function(passport) {
     function(req, email, password, done) {
         if (validator.isEmail(email) || validator.isNull(email)){
             email = email.toLowerCase();
-            console.log(password);
-            console.log(email);
-            console.log(validator.isNull(email));
-            //console.log(req.user.password);
         }    
         else {
-            console.log(email);
-            console.log(validator.isEmail(email));
             return done(null, false, req.flash('loginMessage', 'Invalid email'));
         }
         process.nextTick(function() {
@@ -44,7 +38,7 @@ module.exports = function(passport) {
                     return done(err);
 
                 if (!user || !user.validPassword(password))
-                    return done(null, false, req.flash('loginMessage', 'Derp, something didnt match, test again.'));
+                    return done(null, false, req.flash('loginMessage', 'That did not match, try again.'));
                 else
                     return done(null, user);
             });
