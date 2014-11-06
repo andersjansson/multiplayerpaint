@@ -179,6 +179,7 @@ function CanvasApp(io, loader)
 
     $(this.canvas).bind('mousewheel DOMMouseScroll', function(event){
       if(_this.toolKit.brush.icon.hasClass("active")){
+        event.preventDefault();
 
         var mySlider = _this.toolKit.slider;
         var newValue = mySlider.data('slider').getValue();
@@ -191,7 +192,8 @@ function CanvasApp(io, loader)
         }
 
         _this.setSize(newValue);
-          _this.toolKit.brush.setSize(newValue);
+        _this.toolKit.brush.setSize(newValue);
+        _this.toolKit.moveCursor(event);
       }
     });
   }

@@ -137,7 +137,6 @@ app.use('/api', router);
 */
 //function Client(socket, name)
 
-
 function Client(id, name)
 {
   this.id = id;
@@ -151,6 +150,8 @@ function SocketHandler(io)
   this.clients = {};
   this.clientSocket = {};
   this.gotDataURL = false;
+
+  this.dataURLQueue = [];
 
   this.io = io;
 
@@ -170,6 +171,8 @@ function SocketHandler(io)
     this.clientSocket[socket.id] = socket;
     this.io.sockets.emit("Server.updateClientCount", this.clientCount);
     this.io.sockets.emit("Server.addClient", JSON.stringify(client));
+
+    this.dataURLQueue.push(socket.id);
   }
 
   SocketHandler.prototype.removeClient = function(socket)
@@ -177,6 +180,9 @@ function SocketHandler(io)
     delete this.clients[socket.id];
     delete this.clientSocket[socket.id];
     this.clientCount--;
+
+    this.dataURLQueue.splice(this.dataURLQueue.indexOf(socket.id),1);
+    
   }
 
   SocketHandler.prototype.clientNameChange = function(socket, newName)
@@ -190,11 +196,64 @@ function SocketHandler(io)
   {
     var _this = this;
     var reply = false;
-    var cancel = false;
+    var timeoutIterator = 0;
+
+    //om det finns andra klienter
+    if(this.dataURLQueue.length > 1)
+    {
+      for(var i = 0; i < this.dataURLQueue.length; i++)
+      {
+        //starta en setTimeout för varje klient i listan, med 1 sekunds mellanrum
+        //i väntetid. Om vi inte får svar från första inom 1 sec körs andra osv.
+        if(this.dataURLQueue[i] !== socket.id)
+        {
+          var id = this.dataURLQueue[i];
+
+          setTimeout(function(){
+            var internalId = _this.dataURLQueue[timeoutIterator];
+            
+            if(!reply)
+            {
+              console.log(timeStamp() + " Asking "+internalId+" for dataURL");
+              _this.clientSocket[internalId].emit("Server.requestDataURL", {}, function(error, dataURL){
+                if(error)
+                  console.log(timeStamp() + " Problem receiving dataURL from "+socket.id);
+                
+                else{
+                  reply = true;
+                  console.log(timeStamp() + " Got dataURL from "+internalId+", sending to "+socket.id);
+                  socket.emit("Server.sendDataURL", dataURL, _this.sendDataURLCallback);
+                  _this.painting.saveDataURL(dataURL);
+                  
+                  //plocka ut id på den som svarat ur arrayen, lägg sist
+                  var placeLast = _this.dataURLQueue.splice(_this.dataURLQueue.indexOf(internalId),1);
+                  _this.dataURLQueue.push(placeLast[0]);
+                }  
+              });
+            }
+            timeoutIterator++;
+          }, (i*1000)+1);  
+        }
+
+      }
+
+      //Vänta tills alla blivit frågade, om vi inte fått svar, skicka backup
+      setTimeout(function(){
+        if(!reply){
+          console.log(timeStamp() + " No reply received, or socket(s) too slow in responding");
+          _this.sendPaintingBackup(socket);
+        }
+      },(this.dataURLQueue.length-1)*1000);
+    }
+
+    //det finns bara en klient, skicka backup
+    else
+      this.sendPaintingBackup(socket);
+  }
 
     //Om det finns flera klienter, fråga en av de andra efter dataURL, skicka sedan
-    if(this.clientCount > 1){
-      for(var key in this.clients){
+    //if(this.clientCount > 1){
+      /*for(var key in this.clients){
         if(this.clients[key].id !== socket.id){
 
           console.log(timeStamp() + " Asking other client for dataURL");
@@ -215,9 +274,10 @@ function SocketHandler(io)
 
           break;
         }
-      }
+      }*/
 
       //Wait one second, if client is too slow in responding, send backup
+      /*
       setTimeout(function(){
         if(!reply){
           console.log(timeStamp() + " No reply received, or socket too slow in responding");
@@ -228,9 +288,9 @@ function SocketHandler(io)
     }
 
     else
-      this.sendPaintingBackup(socket);
+      this.sendPaintingBackup(socket);*/
 
-  }
+  //}
   SocketHandler.prototype.sendPaintingBackup = function(socket)
   {
     if(this.painting.hasDataURL){
