@@ -1,7 +1,6 @@
 
 var LocalStrategy  = require('passport-local').Strategy;
 var User = require('../models/user');
-
 var configAuth = require('./auth'); 
 var bodyParser   = require('body-parser');
 var validator = require('validator');
