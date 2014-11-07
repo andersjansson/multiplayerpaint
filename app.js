@@ -34,9 +34,10 @@ app.use(passport.session());
 app.use(flash()); 
 app.use(express.static(__dirname + '/public'));
 require('./routes/routes.js')(app, passport); 
-app.get('/', function(req, res){
+
+/*app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.html');
-});
+});*/
 
 
 
