@@ -1,7 +1,8 @@
-function CanvasApp(io, loader)
+function CanvasApp(io, loader, room)
 {
   this.canvas = document.getElementById('canvas');
   this.loader = loader;
+  this.room = room;
   this.toolKit = new ToolKit(this);
 
   this.socket = io;
@@ -21,14 +22,18 @@ function CanvasApp(io, loader)
 
   this.clientCount;
 
-  this.init();
+  this.init();  
 }
+
   CanvasApp.prototype.init = function(io)
   {
     var _this = this;
 
     this.socket.on('connect', function(){
       _this.setupSocketEvents();
+
+      _this.socket.emit("Client.tryJoinRoom", _this.room);
+
       _this.socket.emit("Client.requestClientCount");
 
       console.log("Requesting dataURL");
@@ -96,6 +101,17 @@ function CanvasApp(io, loader)
 
     this.socket.on("Server.stopLoader", function(msg){
       _this.loader.stop();
+    });
+
+    this.socket.on("Server.tryJoinRoomResponse",function(response){
+      var response = JSON.parse(response);
+      if(response.success){
+        console.log(response.message);
+      }
+      else{
+        $("body").html(response.message);
+      }
+        
     });
   }
 

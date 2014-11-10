@@ -48,9 +48,6 @@ http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
 
-
-
-
 function Client(id, name)
 {
   this.id = id;
@@ -272,6 +269,15 @@ function SocketHandler(io)
 
       socket.on("Client.tryJoinRoom", function(roomId){
         console.log(timeStamp() + " " + socket.id + " is trying to join "+roomId+".");
+        var roomExists = true; //Kolla om rummet finns i db
+        var response;
+        if(roomExists)
+          response = {success: true, message: "Joined room " + roomId + "."};
+
+        else
+          response = {success: false, message: "Failed to join room " + roomId + "."};
+
+        socket.emit("Server.tryJoinRoomResponse", JSON.stringify(response));
         /* Step two
           1. Kolla i db om rummet finns
               - Om det finns, skicka in klienten i det, skicka bekräftelse

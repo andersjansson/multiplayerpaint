@@ -20,20 +20,15 @@ requirejs.config({
 requirejs(['jquery', 'socket.io','jscolor','client','bootstrap','bootstrap-slider', 'chat', 'utility', 'loader'],
 function($, io, jscolor) {
   $(function(){
-    var socket = io.connect();
-    var room = document.title.split("Room ")[1];
-    socket.emit("Client.tryJoinRoom", room);
     
-    /*
-      1. Room-join-checkup-blabla
-      2. Starta bara appen om rum finns
-    */
+    var room = document.title.split("Room ")[1];
 
     jscolor.install();
     jscolor.init();
 
     var loader = new Loader(document.getElementById("canvas"));
     loader.start("Loading, please wait...");
+    var socket = io.connect();
     var app = new CanvasApp(socket,loader,room);
     var chat = new ChatApp($("#chat-window"), socket);
     
