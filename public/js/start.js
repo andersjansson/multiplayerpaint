@@ -1,5 +1,5 @@
 requirejs.config({
-    baseUrl: 'js/lib',
+    baseUrl: '../js/lib',
     shim: {
       "bootstrap"       : {deps:['jquery']},
       "bootstrap-slider": { deps :['bootstrap'] },
