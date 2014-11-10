@@ -258,13 +258,25 @@ function SocketHandler(io)
         console.log(timeStamp() + socket.id + " changed name to "+newName);
         var changed = _this.clientNameChange(socket, newName);
         _this.io.emit("Server.updateClient", JSON.stringify(changed));
-      });      
+      });
 
       /* Other events */
 
       socket.on("Client.requestClientCount", function(){
         console.log(timeStamp() + " Client requesting client count");
         socket.emit("Server.updateClientCount", _this.clientCount);
+      });
+
+      /* Room-related events*/
+
+      socket.on("Client.tryJoinRoom", function(roomId){
+        console.log(timeStamp() + " " + socket.id + " is trying to join "+roomId+".");
+        /* Step two
+          1. Kolla i db om rummet finns
+              - Om det finns, skicka in klienten i det, skicka bekräftelse
+              - Om det inte finns, skicka felmeddelande
+
+        */
       });
     });
   }  

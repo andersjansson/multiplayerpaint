@@ -34,8 +34,6 @@ function CanvasApp(io, loader)
       console.log("Requesting dataURL");
       
       _this.socket.emit("Client.requestDataURL");
-    
-
     });
 
     this.color = "rgb(0,0,0)";
