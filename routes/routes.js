@@ -1,7 +1,9 @@
 module.exports = function(app, passport) {
 
-	app.get('/', function(req, res) {
-		res.render('index.ejs');
+	app.get('/', isLoggedIn, function(req, res) {
+		res.render('index.ejs', {
+			user : req.user
+		});
 	});
 
 	
@@ -23,7 +25,7 @@ module.exports = function(app, passport) {
 
 		
 		app.post('/login', passport.authenticate('local-login', {
-			successRedirect : '/profile', 
+			successRedirect : '/', 
 			failureRedirect : '/login', 
 			failureFlash : true 
 		}));
@@ -45,5 +47,5 @@ function isLoggedIn(req, res, next) {
 	if (req.isAuthenticated())
 		return next();
 
-	res.redirect('/');
+	res.redirect('/login');
 }
