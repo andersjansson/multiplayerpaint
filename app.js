@@ -37,7 +37,8 @@ require('./routes/routes.js')(app, passport);
 
 /*app.get('/', function(req, res){
   res.sendFile(__dirname + '/public/index.html');
-});*/
+});
+*/
 
 
 
