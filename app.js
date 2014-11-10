@@ -1,21 +1,21 @@
 
-var express  = require('express');
-var app      = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var validator = require('validator')
-var port     = process.env.PORT || 8080;
-var mongoose = require('mongoose');
-var passport = require('passport');
-var flash    = require('connect-flash');
-var LocalStrategy    = require('passport-local').Strategy;
-var morgan       = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser   = require('body-parser');
-var validator = require('validator');
-var session      = require('express-session');
+var express       = require('express');
+var app           = express();
+var http          = require('http').Server(app);
+var io            = require('socket.io')(http);
+var validator     = require('validator')
+var port          = process.env.PORT || 8080;
+var mongoose      = require('mongoose');
+var passport      = require('passport');
+var flash         = require('connect-flash');
+var LocalStrategy = require('passport-local').Strategy;
+var morgan        = require('morgan');
+var cookieParser  = require('cookie-parser');
+var bodyParser    = require('body-parser');
+var validator     = require('validator');
+var session       = require('express-session');
 
-var configDB = require('./config/database.js');
+var configDB      = require('./config/database.js');
 
 mongoose.connect(configDB.url); 
 

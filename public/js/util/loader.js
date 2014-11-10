@@ -14,7 +14,7 @@ function Loader(divToCover)
       +"top: "+this.div.offsetTop+"px;'>";
 
     this.cover = $("body").prepend(cover).children(":first");
-    this.cover.append("<img src='img/loading.gif'>");
+    this.cover.append("<img src='../img/loading.gif'>");
     this.cover.append("<div id='loader-text'>");
   }
 

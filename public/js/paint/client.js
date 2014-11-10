@@ -178,7 +178,7 @@ function CanvasApp(io, loader)
     });
 
     $(this.canvas).bind('mousewheel DOMMouseScroll', function(event){
-      if(_this.toolKit.brush.icon.hasClass("active")){
+      if(_this.toolKit.brush.icon.hasClass("active") || _this.toolKit.eraser.icon.hasClass("active")){
         event.preventDefault();
 
         var mySlider = _this.toolKit.slider;

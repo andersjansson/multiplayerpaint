@@ -10,7 +10,6 @@ module.exports = function(app, passport) {
 			user : req.user
 		});
 	});
-
 	
 	app.get('/logout', function(req, res) {
 		req.logout();
@@ -21,6 +20,9 @@ module.exports = function(app, passport) {
 			res.render('login.ejs', { message: req.flash('loginMessage') });
 		});
 
+		app.get('/rooms/:roomId', function(req, res) {
+			res.render('room.ejs', {roomId: req.params.roomId});
+		});
 		
 		app.post('/login', passport.authenticate('local-login', {
 			successRedirect : '/', 
@@ -31,7 +33,6 @@ module.exports = function(app, passport) {
 		app.get('/signup', function(req, res) {
 			res.render('signup.ejs', { message: req.flash('signupMessage') });
 		});
-
 		
 		app.post('/signup', passport.authenticate('local-signup', {
 			successRedirect : '/', 
