@@ -17,6 +17,10 @@ body {
   user-select: none; 
   -webkit-user-select: none; 
   -moz-user-select: none;
+
+}
+#createroom {
+  padding-top: 100px;
 }
 .footer {
   position: absolute;

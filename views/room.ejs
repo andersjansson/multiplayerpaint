@@ -64,17 +64,12 @@
         </div><!--/.nav-collapse -->
       </div>
     </div>
-    <div class="container-fluid wrapper">
-        <canvas id="canvas" width="1024" height="700"></canvas>
-        <div id="chat-container">
-          <div id="chat-client-list"></div>
-          <div id="chat-window">
-          </div>
-          <div id="chat-input-container">
-            <textarea id="chat-input" placeholder="Type here to chat..." maxlength="255"></textarea>
-            <input type="text" id="nick-input" placeholder="Type your name here..." maxlength="20"/>
-          </div>
-        </div>
+    <div class="container" id="createroom">
+      <div class="row">
+          <form action="/rooms" method="post">
+                <button type="submit" class="btn btn-danger btn-lg">Create Room</button>
+          </form>
+      </div>
     </div>
      <div class="navbar navbar-default navbar-fixed-bottom" role="navigation">
       <div class="container">
