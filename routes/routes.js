@@ -25,16 +25,17 @@ module.exports = function(app, passport) {
 	});
 
 	app.get('/rooms', function(req, res) {
-		res.render('index.ejs', {roomId: req.params.roomId});
+		res.render('index.ejs', {roomId: req.params.roomId, roomName: req.body.roomName});
 		console.log("lololol rooooms");
 	});
 	app.post('/rooms',  function(req, res) {
+
 		hashId = generateRoomId(10);
 
 		var Room = RoomModel();
 		console.log(req.body.roomName);
 		console.log(req.body.password);
-		
+
 		console.log(req.params);
 		Room.roomId = hashId;
 		Room.name = req.body.roomName;
@@ -48,14 +49,14 @@ module.exports = function(app, passport) {
   			
   			else
   				res.redirect("/rooms/" + hashId);
-
 		});
 	});
 
 	app.get('/rooms/:roomId',isLoggedIn, function(req, res) {
-	  roomExists(req.params.roomId, function(exists){
-	  	if(exists)
-	  		res.render("room.ejs", {roomId: req.params.roomId, user: req.user});	
+	  getRoom(req.params.roomId, function(doc){
+	  	console.log(doc);
+	  	if(doc)
+	  		res.render("room.ejs", {roomId: req.params.roomId, roomName: doc.name});	
 	  	else
 	  		res.render("404.ejs");
 	  });
@@ -99,13 +100,13 @@ function generateRoomId(length){
 	return id;
 }
 
-function roomExists(roomId,fn)
+function getRoom(roomId,fn)
 {
 	var rId = roomId;
 
 	RoomModel.findOne({roomId: rId}, function (err, doc){
 	  if(doc !== null){
-	  	fn(true);
+	  	fn(doc);
 	  }
 	  else
 	  	fn(false);
