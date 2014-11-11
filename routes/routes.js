@@ -32,8 +32,16 @@ module.exports = function(app, passport) {
 		hashId = generateRoomId(10);
 
 		var Room = RoomModel();
-
+		console.log(req.body.roomName);
+		console.log(req.body.password);
+		
+		console.log(req.params);
 		Room.roomId = hashId;
+		Room.name = req.body.roomName;
+		Room.password = req.body.password;
+		Room.isPrivate = true;
+		Room.creator = req.user.id;
+
 		Room.save(function (err) {
 
   			if (err) console.log(err);
@@ -42,8 +50,6 @@ module.exports = function(app, passport) {
   				res.redirect("/rooms/" + hashId);
 
 		});
-		//console.log("Room har skapats!!!!!!!!!");
-
 	});
 
 	app.get('/rooms/:roomId', function(req, res) {
