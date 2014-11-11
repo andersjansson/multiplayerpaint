@@ -34,14 +34,16 @@ module.exports = function(app, passport) {
 
 	app.get('/rooms/:roomId', function(req, res) {
 		var rId = req.params.roomId;
-		var room = new RoomModel({roomId: rId});
-		room.save();
+		//var room = new RoomModel({roomId: rId});
+		//room.save();
 
 		RoomModel.findOne({roomId: rId}, function (err, doc){
 		  if(doc !== null)
 		  {
 		  	res.render("room.ejs", {roomId: rId})
 		  }
+		  else
+		  	res.render("404.ejs");
 		});
 		
 		

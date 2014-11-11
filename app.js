@@ -267,7 +267,7 @@ function SocketHandler(io)
       });
 
       /* Room-related events*/
-
+      /*
       socket.on("Client.tryJoinRoom", function(roomId){
         console.log(timeStamp() + " " + socket.id + " is trying to join "+roomId+".");
         RoomModel.findOne({ 'some.value': 5 }, function (err, docs) {
@@ -288,7 +288,8 @@ function SocketHandler(io)
               - Om det inte finns, skicka felmeddelande
 
         */
-      });
+
+      //});
     });
   }  
 
