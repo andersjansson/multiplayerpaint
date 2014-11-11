@@ -47,17 +47,12 @@ module.exports = function(app, passport) {
 	});
 
 	app.get('/rooms/:roomId', function(req, res) {
-		var rId = req.params.roomId;
-
-		RoomModel.findOne({roomId: rId}, function (err, doc){
-		  if(doc !== null)
-		  {
-		  	res.render("room.ejs", {roomId: rId})
-		  }
-		  else
-		  	res.render("404.ejs");
-		});
-
+	  roomExists(req.params.roomId, function(exists){
+	  	if(exists)
+	  		res.render("room.ejs", {roomId: req.params.roomId});	
+	  	else
+	  		res.render("404.ejs");
+	  });
 	});
 
 	app.post('/login', passport.authenticate('local-login', {
@@ -98,7 +93,16 @@ function generateRoomId(length){
 	return id;
 }
 
-function roomExists(roomId)
+function roomExists(roomId,fn)
 {
-	
+	var rId = roomId;
+
+	RoomModel.findOne({roomId: rId}, function (err, doc){
+	  if(doc !== null){
+	  	fn(true);
+	  }
+	  else
+	  	fn(false);
+	  	
+	});
 }
