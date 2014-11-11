@@ -36,14 +36,16 @@ module.exports = function(app, passport) {
 
 	app.get('/rooms/:roomId', function(req, res) {
 		var rId = req.params.roomId;
-		var room = new RoomModel({roomId: rId});
-		room.save();
+		//var room = new RoomModel({roomId: rId});
+		//room.save();
 
 		RoomModel.findOne({roomId: rId}, function (err, doc){
 		  if(doc !== null)
 		  {
 		  	res.render("room.ejs", {roomId: rId})
 		  }
+		  else
+		  	res.render("404.ejs");
 		});
 
 	});
@@ -71,4 +73,17 @@ function isLoggedIn(req, res, next) {
 		return next();
 
 	res.redirect('/login');
+}
+
+
+function generateRoomId(length){
+	var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	var id = "";
+
+	for(var i = 0; i < length; i++)
+	{
+		id += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+
+	return id;
 }

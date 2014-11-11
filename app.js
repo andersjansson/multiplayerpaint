@@ -3,7 +3,7 @@ var express       = require('express');
 var app           = express();
 var http          = require('http').Server(app);
 var io            = require('socket.io')(http);
-var validator     = require('validator')
+var validator     = require('validator');
 var port          = process.env.PORT || 8080;
 var mongoose      = require('mongoose');
 var passport      = require('passport');
@@ -267,7 +267,7 @@ function SocketHandler(io)
       });
 
       /* Room-related events*/
-
+      /*
       socket.on("Client.tryJoinRoom", function(roomId){
         console.log(timeStamp() + " " + socket.id + " is trying to join "+roomId+".");
         RoomModel.findOne({ 'some.value': 5 }, function (err, docs) {
@@ -288,7 +288,8 @@ function SocketHandler(io)
               - Om det inte finns, skicka felmeddelande
 
         */
-      });
+
+      //});
     });
   }  
 
