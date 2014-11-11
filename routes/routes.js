@@ -1,5 +1,5 @@
 var RoomModel = require('../models/room');
-
+var bcrypt   = require('bcrypt-nodejs');
 module.exports = function(app, passport) {
 
 	app.get('/', isLoggedIn, function(req, res) {
@@ -9,13 +9,12 @@ module.exports = function(app, passport) {
 
 	});
 
-	
 	app.get('/profile', isLoggedIn, function(req, res) {
 		res.render('profile.ejs', {
 			user : req.user
 		});
 	});
-	
+
 	app.get('/logout', function(req, res) {
 		req.logout();
 		res.redirect('/');
@@ -26,10 +25,25 @@ module.exports = function(app, passport) {
 	});
 
 	app.get('/rooms', function(req, res) {
-		res.render('room.ejs', {roomId: req.params.roomId});
+		res.render('index.ejs', {roomId: req.params.roomId});
+		console.log("lololol rooooms");
 	});
 	app.post('/rooms',  function(req, res) {
-		
+		hashId = generateRoomId(10);
+
+		var Room = RoomModel();
+
+		Room.roomId = hashId;
+		Room.save(function (err) {
+
+  			if (err) console.log(err);
+  			
+  			else
+  				res.redirect("/rooms/" + hashId);
+
+		});
+		//console.log("Room har skapats!!!!!!!!!");
+
 	});
 
 	app.get('/rooms/:roomId', function(req, res) {
@@ -43,25 +57,23 @@ module.exports = function(app, passport) {
 		  else
 		  	res.render("404.ejs");
 		});
-		
-		
-		
+
 	});
-	
+
 	app.post('/login', passport.authenticate('local-login', {
-		successRedirect : '/', 
-		failureRedirect : '/login', 
-		failureFlash : true 
+		successRedirect : '/',
+		failureRedirect : '/login',
+		failureFlash : true
 	}));
 
 	app.get('/signup', function(req, res) {
 		res.render('signup.ejs', { message: req.flash('signupMessage') });
 	});
-	
+
 	app.post('/signup', passport.authenticate('local-signup', {
-		successRedirect : '/', 
-		failureRedirect : '/signup', 
-		failureFlash : true 
+		successRedirect : '/',
+		failureRedirect : '/signup',
+		failureFlash : true
 	}));
 };
 
@@ -72,6 +84,7 @@ function isLoggedIn(req, res, next) {
 
 	res.redirect('/login');
 }
+
 
 function generateRoomId(length){
 	var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
