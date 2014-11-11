@@ -43,13 +43,11 @@ require('./routes/routes.js')(app, passport);
 
 
 var PaintingModel = require('./models/painting');
+var RoomModel = require('./models/room');
 
 http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
-
-
-
 
 function Client(id, name)
 {
@@ -59,7 +57,7 @@ function Client(id, name)
 
 function SocketHandler(io)
 {
-  this.painting = new Painting();
+  this.painting = new Painting(RoomModel);
   this.clientCount = 0;
   this.clients = {};
   this.clientSocket = {};
@@ -272,6 +270,18 @@ function SocketHandler(io)
 
       socket.on("Client.tryJoinRoom", function(roomId){
         console.log(timeStamp() + " " + socket.id + " is trying to join "+roomId+".");
+        RoomModel.findOne({ 'some.value': 5 }, function (err, docs) {
+        // docs is an array
+      });
+        var roomExists = true; //Kolla om rummet finns i db
+        var response;
+        if(_this.painting.roomExists(roomId))
+          response = {success: true, message: "Joined room " + roomId + "."};
+
+        else
+          response = {success: false, message: "Failed to join room " + roomId + "."};
+
+        socket.emit("Server.tryJoinRoomResponse", JSON.stringify(response));
         /* Step two
           1. Kolla i db om rummet finns
               - Om det finns, skicka in klienten i det, skicka bekräftelse
@@ -282,14 +292,23 @@ function SocketHandler(io)
     });
   }  
 
-function Painting(PaintingModel)
+function Painting(roomModel)
 {
   this.paintArray = new Array();
   console.log(this.paintArray);
   this.dataURL;
   this.hasDataURL = false;
-
+  this.roomModel = roomModel;
 }
+
+  Painting.prototype.roomExists = function(rId)
+  {
+    this.roomModel.findOne({ roomId: rId}, function (err, doc){
+      console.log(doc);
+    });
+
+  }
+
   Painting.prototype.saveDataURLtoMongo = function(dataURL)
   {
     this.dataURL = dataURL;

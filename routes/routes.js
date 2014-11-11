@@ -1,3 +1,5 @@
+var RoomModel = require('../models/room');
+var bcrypt   = require('bcrypt-nodejs');
 module.exports = function(app, passport) {
 
 	app.get('/', isLoggedIn, function(req, res) {
@@ -12,7 +14,7 @@ module.exports = function(app, passport) {
 			user : req.user
 		});
 	});
-	
+
 	app.get('/logout', function(req, res) {
 		req.logout();
 		res.redirect('/');
@@ -27,24 +29,39 @@ module.exports = function(app, passport) {
 		console.log("lololol rooooms");
 	});
 	app.post('/rooms',  function(req, res) {
-		console.log(req);
+
+		var hash = bcrypt.genSalt(8):
+		console.log("ett rum skapas för dig!" . hash);
 	});
 
-	
+	app.get('/rooms/:roomId', function(req, res) {
+		var rId = req.params.roomId;
+		var room = new RoomModel({roomId: rId});
+		room.save();
+
+		RoomModel.findOne({roomId: rId}, function (err, doc){
+		  if(doc !== null)
+		  {
+		  	res.render("room.ejs", {roomId: rId})
+		  }
+		});
+
+	});
+
 	app.post('/login', passport.authenticate('local-login', {
-		successRedirect : '/', 
-		failureRedirect : '/login', 
-		failureFlash : true 
+		successRedirect : '/',
+		failureRedirect : '/login',
+		failureFlash : true
 	}));
 
 	app.get('/signup', function(req, res) {
 		res.render('signup.ejs', { message: req.flash('signupMessage') });
 	});
-	
+
 	app.post('/signup', passport.authenticate('local-signup', {
-		successRedirect : '/', 
-		failureRedirect : '/signup', 
-		failureFlash : true 
+		successRedirect : '/',
+		failureRedirect : '/signup',
+		failureFlash : true
 	}));
 };
 
