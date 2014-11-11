@@ -74,3 +74,15 @@ function isLoggedIn(req, res, next) {
 
 	res.redirect('/login');
 }
+
+function generateRoomId(length){
+	var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	var id = "";
+
+	for(var i = 0; i < length; i++)
+	{
+		id += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+
+	return id;
+}
