@@ -56,7 +56,7 @@ module.exports = function(app, passport) {
 	  getRoom(req.params.roomId, function(doc){
 	  	console.log(doc);
 	  	if(doc)
-	  		res.render("room.ejs", {roomId: req.params.roomId, roomName: doc.name});	
+	  		res.render("room.ejs", {roomId: req.params.roomId, roomName: doc.name, user: req.user});	
 	  	else
 	  		res.render("404.ejs");
 	  });
