@@ -25,13 +25,25 @@ module.exports = function(app, passport) {
 	});
 
 	app.get('/rooms', function(req, res) {
-		res.render('room.ejs', {roomId: req.params.roomId});
+		res.render('index.ejs', {roomId: req.params.roomId});
 		console.log("lololol rooooms");
 	});
 	app.post('/rooms',  function(req, res) {
+		hashId = generateRoomId(10);
 
-		var hash = bcrypt.genSalt(8):
-		console.log("ett rum skapas för dig!" . hash);
+		var Room = RoomModel();
+
+		Room.roomId = hashId;
+		Room.save(function (err) {
+
+  			if (err) console.log(err);
+  			
+  			else
+  				res.redirect("/rooms/" + hashId);
+
+		});
+		//console.log("Room har skapats!!!!!!!!!");
+
 	});
 
 	app.get('/rooms/:roomId', function(req, res) {
