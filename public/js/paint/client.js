@@ -32,6 +32,8 @@ function CanvasApp(io, loader, room)
     this.socket.on('connect', function(){
       _this.setupSocketEvents();
 
+      _this.socket.emit("Client.joinRoom", _this.room);
+
       _this.socket.emit("Client.requestClientCount");
 
       console.log("Requesting dataURL");

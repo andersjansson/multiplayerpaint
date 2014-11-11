@@ -46,10 +46,10 @@ module.exports = function(app, passport) {
 
 	});
 
-	app.get('/rooms/:roomId', function(req, res) {
+	app.get('/rooms/:roomId',isLoggedIn, function(req, res) {
 	  roomExists(req.params.roomId, function(exists){
 	  	if(exists)
-	  		res.render("room.ejs", {roomId: req.params.roomId});	
+	  		res.render("room.ejs", {roomId: req.params.roomId, user: req.user});	
 	  	else
 	  		res.render("404.ejs");
 	  });

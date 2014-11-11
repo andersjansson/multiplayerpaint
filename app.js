@@ -49,10 +49,11 @@ http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
 
-function Client(id, name)
+function Client(id, roomId ,name)
 {
   this.id = id;
   this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
+  this.roomId = roomId;
 }
 
 function SocketHandler(io)
@@ -75,14 +76,19 @@ function SocketHandler(io)
     this.setupSocketEvents();
   }
 
-  SocketHandler.prototype.addClient = function(socket)
+  SocketHandler.prototype.addClientToRoom = function(roomId)
+  {
+
+  }
+
+  SocketHandler.prototype.addClient = function(socket,roomId)
   {
     this.clientCount++;
-    var client = new Client(socket.id);
+    var client = new Client(socket.id, roomId);
     this.clients[socket.id] = client;
     this.clientSocket[socket.id] = socket;
-    this.io.sockets.emit("Server.updateClientCount", this.clientCount);
-    this.io.sockets.emit("Server.addClient", JSON.stringify(client));
+    this.io.to(roomId).emit("Server.updateClientCount", this.clientCount);
+    this.io.to(roomId).emit("Server.addClient", JSON.stringify(client));
 
     this.dataURLQueue.push(socket.id);
   }
@@ -192,7 +198,6 @@ function SocketHandler(io)
 
     this.io.sockets.on('connection', function(socket){
       console.log(timeStamp() + ' client connected: '+socket.id);
-      _this.addClient(socket);
 
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
@@ -263,11 +268,14 @@ function SocketHandler(io)
 
       socket.on("Client.requestClientCount", function(){
         console.log(timeStamp() + " Client requesting client count");
-        socket.emit("Server.updateClientCount", _this.clientCount);
+        _this.io.to(_this.clients[socket.id].roomId).emit("Server.updateClientCount", _this.clientCount);
       });
 
       /* Room-related events*/
-
+      socket.on("Client.joinRoom",function(roomId){
+        _this.addClient(socket,roomId);
+        socket.join(roomId);
+      });
     });
   }  
 
