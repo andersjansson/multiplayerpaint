@@ -7,7 +7,6 @@ module.exports = function(app, passport) {
 
 	});
 
-	
 	app.get('/profile', isLoggedIn, function(req, res) {
 		res.render('profile.ejs', {
 			user : req.user
@@ -25,11 +24,11 @@ module.exports = function(app, passport) {
 
 	app.get('/rooms', function(req, res) {
 		res.render('room.ejs', {roomId: req.params.roomId});
-		console.log("");
+		console.log("lololol rooooms");
 	});
 	app.post('/rooms',  function(req, res) {
-		
-	}));
+		console.log(req);
+	});
 
 	
 	app.post('/login', passport.authenticate('local-login', {
