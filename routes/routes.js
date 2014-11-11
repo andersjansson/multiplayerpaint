@@ -1,3 +1,5 @@
+var RoomModel = require('../models/room');
+
 module.exports = function(app, passport) {
 
 	app.get('/', isLoggedIn, function(req, res) {
@@ -25,12 +27,26 @@ module.exports = function(app, passport) {
 
 	app.get('/rooms', function(req, res) {
 		res.render('room.ejs', {roomId: req.params.roomId});
-		console.log("");
 	});
 	app.post('/rooms',  function(req, res) {
 		
-	}));
+	});
 
+	app.get('/rooms/:roomId', function(req, res) {
+		var rId = req.params.roomId;
+		var room = new RoomModel({roomId: rId});
+		room.save();
+
+		RoomModel.findOne({roomId: rId}, function (err, doc){
+		  if(doc !== null)
+		  {
+		  	res.render("room.ejs", {roomId: rId})
+		  }
+		});
+		
+		
+		
+	});
 	
 	app.post('/login', passport.authenticate('local-login', {
 		successRedirect : '/', 
