@@ -49,6 +49,28 @@ http.listen(8080, function(){
   console.log(timeStamp() + ' Server listening on port 8080');
 });
 
+/* 
+  1. Kolla om rummet finns
+    - om det inte finns, skapa det
+    - skapa ny klient i dess RoomHandler
+  2. 
+  
+
+*/
+
+var roomHandlers = [];
+
+io.sockets.on('connection', function(socket){
+  /* Room-related events*/
+  socket.on("Client.joinRoom",function(roomId){
+    if(!roomHandlers[roomId]){
+      roomHandlers[roomId] = new RoomHandler(io,roomId);
+    }
+    
+    roomHandlers[roomId].addClient(socket,roomId);  
+  });
+});
+
 function Client(id, roomId ,name)
 {
   this.id = id;
@@ -56,13 +78,15 @@ function Client(id, roomId ,name)
   this.roomId = roomId;
 }
 
-function SocketHandler(io)
+function RoomHandler(io, roomId)
 {
   this.painting = new Painting(RoomModel);
   this.clientCount = 0;
   this.clients = {};
   this.clientSocket = {};
   this.gotDataURL = false;
+
+  this.roomId = roomId;
 
   this.dataURLQueue = [];
 
@@ -71,17 +95,12 @@ function SocketHandler(io)
   this.init();
 }
 
-  SocketHandler.prototype.init = function()
+  RoomHandler.prototype.init = function()
   {
     this.setupSocketEvents();
   }
 
-  SocketHandler.prototype.addClientToRoom = function(roomId)
-  {
-
-  }
-
-  SocketHandler.prototype.addClient = function(socket,roomId)
+  RoomHandler.prototype.addClient = function(socket,roomId)
   {
     this.clientCount++;
     var client = new Client(socket.id, roomId);
@@ -91,9 +110,10 @@ function SocketHandler(io)
     this.io.to(roomId).emit("Server.addClient", JSON.stringify(client));
 
     this.dataURLQueue.push(socket.id);
+    socket.join(roomId);
   }
 
-  SocketHandler.prototype.removeClient = function(socket)
+  RoomHandler.prototype.removeClient = function(socket)
   {
     delete this.clients[socket.id];
     delete this.clientSocket[socket.id];
@@ -103,14 +123,14 @@ function SocketHandler(io)
     
   }
 
-  SocketHandler.prototype.clientNameChange = function(socket, newName)
+  RoomHandler.prototype.clientNameChange = function(socket, newName)
   {
     this.clients[socket.id].name = newName;
 
     return this.clients[socket.id];
   }
 
-  SocketHandler.prototype.handleDataUrlRequest = function(socket)
+  RoomHandler.prototype.handleDataUrlRequest = function(socket)
   {
     var _this = this;
     var reply = false;
@@ -169,7 +189,7 @@ function SocketHandler(io)
       this.sendPaintingBackup(socket);
   }
 
-  SocketHandler.prototype.sendPaintingBackup = function(socket)
+  RoomHandler.prototype.sendPaintingBackup = function(socket)
   {
     if(this.painting.hasDataURL){
       console.log(timeStamp() + " Sending Painting-dataURL");
@@ -181,7 +201,7 @@ function SocketHandler(io)
     }
   }
 
-  SocketHandler.prototype.sendDataURLCallback = function(success)
+  RoomHandler.prototype.sendDataURLCallback = function(success)
   {
     if(success){
       this.broadcast.emit("Server.stopLoader");
@@ -192,7 +212,7 @@ function SocketHandler(io)
       console.log(timeStamp() + " Problem sending dataURL to client");
   }
 
-  SocketHandler.prototype.setupSocketEvents = function()
+  RoomHandler.prototype.setupSocketEvents = function()
   {
     var _this = this;
 
@@ -201,8 +221,8 @@ function SocketHandler(io)
 
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
+        _this.io.to(_this.roomId).emit("Server.removeClient", socket.id);
         _this.removeClient(socket);
-        _this.io.emit("Server.removeClient", socket.id);
       });
 
       /* Canvas-related events */
@@ -210,7 +230,7 @@ function SocketHandler(io)
       socket.on("Client.drawLine", function(msg){
         _this.painting.saveBrushStroke(msg);
         if(_this.clientCount > 1)
-          socket.broadcast.emit("Server.otherUserDrawingLine", msg);
+          socket.broadcast.to(_this.roomId).emit("Server.otherUserDrawingLine", msg);
       });
 
       socket.on("Client.sendDataURL", function(dataURL){
@@ -220,7 +240,7 @@ function SocketHandler(io)
 
       socket.on("Client.requestDataURL", function(dataURL){
         console.log(timeStamp() + " Client requesting dataURL");
-        _this.io.emit("Server.startLoader", "Synchronizing... Please wait");
+        _this.io.to(_this.roomId).emit("Server.startLoader", "Synchronizing... Please wait");
         _this.handleDataUrlRequest(socket);
       });
 
@@ -231,9 +251,9 @@ function SocketHandler(io)
       });
       
       socket.on("Client.clearCanvas", function(){
-        socket.broadcast.emit("Server.trashPainting");
+        socket.to(_this.clients[socket.id].roomId).broadcast.emit("Server.trashPainting");
         _this.painting.removeAll();
-        _this.io.emit("Server.chatMessage", JSON.stringify({
+        _this.io.to(_this.clients[socket.id].roomId).emit("Server.chatMessage", JSON.stringify({
           type: "status",
           text: " has cleared the canvas.",
           sender: _this.clients[socket.id].name
@@ -248,34 +268,30 @@ function SocketHandler(io)
         for(var prop in msg){
           msg[prop] = validator.escape(msg[prop]);
         }
-        socket.broadcast.emit("Server.chatMessage", JSON.stringify(msg));
+        socket.to(_this.roomId).broadcast.emit("Server.chatMessage", JSON.stringify(msg));
         
         console.log(timeStamp() + " New chat message from "+msg.sender+": "+msg.text);
       });
 
       socket.on("Client.requestClientList", function(){
         console.log(timeStamp() + " Client requesting clientList");
-        socket.emit("Server.updateClientList", JSON.stringify(_this.clients));
+        _this.io.to(_this.roomId).emit("Server.updateClientList", JSON.stringify(_this.clients));
       });
 
       socket.on("Client.changeName", function(newName){
         console.log(timeStamp() + socket.id + " changed name to "+newName);
         var changed = _this.clientNameChange(socket, newName);
-        _this.io.emit("Server.updateClient", JSON.stringify(changed));
+        _this.io.to(_this.roomId).emit("Server.updateClient", JSON.stringify(changed));
       });
 
       /* Other events */
 
       socket.on("Client.requestClientCount", function(){
         console.log(timeStamp() + " Client requesting client count");
-        _this.io.to(_this.clients[socket.id].roomId).emit("Server.updateClientCount", _this.clientCount);
+        _this.io.to(_this.roomId).emit("Server.updateClientCount", _this.clientCount);
       });
 
-      /* Room-related events*/
-      socket.on("Client.joinRoom",function(roomId){
-        _this.addClient(socket,roomId);
-        socket.join(roomId);
-      });
+      
     });
   }  
 
@@ -350,4 +366,4 @@ function addZero(number)
   return (number < 10) ? "0"+number : number;
 }
 
-var socketHandler = new SocketHandler(io);
+var roomHandler = new RoomHandler(io);
