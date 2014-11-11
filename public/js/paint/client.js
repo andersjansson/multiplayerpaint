@@ -32,8 +32,6 @@ function CanvasApp(io, loader, room)
     this.socket.on('connect', function(){
       _this.setupSocketEvents();
 
-      _this.socket.emit("Client.tryJoinRoom", _this.room);
-
       _this.socket.emit("Client.requestClientCount");
 
       console.log("Requesting dataURL");
@@ -103,16 +101,6 @@ function CanvasApp(io, loader, room)
       _this.loader.stop();
     });
 
-    this.socket.on("Server.tryJoinRoomResponse",function(response){
-      var response = JSON.parse(response);
-      if(response.success){
-        console.log(response.message);
-      }
-      else{
-        $("body").html(response.message);
-      }
-        
-    });
   }
 
   CanvasApp.prototype.setupListeners = function()

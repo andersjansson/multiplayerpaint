@@ -34,8 +34,6 @@ module.exports = function(app, passport) {
 
 	app.get('/rooms/:roomId', function(req, res) {
 		var rId = req.params.roomId;
-		//var room = new RoomModel({roomId: rId});
-		//room.save();
 
 		RoomModel.findOne({roomId: rId}, function (err, doc){
 		  if(doc !== null)
@@ -85,4 +83,9 @@ function generateRoomId(length){
 	}
 
 	return id;
+}
+
+function roomExists(roomId)
+{
+	
 }

@@ -267,29 +267,7 @@ function SocketHandler(io)
       });
 
       /* Room-related events*/
-      /*
-      socket.on("Client.tryJoinRoom", function(roomId){
-        console.log(timeStamp() + " " + socket.id + " is trying to join "+roomId+".");
-        RoomModel.findOne({ 'some.value': 5 }, function (err, docs) {
-        // docs is an array
-      });
-        var roomExists = true; //Kolla om rummet finns i db
-        var response;
-        if(_this.painting.roomExists(roomId))
-          response = {success: true, message: "Joined room " + roomId + "."};
 
-        else
-          response = {success: false, message: "Failed to join room " + roomId + "."};
-
-        socket.emit("Server.tryJoinRoomResponse", JSON.stringify(response));
-        /* Step two
-          1. Kolla i db om rummet finns
-              - Om det finns, skicka in klienten i det, skicka bekräftelse
-              - Om det inte finns, skicka felmeddelande
-
-        */
-
-      //});
     });
   }  
 
