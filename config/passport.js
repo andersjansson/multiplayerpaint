@@ -48,6 +48,7 @@ module.exports = function(passport) {
     passport.use('local-signup', new LocalStrategy({
         usernameField : 'email',
         passwordField : 'password',
+        emailField: 'username',
         passReqToCallback : true 
     },
     function(req, email, password, done) {
@@ -80,7 +81,7 @@ module.exports = function(passport) {
 
                         newUser.local.email = validator.escape(email);
                         newUser.local.password = newUser.generateHash(password);
-
+                        newUser.local.username = validator.escape(req.body.username);
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
@@ -100,6 +101,7 @@ module.exports = function(passport) {
                         return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
                     } else {
                         var user = req.user;
+                        user.local.username = validator.escape(username);
                         user.local.email = validator.escape(email);
                         user.local.password = user.generateHash(password);
                         user.save(function (err) {

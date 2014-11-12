@@ -1,16 +1,29 @@
 var RoomModel = require('../models/room');
 var bcrypt   = require('bcrypt-nodejs');
+
 module.exports = function(app, passport) {
 
-	app.get('/', isLoggedIn, function(req, res) {
+	app.get('/', function(req, res) {
 		res.render('index.ejs', {
 			user : req.user
 		});
 
 	});
 
-	app.get('/profile', isLoggedIn, function(req, res) {
+	app.get('/profile', function(req, res) {
+
+		var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
+
 		res.render('profile.ejs', {
+			user : req.user,
+			Userrooms: rooms,
+		});
+		console.log(rooms);
+		console.log(req.user.id);
+	});
+
+	app.get('/profile/settings', function(req, res){
+		res.render('profile_settings.ejs', {
 			user : req.user
 		});
 	});
