@@ -35,18 +35,11 @@ app.use(flash());
 app.use(express.static(__dirname + '/public'));
 require('./routes/routes.js')(app, passport); 
 
-/*app.get('/', function(req, res){
-  res.sendFile(__dirname + '/public/index.html');
-});
-*/
-
-
-
 var PaintingModel = require('./models/painting');
 var RoomModel = require('./models/room');
 
-http.listen(8080, function(){
-  console.log(timeStamp() + ' Server listening on port 8080');
+http.listen(port, function(){
+  console.log(timeStamp() + ' Server listening on port '+port);
 });
 
 /* 
@@ -57,36 +50,52 @@ http.listen(8080, function(){
   
 
 */
-
 var roomHandlers = [];
-
+/*
 io.sockets.on('connection', function(socket){
-  /* Room-related events*/
+  console.log(timeStamp() + ' client connected: '+socket.id);
+
   socket.on("Client.joinRoom",function(roomId){
-    if(!roomHandlers[roomId]){
+    
+    if(typeof roomHandlers[roomId] == "undefined"){
+      console.log(timeStamp() + " " + "Client "+socket.id+" creates room "+roomId);
       roomHandlers[roomId] = new RoomHandler(io,roomId);
     }
+    else
+      console.log(timeStamp() + " " + "Client "+socket.id+" joins room "+roomId);
     
-    roomHandlers[roomId].addClient(socket,roomId);  
-  });
-});
+    roomHandlers[roomId].addClient(socket);
 
-function Client(id, roomId ,name)
+    console.log(timeStamp() + " ---- Logging in Client.joinRoom ----");
+    roomHandlers[roomId].log();
+  });
+
+  
+});*/
+
+function Room(id)
+{
+  this.id = id;
+  this.dataURLQueue = [];
+  this.painting = new Painting(RoomModel);
+  this.clientCount = 0;
+}
+
+function Client(id, name)
 {
   this.id = id;
   this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
-  this.roomId = roomId;
 }
 
-function RoomHandler(io, roomId)
+function RoomHandler(io)
 {
+  this.rooms = [];
+  this.roomId = "blargh";
   this.painting = new Painting(RoomModel);
   this.clientCount = 0;
   this.clients = {};
   this.clientSocket = {};
   this.gotDataURL = false;
-
-  this.roomId = roomId;
 
   this.dataURLQueue = [];
 
@@ -100,18 +109,39 @@ function RoomHandler(io, roomId)
     this.setupSocketEvents();
   }
 
-  RoomHandler.prototype.addClient = function(socket,roomId)
+  //verkar funka
+  RoomHandler.prototype.addClient = function(socket)
   {
     this.clientCount++;
-    var client = new Client(socket.id, roomId);
+    var client = new Client(socket.id);
     this.clients[socket.id] = client;
     this.clientSocket[socket.id] = socket;
-    this.io.to(roomId).emit("Server.updateClientCount", this.clientCount);
-    this.io.to(roomId).emit("Server.addClient", JSON.stringify(client));
+    this.io.to(socket.roomId).emit("Server.updateClientCount", this.clientCount);
+    this.io.to(socket.roomId).emit("Server.addClient", JSON.stringify(client));
 
     this.dataURLQueue.push(socket.id);
-    socket.join(roomId);
   }
+
+  RoomHandler.prototype.clientJoinRoom = function(socket, roomId)
+  {
+    var s = socket;
+    
+    s.roomId = roomId;
+    s.join(roomId);
+
+    if(typeof this.rooms[roomId] == "undefined"){
+      this.rooms[roomId] = new Room(roomId);
+    }
+
+    this.rooms[roomId].dataURLQueue.push(socket.id);
+    this.rooms[roomId].clientCount++;
+  }
+
+  RoomHandler.prototype.clientLeaveRoom = function(socket)
+  {
+    this.rooms[socket.roomId].dataURLQueue.splice(this.rooms[socket.roomId].dataURLQueue.indexOf(socket.id),1);
+    this.rooms[socket.roomId].clientCount--;
+  }  
 
   RoomHandler.prototype.removeClient = function(socket)
   {
@@ -137,18 +167,18 @@ function RoomHandler(io, roomId)
     var timeoutIterator = 0;
 
     //om det finns andra klienter
-    if(this.dataURLQueue.length > 1)
+    if(this.rooms[socket.roomId].dataURLQueue.length > 1)
     {
-      for(var i = 0; i < this.dataURLQueue.length; i++)
+      for(var i = 0; i < this.rooms[socket.roomId].dataURLQueue.length; i++)
       {
         //starta en setTimeout för varje klient i listan, med 1 sekunds mellanrum
         //i väntetid. Om vi inte får svar från första inom 1 sec körs andra osv.
-        if(this.dataURLQueue[i] !== socket.id)
+        if(this.rooms[socket.roomId].dataURLQueue[i] !== socket.id)
         {
-          var id = this.dataURLQueue[i];
+          var id = this.rooms[socket.roomId].dataURLQueue[i];
 
           setTimeout(function(){
-            var internalId = _this.dataURLQueue[timeoutIterator];
+            var internalId = _this.rooms[socket.roomId].dataURLQueue[timeoutIterator];
             
             if(!reply)
             {
@@ -161,11 +191,12 @@ function RoomHandler(io, roomId)
                   reply = true;
                   console.log(timeStamp() + " Got dataURL from "+internalId+", sending to "+socket.id);
                   socket.emit("Server.sendDataURL", dataURL, _this.sendDataURLCallback);
-                  _this.painting.saveDataURL(dataURL);
+                  _this.rooms[socket.roomId].painting.saveDataURL(dataURL);
                   
                   //plocka ut id på den som svarat ur arrayen, lägg sist
-                  var placeLast = _this.dataURLQueue.splice(_this.dataURLQueue.indexOf(internalId),1);
-                  _this.dataURLQueue.push(placeLast[0]);
+                  var placeLast = _this.rooms[socket.roomId].dataURLQueue.splice(_this.rooms[socket.roomId].dataURLQueue.indexOf(internalId),1);
+                  _this.rooms[socket.roomId].dataURLQueue.push(placeLast[0]);
+
                 }  
               });
             }
@@ -191,20 +222,20 @@ function RoomHandler(io, roomId)
 
   RoomHandler.prototype.sendPaintingBackup = function(socket)
   {
-    if(this.painting.hasDataURL){
+    if(this.rooms[socket.roomId].painting.hasDataURL){
       console.log(timeStamp() + " Sending Painting-dataURL");
-      socket.emit("Server.sendDataURL", this.painting.dataURL, this.sendDataURLCallback);
+      socket.emit("Server.sendDataURL", this.rooms[socket.roomId].painting.dataURL, this.sendDataURLCallback);
     }
     else{
       console.log(timeStamp() + " No dataURL exists, sending Painting-backup");
-      socket.emit("Server.drawBackup", this.painting.getFullPainting(), this.sendDataURLCallback);
+      socket.emit("Server.drawBackup", this.rooms[socket.roomId].painting.getFullPainting(), this.sendDataURLCallback);
     }
   }
 
   RoomHandler.prototype.sendDataURLCallback = function(success)
   {
     if(success){
-      this.broadcast.emit("Server.stopLoader");
+      this.broadcast.to(this.roomId).emit("Server.stopLoader");
       this.emit("Server.stopLoader");
     }
       
@@ -217,20 +248,27 @@ function RoomHandler(io, roomId)
     var _this = this;
 
     this.io.sockets.on('connection', function(socket){
+
       console.log(timeStamp() + ' client connected: '+socket.id);
+      _this.addClient(socket);
 
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
-        _this.io.to(_this.roomId).emit("Server.removeClient", socket.id);
+        _this.io.to(socket.roomId).emit("Server.removeClient", socket.id);
         _this.removeClient(socket);
+        _this.clientLeaveRoom(socket);
+      });
+
+      socket.on("Client.joinRoom",function(roomId){
+        _this.clientJoinRoom(socket,roomId);
       });
 
       /* Canvas-related events */
 
       socket.on("Client.drawLine", function(msg){
-        _this.painting.saveBrushStroke(msg);
+        _this.rooms[socket.roomId].painting.saveBrushStroke(msg);
         if(_this.clientCount > 1)
-          socket.broadcast.to(_this.roomId).emit("Server.otherUserDrawingLine", msg);
+          socket.broadcast.to(socket.roomId).emit("Server.otherUserDrawingLine", msg);
       });
 
       socket.on("Client.sendDataURL", function(dataURL){
@@ -240,7 +278,7 @@ function RoomHandler(io, roomId)
 
       socket.on("Client.requestDataURL", function(dataURL){
         console.log(timeStamp() + " Client requesting dataURL");
-        _this.io.to(_this.roomId).emit("Server.startLoader", "Synchronizing... Please wait");
+        _this.io.to(socket.roomId).emit("Server.startLoader", "Synchronizing... Please wait");
         _this.handleDataUrlRequest(socket);
       });
 
@@ -251,14 +289,14 @@ function RoomHandler(io, roomId)
       });
       
       socket.on("Client.clearCanvas", function(){
-        socket.to(_this.clients[socket.id].roomId).broadcast.emit("Server.trashPainting");
+        console.log(timeStamp() + " " + socket.id + " clearing all canvases in " + _this.roomId);
+        socket.to(socket.roomId).broadcast.emit("Server.trashPainting");
         _this.painting.removeAll();
-        _this.io.to(_this.clients[socket.id].roomId).emit("Server.chatMessage", JSON.stringify({
+        _this.io.to(socket.roomId).emit("Server.chatMessage", JSON.stringify({
           type: "status",
           text: " has cleared the canvas.",
           sender: _this.clients[socket.id].name
         }));
-        console.log(timeStamp() + " Clearing all canvases");
       });
 
       /* Chat-related events */
@@ -275,20 +313,28 @@ function RoomHandler(io, roomId)
 
       socket.on("Client.requestClientList", function(){
         console.log(timeStamp() + " Client requesting clientList");
-        _this.io.to(_this.roomId).emit("Server.updateClientList", JSON.stringify(_this.clients));
+        var clientsInSameRoom = {};
+
+        for(var cId in _this.clientSocket){
+          if(_this.clientSocket[cId].roomId === socket.roomId)
+            clientsInSameRoom[cId] = _this.clients[cId];
+        }
+        console.log(clientsInSameRoom);
+
+        _this.io.to(socket.roomId).emit("Server.updateClientList", JSON.stringify(clientsInSameRoom));
       });
 
       socket.on("Client.changeName", function(newName){
         console.log(timeStamp() + socket.id + " changed name to "+newName);
         var changed = _this.clientNameChange(socket, newName);
-        _this.io.to(_this.roomId).emit("Server.updateClient", JSON.stringify(changed));
+        _this.io.to(socket.roomId).emit("Server.updateClient", JSON.stringify(changed));
       });
 
       /* Other events */
 
       socket.on("Client.requestClientCount", function(){
         console.log(timeStamp() + " Client requesting client count");
-        _this.io.to(_this.roomId).emit("Server.updateClientCount", _this.clientCount);
+        _this.io.to(socket.roomId).emit("Server.updateClientCount", _this.rooms[socket.roomId].clientCount);
       });
 
       

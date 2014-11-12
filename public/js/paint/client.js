@@ -1,12 +1,11 @@
-function CanvasApp(io, loader, room)
+function CanvasApp(io, loader)
 {
   this.canvas = document.getElementById('canvas');
   this.loader = loader;
-  this.room = room;
   this.toolKit = new ToolKit(this);
 
   this.socket = io;
-  
+  console.log(" ---- socket.roomId: " + this.socket.roomId + " ----");
   this.context = this.canvas.getContext("2d");
   this.isPainting = false;
 
@@ -32,7 +31,7 @@ function CanvasApp(io, loader, room)
     this.socket.on('connect', function(){
       _this.setupSocketEvents();
 
-      _this.socket.emit("Client.joinRoom", _this.room);
+      _this.socket.emit("Client.joinRoom", _this.socket.roomId);
 
       _this.socket.emit("Client.requestClientCount");
 

@@ -52,11 +52,11 @@ module.exports = function(app, passport) {
 		});
 	});
 
-	app.get('/rooms/:roomId',isLoggedIn, function(req, res) {
+	app.get('/rooms/:roomId', function(req, res) {
 	  getRoom(req.params.roomId, function(doc){
-	  	console.log(doc);
-	  	if(doc)
-	  		res.render("room.ejs", {roomId: req.params.roomId, roomName: doc.name, user: req.user});	
+	  	if(doc){
+	  		res.render("room.ejs", {roomId: req.params.roomId, roomName: doc.name});
+	  	}
 	  	else
 	  		res.render("404.ejs");
 	  });

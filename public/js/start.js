@@ -21,15 +21,16 @@ requirejs(['jquery', 'socket.io','jscolor','client','bootstrap','bootstrap-slide
 function($, io, jscolor) {
   $(function(){
     
-    var room = document.title.split("Room ")[1];
-
+    var room = $("title").attr("data-id");
     jscolor.install();
     jscolor.init();
 
     var loader = new Loader(document.getElementById("canvas"));
     loader.start("Loading, please wait...");
     var socket = io.connect();
-    var app = new CanvasApp(socket,loader,room);
+    socket.roomId = room;
+    console.log("---- socket.roomId: " + socket.roomId + " ----");
+    var app = new CanvasApp(socket,loader);
     var chat = new ChatApp($("#chat-window"), socket);
     
   });

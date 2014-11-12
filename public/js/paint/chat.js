@@ -82,6 +82,7 @@ function ChatApp(div, socket)
 
     this.socket.on("Server.updateClientList", function(list){
       var l = JSON.parse(list);
+      console.log(l);
       _this.renderClientList(l);
       _this.clients = l;
     });
