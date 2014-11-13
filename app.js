@@ -115,8 +115,11 @@ function RoomHandler(io)
     s.join(roomId);
 
     if(typeof this.rooms[roomId] == "undefined"){
+      console.log(timeStamp() + " Creating room with roomId: "+roomId);
       this.rooms[roomId] = new Room(roomId);
     }
+    else
+      console.log(timeStamp() + " Joining room with roomId: "+roomId);
 
     this.rooms[roomId].dataURLQueue.push(socket.id);
     this.rooms[roomId].clientCount++;
@@ -205,17 +208,7 @@ function RoomHandler(io)
       this.sendPaintingBackup(socket);
   }
 
-  RoomHandler.prototype.sendPaintingBackup = function(socket)
-  {
-    if(this.rooms[socket.roomId].hasDataURL){
-      console.log(timeStamp() + " Sending Painting-dataURL");
-      socket.emit("Server.sendDataURL", this.rooms[socket.roomId].dataURL, this.sendDataURLCallback);
-    }
-    else{
-      console.log(timeStamp() + " No dataURL exists, sending Painting-backup");
-      socket.emit("Server.drawBackup", this.rooms[socket.roomId].getFullPainting(), this.sendDataURLCallback);
-    }
-  }
+  
 
   RoomHandler.prototype.sendDataURLCallback = function(success)
   {
@@ -242,6 +235,13 @@ function RoomHandler(io)
         _this.io.to(socket.roomId).emit("Server.removeClient", socket.id);
         _this.removeClient(socket);
         _this.clientLeaveRoom(socket);
+
+        if(_this.clientCount == 0){
+          if(typeof _this.rooms[socket.roomId].dataURL !== "undefined"){
+            console.log(timeStamp() + " Last client disconnected from room "+socket.roomId + ", saving local dataURL to mongoDB.");
+            _this.rooms[socket.roomId].saveLocalDataURLToMongo();
+          }
+        }
       });
 
       socket.on("Client.joinRoom",function(roomId){
@@ -275,8 +275,8 @@ function RoomHandler(io)
       
       socket.on("Client.clearCanvas", function(){
         console.log(timeStamp() + " " + socket.id + " clearing all canvases in " + _this.roomId);
-        socket.to(socket.roomId).broadcast.emit("Server.trashPainting");
-        _this.painting.removeAll();
+        socket.to(socket.roomId).broadcast.emit("Server.clearCanvas");
+        _this.rooms[socket.roomId].clearCanvas();
         _this.io.to(socket.roomId).emit("Server.chatMessage", JSON.stringify({
           type: "status",
           text: " has cleared the canvas.",
@@ -325,40 +325,93 @@ function RoomHandler(io)
     });
   }  
 
+  RoomHandler.prototype.sendPaintingBackup = function(socket)
+  {
+    var _this = this;
+
+    if(this.rooms[socket.roomId].hasLocalDataURL){
+      socket.emit("Server.sendDataURL", this.rooms[socket.roomId].dataURL, this.sendDataURLCallback);
+      console.log(timeStamp() + " Sending local dataURL");
+    }
+
+    else{
+      console.log("In sendPaintingbackup, roomId: "+ socket.roomId);
+    
+      _this.rooms[socket.roomId].getModelFromMongo(socket.roomId, function(model){
+        if(model && typeof model !== "undefined"){
+          socket.emit("Server.sendDataURL", model.dataURL, _this.sendDataURLCallback);
+          console.log(timeStamp() + " No local dataURL, sending dataURL from mongoDB");
+        }
+        else{
+          console.log(timeStamp() + " No local or mongoDB dataURL exists.");
+        }
+    
+      });
+    }
+
+    socket.emit("Server.sendDataURL", "", this.sendDataURLCallback);
+  }
+
 function Room(id)
 {
   this.id = id;
+  this.roomModel;
   this.dataURLQueue = [];
   this.clientCount = 0;
   this.dataURL;
-  this.hasDataURL = false;
+  this.hasLocalDataURL = false;
   this.paintArray = new Array();
+  this.lastModified = 0;
+
+  this.init();
 }
+
+  Room.prototype.init = function()
+  {
+    var _this = this;
+
+    this.getModelFromMongo(this.id, function(model){
+      if(model && typeof model !== "undefined"){
+        console.log(timeStamp() + " Successfully retrieved model from mongoDB.");
+        _this.roomModel = model;
+      }
+      else{
+        console.log(timeStamp() + " Failed to retrieve model from mongoDB.");
+      }
+        
+    });
+  }
+
+  Room.prototype.saveLocalDataURLToMongo = function()
+  {
+    this.roomModel.dataURL = this.dataURL;
+    this.roomModel.save();
+  }
 
   Room.prototype.saveDataURLtoMongo = function(dataURL)
   {
+    console.log(timeStamp() + " Saving dataURL to roomModel");
     this.dataURL = dataURL;
-    var PaintM = new PaintingModel();
-    PaintM.name = this.dataURL;
-    PaintM.save();
-    console.log(timeStamp() + " Saving dataURL in mongoDB");    
+    this.roomModel.dataURL = this.dataURL;
+    this.roomModel.save();
   }
 
-  Room.prototype.getDataURLfromMongo = function()
+  Room.prototype.getModelFromMongo = function(id, fn)
   {
-
+    RoomModel.findOne({ roomId: id }, function (err, doc){
+      if(!err)
+        fn(doc);
+      else
+        fn(false);
+    });
+      
   }
 
-  Room.prototype.getLastModified = function()
-  {
-
-  }
-  
   Room.prototype.saveDataURL = function(dataURL)
   {
-    console.log(timeStamp() + " Saving dataURL");
+    console.log(timeStamp() + " Saving local dataURL");
     this.dataURL = dataURL;
-    this.hasDataURL = true;
+    this.hasLocalDataURL = true;
   }
 
   Room.prototype.saveBrushStroke = function(data)
@@ -371,11 +424,13 @@ function Room(id)
     return JSON.stringify(this.paintArray);
   }
 
-  Room.prototype.removeAll = function()
+  Room.prototype.clearCanvas = function()
   {
     this.paintArray = [];
     this.dataURL = null;
-    this.hasDataURL = false;
+    this.roomModel.dataURL = null;
+    this.roomModel.save();
+    this.hasLocalDataURL = false;
   }
 
 function Client(id, name)

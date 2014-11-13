@@ -85,8 +85,7 @@ function CanvasApp(io, loader)
       callback(true);
     });
 
-    this.socket.on("Server.trashPainting", function(data){
-      console.log("clienten fått order om att cleara canvas!");
+    this.socket.on("Server.clearCanvas", function(data){
       _this.clearCanvas();
     });
 
