@@ -1,0 +1,26 @@
+<% include ../Partials/header %>
+
+<div class="container" style="padding-top: 50px;">
+	<%= user %>
+<form action="/profile/settings/edit" method="post">
+
+		<div class="form-group">
+			<label>Username</label>
+			<input type="text" class="form-control" name="username" value= '<%= user.local.username %>'>
+		</div>
+		<div class="form-group">
+			<label>Email</label>
+			<input type="text" class="form-control" name="email" value= '<%= user.local.email %>'>
+		</div>
+		<div class="form-group">
+			<label>Password</label>
+			<input type="password" class="form-control" name="password">
+		</div>
+
+		<button type="submit" class="btn btn-danger btn-lg">Signup</button>
+	</form>
+
+</div>
+
+<% include ../Partials/footer_tools %>
+

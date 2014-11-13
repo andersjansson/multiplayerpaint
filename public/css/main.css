@@ -17,7 +17,6 @@ body {
   user-select: none; 
   -webkit-user-select: none; 
   -moz-user-select: none;
-  padding-top: 70px;
 }
 #createroom {
   padding-top: 100px;
