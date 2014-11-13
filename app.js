@@ -73,25 +73,10 @@ io.sockets.on('connection', function(socket){
   
 });*/
 
-function Room(id)
-{
-  this.id = id;
-  this.dataURLQueue = [];
-  this.painting = new Painting(RoomModel);
-  this.clientCount = 0;
-}
-
-function Client(id, name)
-{
-  this.id = id;
-  this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
-}
-
 function RoomHandler(io)
 {
   this.rooms = [];
   this.roomId = "blargh";
-  this.painting = new Painting(RoomModel);
   this.clientCount = 0;
   this.clients = {};
   this.clientSocket = {};
@@ -191,7 +176,7 @@ function RoomHandler(io)
                   reply = true;
                   console.log(timeStamp() + " Got dataURL from "+internalId+", sending to "+socket.id);
                   socket.emit("Server.sendDataURL", dataURL, _this.sendDataURLCallback);
-                  _this.rooms[socket.roomId].painting.saveDataURL(dataURL);
+                  _this.rooms[socket.roomId].saveDataURL(dataURL);
                   
                   //plocka ut id på den som svarat ur arrayen, lägg sist
                   var placeLast = _this.rooms[socket.roomId].dataURLQueue.splice(_this.rooms[socket.roomId].dataURLQueue.indexOf(internalId),1);
@@ -222,13 +207,13 @@ function RoomHandler(io)
 
   RoomHandler.prototype.sendPaintingBackup = function(socket)
   {
-    if(this.rooms[socket.roomId].painting.hasDataURL){
+    if(this.rooms[socket.roomId].hasDataURL){
       console.log(timeStamp() + " Sending Painting-dataURL");
-      socket.emit("Server.sendDataURL", this.rooms[socket.roomId].painting.dataURL, this.sendDataURLCallback);
+      socket.emit("Server.sendDataURL", this.rooms[socket.roomId].dataURL, this.sendDataURLCallback);
     }
     else{
       console.log(timeStamp() + " No dataURL exists, sending Painting-backup");
-      socket.emit("Server.drawBackup", this.rooms[socket.roomId].painting.getFullPainting(), this.sendDataURLCallback);
+      socket.emit("Server.drawBackup", this.rooms[socket.roomId].getFullPainting(), this.sendDataURLCallback);
     }
   }
 
@@ -266,14 +251,14 @@ function RoomHandler(io)
       /* Canvas-related events */
 
       socket.on("Client.drawLine", function(msg){
-        _this.rooms[socket.roomId].painting.saveBrushStroke(msg);
+        _this.rooms[socket.roomId].saveBrushStroke(msg);
         if(_this.clientCount > 1)
           socket.broadcast.to(socket.roomId).emit("Server.otherUserDrawingLine", msg);
       });
 
       socket.on("Client.sendDataURL", function(dataURL){
         console.log(timeStamp() + " Receiving dataURL from client");
-        _this.painting.saveDataURL(dataURL);
+        _this.rooms[socket.roomId].saveDataURL(dataURL);
       });
 
       socket.on("Client.requestDataURL", function(dataURL){
@@ -284,7 +269,7 @@ function RoomHandler(io)
 
       socket.on("Client.saveDataURL", function(dataURL){
         console.log(timeStamp() + " Receiving order to save dataURL from client");
-        _this.painting.saveDataURLtoMongo(dataURL);
+        _this.rooms[socket.roomId].saveDataURLtoMongo(dataURL);
         console.log(timeStamp() + " DataURL just got stored in mongodb!");
       });
       
@@ -319,7 +304,6 @@ function RoomHandler(io)
           if(_this.clientSocket[cId].roomId === socket.roomId)
             clientsInSameRoom[cId] = _this.clients[cId];
         }
-        console.log(clientsInSameRoom);
 
         _this.io.to(socket.roomId).emit("Server.updateClientList", JSON.stringify(clientsInSameRoom));
       });
@@ -341,24 +325,17 @@ function RoomHandler(io)
     });
   }  
 
-function Painting(roomModel)
+function Room(id)
 {
-  this.paintArray = new Array();
-  console.log(this.paintArray);
+  this.id = id;
+  this.dataURLQueue = [];
+  this.clientCount = 0;
   this.dataURL;
   this.hasDataURL = false;
-  this.roomModel = roomModel;
+  this.paintArray = new Array();
 }
 
-  Painting.prototype.roomExists = function(rId)
-  {
-    this.roomModel.findOne({ roomId: rId}, function (err, doc){
-      console.log(doc);
-    });
-
-  }
-
-  Painting.prototype.saveDataURLtoMongo = function(dataURL)
+  Room.prototype.saveDataURLtoMongo = function(dataURL)
   {
     this.dataURL = dataURL;
     var PaintM = new PaintingModel();
@@ -366,33 +343,48 @@ function Painting(roomModel)
     PaintM.save();
     console.log(timeStamp() + " Saving dataURL in mongoDB");    
   }
+
+  Room.prototype.getDataURLfromMongo = function()
+  {
+
+  }
+
+  Room.prototype.getLastModified = function()
+  {
+
+  }
   
-  Painting.prototype.saveDataURL = function(dataURL)
+  Room.prototype.saveDataURL = function(dataURL)
   {
     console.log(timeStamp() + " Saving dataURL");
     this.dataURL = dataURL;
     this.hasDataURL = true;
   }
 
-  Painting.prototype.saveBrushStroke = function(data)
+  Room.prototype.saveBrushStroke = function(data)
   {
-    if(!this.paintArray)
-      this.paintArray = new Array();
-
     this.paintArray.push(JSON.parse(data));
   }
 
-  Painting.prototype.getFullPainting = function()
+  Room.prototype.getFullPainting = function()
   {
     return JSON.stringify(this.paintArray);
   }
 
-  Painting.prototype.removeAll = function()
+  Room.prototype.removeAll = function()
   {
     this.paintArray = [];
     this.dataURL = null;
     this.hasDataURL = false;
   }
+
+function Client(id, name)
+{
+  this.id = id;
+  this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
+}
+
+
 
 /* Utility functions */
 function timeStamp()
