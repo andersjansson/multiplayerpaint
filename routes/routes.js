@@ -1,18 +1,34 @@
 var RoomModel = require('../models/room');
 var bcrypt   = require('bcrypt-nodejs');
+
 module.exports = function(app, passport) {
 
-	app.get('/', isLoggedIn, function(req, res) {
+	app.get('/', function(req, res) {
 		res.render('index.ejs', {
 			user : req.user
 		});
 
 	});
 
-	app.get('/profile', isLoggedIn, function(req, res) {
-		res.render('profile.ejs', {
+	app.get('/profile', function(req, res) {
+
+		var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
+
+		res.render('Profile/profile.ejs', {
+			user : req.user,
+			Userrooms: rooms,
+		});
+		console.log(rooms);
+		console.log(req.user.id);
+	});
+
+	app.get('/profile/settings', function(req, res){
+		res.render('Profile/profile_settings.ejs', {
 			user : req.user
 		});
+	});
+	app.get('/profile/settings/edit', function(req, res){
+		return "EDIT MOTHERRUCKAH"
 	});
 
 	app.get('/logout', function(req, res) {
@@ -21,7 +37,7 @@ module.exports = function(app, passport) {
 	});
 
 	app.get('/login', function(req, res) {
-		res.render('login.ejs', { message: req.flash('loginMessage') });
+		res.render('Auth/login.ejs', { message: req.flash('loginMessage') });
 	});
 
 	app.get('/rooms', function(req, res) {
@@ -54,9 +70,8 @@ module.exports = function(app, passport) {
 
 	app.get('/rooms/:roomId', function(req, res) {
 	  getRoom(req.params.roomId, function(doc){
-	  	if(doc){
-	  		res.render("room.ejs", {roomId: req.params.roomId, roomName: doc.name});
-	  	}
+	  	if(doc)
+	  		res.render("Rooms/room.ejs", {roomId: req.params.roomId, roomName: doc.name, user: req.user});
 	  	else
 	  		res.render("404.ejs");
 	  });
@@ -69,7 +84,7 @@ module.exports = function(app, passport) {
 	}));
 
 	app.get('/signup', function(req, res) {
-		res.render('signup.ejs', { message: req.flash('signupMessage') });
+		res.render('/Auth/signup.ejs', { message: req.flash('signupMessage') });
 	});
 
 	app.post('/signup', passport.authenticate('local-signup', {
