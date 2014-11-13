@@ -35,29 +35,48 @@ app.use(flash());
 app.use(express.static(__dirname + '/public'));
 require('./routes/routes.js')(app, passport); 
 
-/*app.get('/', function(req, res){
-  res.sendFile(__dirname + '/public/index.html');
-});
-*/
-
-
-
 var PaintingModel = require('./models/painting');
 var RoomModel = require('./models/room');
 
-http.listen(8080, function(){
-  console.log(timeStamp() + ' Server listening on port 8080');
+http.listen(port, function(){
+  console.log(timeStamp() + ' Server listening on port '+port);
 });
 
-function Client(id, name)
-{
-  this.id = id;
-  this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
-}
+/* 
+  1. Kolla om rummet finns
+    - om det inte finns, skapa det
+    - skapa ny klient i dess RoomHandler
+  2. 
+  
 
-function SocketHandler(io)
+*/
+var roomHandlers = [];
+/*
+io.sockets.on('connection', function(socket){
+  console.log(timeStamp() + ' client connected: '+socket.id);
+
+  socket.on("Client.joinRoom",function(roomId){
+    
+    if(typeof roomHandlers[roomId] == "undefined"){
+      console.log(timeStamp() + " " + "Client "+socket.id+" creates room "+roomId);
+      roomHandlers[roomId] = new RoomHandler(io,roomId);
+    }
+    else
+      console.log(timeStamp() + " " + "Client "+socket.id+" joins room "+roomId);
+    
+    roomHandlers[roomId].addClient(socket);
+
+    console.log(timeStamp() + " ---- Logging in Client.joinRoom ----");
+    roomHandlers[roomId].log();
+  });
+
+  
+});*/
+
+function RoomHandler(io)
 {
-  this.painting = new Painting(RoomModel);
+  this.rooms = [];
+  this.roomId = "blargh";
   this.clientCount = 0;
   this.clients = {};
   this.clientSocket = {};
@@ -70,24 +89,49 @@ function SocketHandler(io)
   this.init();
 }
 
-  SocketHandler.prototype.init = function()
+  RoomHandler.prototype.init = function()
   {
     this.setupSocketEvents();
   }
 
-  SocketHandler.prototype.addClient = function(socket)
+  //verkar funka
+  RoomHandler.prototype.addClient = function(socket)
   {
     this.clientCount++;
     var client = new Client(socket.id);
     this.clients[socket.id] = client;
     this.clientSocket[socket.id] = socket;
-    this.io.sockets.emit("Server.updateClientCount", this.clientCount);
-    this.io.sockets.emit("Server.addClient", JSON.stringify(client));
+    this.io.to(socket.roomId).emit("Server.updateClientCount", this.clientCount);
+    this.io.to(socket.roomId).emit("Server.addClient", JSON.stringify(client));
 
     this.dataURLQueue.push(socket.id);
   }
 
-  SocketHandler.prototype.removeClient = function(socket)
+  RoomHandler.prototype.clientJoinRoom = function(socket, roomId)
+  {
+    var s = socket;
+    
+    s.roomId = roomId;
+    s.join(roomId);
+
+    if(typeof this.rooms[roomId] == "undefined"){
+      console.log(timeStamp() + " Creating room with roomId: "+roomId);
+      this.rooms[roomId] = new Room(roomId);
+    }
+    else
+      console.log(timeStamp() + " Joining room with roomId: "+roomId);
+
+    this.rooms[roomId].dataURLQueue.push(socket.id);
+    this.rooms[roomId].clientCount++;
+  }
+
+  RoomHandler.prototype.clientLeaveRoom = function(socket)
+  {
+    this.rooms[socket.roomId].dataURLQueue.splice(this.rooms[socket.roomId].dataURLQueue.indexOf(socket.id),1);
+    this.rooms[socket.roomId].clientCount--;
+  }  
+
+  RoomHandler.prototype.removeClient = function(socket)
   {
     delete this.clients[socket.id];
     delete this.clientSocket[socket.id];
@@ -97,32 +141,32 @@ function SocketHandler(io)
     
   }
 
-  SocketHandler.prototype.clientNameChange = function(socket, newName)
+  RoomHandler.prototype.clientNameChange = function(socket, newName)
   {
     this.clients[socket.id].name = newName;
 
     return this.clients[socket.id];
   }
 
-  SocketHandler.prototype.handleDataUrlRequest = function(socket)
+  RoomHandler.prototype.handleDataUrlRequest = function(socket)
   {
     var _this = this;
     var reply = false;
     var timeoutIterator = 0;
 
     //om det finns andra klienter
-    if(this.dataURLQueue.length > 1)
+    if(this.rooms[socket.roomId].dataURLQueue.length > 1)
     {
-      for(var i = 0; i < this.dataURLQueue.length; i++)
+      for(var i = 0; i < this.rooms[socket.roomId].dataURLQueue.length; i++)
       {
         //starta en setTimeout för varje klient i listan, med 1 sekunds mellanrum
         //i väntetid. Om vi inte får svar från första inom 1 sec körs andra osv.
-        if(this.dataURLQueue[i] !== socket.id)
+        if(this.rooms[socket.roomId].dataURLQueue[i] !== socket.id)
         {
-          var id = this.dataURLQueue[i];
+          var id = this.rooms[socket.roomId].dataURLQueue[i];
 
           setTimeout(function(){
-            var internalId = _this.dataURLQueue[timeoutIterator];
+            var internalId = _this.rooms[socket.roomId].dataURLQueue[timeoutIterator];
             
             if(!reply)
             {
@@ -135,11 +179,12 @@ function SocketHandler(io)
                   reply = true;
                   console.log(timeStamp() + " Got dataURL from "+internalId+", sending to "+socket.id);
                   socket.emit("Server.sendDataURL", dataURL, _this.sendDataURLCallback);
-                  _this.painting.saveDataURL(dataURL);
+                  _this.rooms[socket.roomId].saveDataURL(dataURL);
                   
                   //plocka ut id på den som svarat ur arrayen, lägg sist
-                  var placeLast = _this.dataURLQueue.splice(_this.dataURLQueue.indexOf(internalId),1);
-                  _this.dataURLQueue.push(placeLast[0]);
+                  var placeLast = _this.rooms[socket.roomId].dataURLQueue.splice(_this.rooms[socket.roomId].dataURLQueue.indexOf(internalId),1);
+                  _this.rooms[socket.roomId].dataURLQueue.push(placeLast[0]);
+
                 }  
               });
             }
@@ -163,22 +208,12 @@ function SocketHandler(io)
       this.sendPaintingBackup(socket);
   }
 
-  SocketHandler.prototype.sendPaintingBackup = function(socket)
-  {
-    if(this.painting.hasDataURL){
-      console.log(timeStamp() + " Sending Painting-dataURL");
-      socket.emit("Server.sendDataURL", this.painting.dataURL, this.sendDataURLCallback);
-    }
-    else{
-      console.log(timeStamp() + " No dataURL exists, sending Painting-backup");
-      socket.emit("Server.drawBackup", this.painting.getFullPainting(), this.sendDataURLCallback);
-    }
-  }
+  
 
-  SocketHandler.prototype.sendDataURLCallback = function(success)
+  RoomHandler.prototype.sendDataURLCallback = function(success)
   {
     if(success){
-      this.broadcast.emit("Server.stopLoader");
+      this.broadcast.to(this.roomId).emit("Server.stopLoader");
       this.emit("Server.stopLoader");
     }
       
@@ -186,54 +221,67 @@ function SocketHandler(io)
       console.log(timeStamp() + " Problem sending dataURL to client");
   }
 
-  SocketHandler.prototype.setupSocketEvents = function()
+  RoomHandler.prototype.setupSocketEvents = function()
   {
     var _this = this;
 
     this.io.sockets.on('connection', function(socket){
+
       console.log(timeStamp() + ' client connected: '+socket.id);
       _this.addClient(socket);
 
       socket.on('disconnect', function(){
         console.log(timeStamp() + " client disconnected: "+ socket.id);
+        _this.io.to(socket.roomId).emit("Server.removeClient", socket.id);
         _this.removeClient(socket);
-        _this.io.emit("Server.removeClient", socket.id);
+        _this.clientLeaveRoom(socket);
+
+        if(_this.clientCount == 0){
+          if(typeof _this.rooms[socket.roomId].dataURL !== "undefined"){
+            console.log(timeStamp() + " Last client disconnected from room "+socket.roomId + ", saving local dataURL to mongoDB.");
+            _this.rooms[socket.roomId].saveLocalDataURLToMongo();
+          }
+        }
+      });
+
+      socket.on("Client.joinRoom",function(roomId){
+        _this.clientJoinRoom(socket,roomId);
       });
 
       /* Canvas-related events */
 
       socket.on("Client.drawLine", function(msg){
-        _this.painting.saveBrushStroke(msg);
+        _this.rooms[socket.roomId].saveBrushStroke(msg);
         if(_this.clientCount > 1)
-          socket.broadcast.emit("Server.otherUserDrawingLine", msg);
+          socket.broadcast.to(socket.roomId).emit("Server.otherUserDrawingLine", msg);
       });
 
       socket.on("Client.sendDataURL", function(dataURL){
         console.log(timeStamp() + " Receiving dataURL from client");
-        _this.painting.saveDataURL(dataURL);
+        _this.rooms[socket.roomId].saveDataURL(dataURL);
       });
 
       socket.on("Client.requestDataURL", function(dataURL){
         console.log(timeStamp() + " Client requesting dataURL");
-        _this.io.emit("Server.startLoader", "Synchronizing... Please wait");
+        _this.io.to(socket.roomId).emit("Server.startLoader", "Synchronizing... Please wait");
         _this.handleDataUrlRequest(socket);
       });
 
       socket.on("Client.saveDataURL", function(dataURL){
         console.log(timeStamp() + " Receiving order to save dataURL from client");
-        _this.painting.saveDataURLtoMongo(dataURL);
+        _this.rooms[socket.roomId].saveDataURLtoMongo(dataURL);
         console.log(timeStamp() + " DataURL just got stored in mongodb!");
       });
       
       socket.on("Client.clearCanvas", function(){
-        socket.broadcast.emit("Server.trashPainting");
-        _this.painting.removeAll();
-        _this.io.emit("Server.chatMessage", JSON.stringify({
+        console.log(timeStamp() + " " + socket.id + " clearing all canvases in " + _this.roomId);
+        socket.to(socket.roomId).broadcast.emit("Server.clearCanvas");
+        _this.rooms[socket.roomId].clearCanvas();
+        _this.io.to(socket.roomId).emit("Server.chatMessage", JSON.stringify({
           type: "status",
           text: " has cleared the canvas.",
           sender: _this.clients[socket.id].name
         }));
-        console.log(timeStamp() + " Clearing all canvases");
       });
 
       /* Chat-related events */
@@ -243,86 +291,155 @@ function SocketHandler(io)
         for(var prop in msg){
           msg[prop] = validator.escape(msg[prop]);
         }
-        socket.broadcast.emit("Server.chatMessage", JSON.stringify(msg));
+        socket.to(_this.roomId).broadcast.emit("Server.chatMessage", JSON.stringify(msg));
         
         console.log(timeStamp() + " New chat message from "+msg.sender+": "+msg.text);
       });
 
       socket.on("Client.requestClientList", function(){
         console.log(timeStamp() + " Client requesting clientList");
-        socket.emit("Server.updateClientList", JSON.stringify(_this.clients));
+        var clientsInSameRoom = {};
+
+        for(var cId in _this.clientSocket){
+          if(_this.clientSocket[cId].roomId === socket.roomId)
+            clientsInSameRoom[cId] = _this.clients[cId];
+        }
+
+        _this.io.to(socket.roomId).emit("Server.updateClientList", JSON.stringify(clientsInSameRoom));
       });
 
       socket.on("Client.changeName", function(newName){
         console.log(timeStamp() + socket.id + " changed name to "+newName);
         var changed = _this.clientNameChange(socket, newName);
-        _this.io.emit("Server.updateClient", JSON.stringify(changed));
+        _this.io.to(socket.roomId).emit("Server.updateClient", JSON.stringify(changed));
       });
 
       /* Other events */
 
       socket.on("Client.requestClientCount", function(){
         console.log(timeStamp() + " Client requesting client count");
-        socket.emit("Server.updateClientCount", _this.clientCount);
+        _this.io.to(socket.roomId).emit("Server.updateClientCount", _this.rooms[socket.roomId].clientCount);
       });
 
-      /* Room-related events*/
-
+      
     });
   }  
 
-function Painting(roomModel)
+  RoomHandler.prototype.sendPaintingBackup = function(socket)
+  {
+    var _this = this;
+
+    if(this.rooms[socket.roomId].hasLocalDataURL){
+      socket.emit("Server.sendDataURL", this.rooms[socket.roomId].dataURL, this.sendDataURLCallback);
+      console.log(timeStamp() + " Sending local dataURL");
+    }
+
+    else{
+      console.log("In sendPaintingbackup, roomId: "+ socket.roomId);
+    
+      _this.rooms[socket.roomId].getModelFromMongo(socket.roomId, function(model){
+        if(model && typeof model !== "undefined"){
+          socket.emit("Server.sendDataURL", model.dataURL, _this.sendDataURLCallback);
+          console.log(timeStamp() + " No local dataURL, sending dataURL from mongoDB");
+        }
+        else{
+          console.log(timeStamp() + " No local or mongoDB dataURL exists.");
+        }
+    
+      });
+    }
+
+    socket.emit("Server.sendDataURL", "", this.sendDataURLCallback);
+  }
+
+function Room(id)
 {
-  this.paintArray = new Array();
-  console.log(this.paintArray);
+  this.id = id;
+  this.roomModel;
+  this.dataURLQueue = [];
+  this.clientCount = 0;
   this.dataURL;
-  this.hasDataURL = false;
-  this.roomModel = roomModel;
+  this.hasLocalDataURL = false;
+  this.paintArray = new Array();
+  this.lastModified = 0;
+
+  this.init();
 }
 
-  Painting.prototype.roomExists = function(rId)
+  Room.prototype.init = function()
   {
-    this.roomModel.findOne({ roomId: rId}, function (err, doc){
-      console.log(doc);
+    var _this = this;
+
+    this.getModelFromMongo(this.id, function(model){
+      if(model && typeof model !== "undefined"){
+        console.log(timeStamp() + " Successfully retrieved model from mongoDB.");
+        _this.roomModel = model;
+      }
+      else{
+        console.log(timeStamp() + " Failed to retrieve model from mongoDB.");
+      }
+        
     });
-
   }
 
-  Painting.prototype.saveDataURLtoMongo = function(dataURL)
+  Room.prototype.saveLocalDataURLToMongo = function()
   {
+    this.roomModel.dataURL = this.dataURL;
+    this.roomModel.save();
+  }
+
+  Room.prototype.saveDataURLtoMongo = function(dataURL)
+  {
+    console.log(timeStamp() + " Saving dataURL to roomModel");
     this.dataURL = dataURL;
-    var PaintM = new PaintingModel();
-    PaintM.name = this.dataURL;
-    PaintM.save();
-    console.log(timeStamp() + " Saving dataURL in mongoDB");    
+    this.roomModel.dataURL = this.dataURL;
+    this.roomModel.save();
   }
-  
-  Painting.prototype.saveDataURL = function(dataURL)
+
+  Room.prototype.getModelFromMongo = function(id, fn)
   {
-    console.log(timeStamp() + " Saving dataURL");
+    RoomModel.findOne({ roomId: id }, function (err, doc){
+      if(!err)
+        fn(doc);
+      else
+        fn(false);
+    });
+      
+  }
+
+  Room.prototype.saveDataURL = function(dataURL)
+  {
+    console.log(timeStamp() + " Saving local dataURL");
     this.dataURL = dataURL;
-    this.hasDataURL = true;
+    this.hasLocalDataURL = true;
   }
 
-  Painting.prototype.saveBrushStroke = function(data)
+  Room.prototype.saveBrushStroke = function(data)
   {
-    if(!this.paintArray)
-      this.paintArray = new Array();
-
     this.paintArray.push(JSON.parse(data));
   }
 
-  Painting.prototype.getFullPainting = function()
+  Room.prototype.getFullPainting = function()
   {
     return JSON.stringify(this.paintArray);
   }
 
-  Painting.prototype.removeAll = function()
+  Room.prototype.clearCanvas = function()
   {
     this.paintArray = [];
     this.dataURL = null;
-    this.hasDataURL = false;
+    this.roomModel.dataURL = null;
+    this.roomModel.save();
+    this.hasLocalDataURL = false;
   }
+
+function Client(id, name)
+{
+  this.id = id;
+  this.name = (typeof name === 'undefined') ? this.id.substr(0,7) : name;
+}
+
+
 
 /* Utility functions */
 function timeStamp()
@@ -342,4 +459,4 @@ function addZero(number)
   return (number < 10) ? "0"+number : number;
 }
 
-var socketHandler = new SocketHandler(io);
+var roomHandler = new RoomHandler(io);

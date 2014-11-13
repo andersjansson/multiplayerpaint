@@ -1,0 +1,285 @@
+/*=================================================================================================================================== 
+ #General
+======================================================================================================================================*/
+
+* { 
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  margin-bottom: 60px;
+  user-select: none; 
+  -webkit-user-select: none; 
+  -moz-user-select: none;
+<<<<<<< HEAD
+  padding-top: 0px;
+=======
+>>>>>>> 03020fb98069ff66a3dbe0348e48ba70d5381055
+}
+#createroom {
+  padding-top: 100px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+body > .container-fluid {
+  padding: 60px 15px 0;
+}
+.container .text-muted {
+  margin: 20px 0;
+}
+
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+.navbar{
+  background-color: white;
+}
+
+.footer{
+ 
+}
+.wrapper{
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.fa {
+  color: black;
+  font-size: 1.4em;
+}
+
+.fa-rocket{
+  font-size: 1em;
+  color:#FF4D4D;
+}
+
+/*=================================================================================================================================== 
+ #Canvas / Canvas Interface
+======================================================================================================================================*/
+
+canvas { 
+  position: absolute; 
+  overflow: hidden;
+  border: solid gray 1px;
+  cursor: crosshair;
+  
+}
+
+#brushDiv{
+  border-radius: 100%; 
+  width: 10px; 
+  height: 10px; 
+  background: black; 
+  position: absolute; 
+  top: 0; left: 0;
+  pointer-events:none;
+}
+
+#eyedropperDiv{
+  background: url("img/eyedropper.png");
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  border: solid red 10px;
+  top: 0; left: 0;
+}
+
+#eyedropper{
+      
+}
+
+#eyedropper:hover{
+  
+  cursor: pointer;
+}
+
+.tool-icon{
+  margin-top: 8px;
+  padding: 4px 7px 3px 7px;
+  border-radius: 3px;
+}
+
+.tool-icon:hover{
+  cursor: pointer;
+}
+
+.tool-icon:hover:after{
+  background: #333;
+  background: rgba(0,0,0,.8);
+  border-radius: 5px;
+  bottom: 26px;
+  color: #fff;
+  content: attr(title);
+  left: 20%;
+  padding: 5px 15px;
+  position: absolute;
+  z-index: 98;
+  width: 120px;
+}
+
+.tool-icon.active{
+  background: #C4C4C4;
+}
+
+#brushSizeSlider {
+  margin-right: 15px;
+}
+
+.color{
+  margin-right: 5px;
+}
+
+/*=================================================================================================================================== 
+ #Chat
+======================================================================================================================================*/
+
+#chat-container{
+  height: 702px;
+  min-width: 250px;
+  max-width: 600px;
+  overflow: hidden;
+  margin-left: 1044px;
+  position: relative;
+  border: solid gray 1px;
+  z-index: 1;
+}
+
+#chat-window{
+  padding: 5px;
+  width: 100%;
+  height: 572px;
+  overflow: auto;
+  z-index: 2;
+}
+
+#chat-input-container{
+  width: 100%;
+  position: relative;
+}
+
+#chat-input{
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin: 0;
+  height: 80px;
+  width: 100%;
+  overflow: auto;
+  resize: none;
+  border: none;
+  border-top: solid gray 1px;
+  border-bottom: solid gray 1px;
+  padding: 5px;
+}
+
+#chat-client-list-wrap{
+  width: 100%;
+  padding: 0 5px 0 5px;
+  margin-right: 255px;
+}
+
+#chat-client-list{
+  width: 100%;
+  position: absolute;
+  margin-right: 50px;
+  word-break: normal;
+  padding: 1px 5px 2px 5px;
+  border-bottom: solid gray 1px;
+}
+
+#chat-client-list ul, li{
+  padding: 0;
+  margin: 0;
+}
+
+#chat-client-list li{
+  display: inline;
+}
+
+#chat-client-list li:not(:last-child):after{
+  content: ", ";
+}
+
+#nick-input{
+  margin: 5px 0 0 10px;
+  padding-left: 5px;
+}
+
+#chat-window p{
+  padding: 0;
+  margin: 0;
+  word-break: break-all;
+}
+
+.chat-status-name{
+  word-break: normal;
+}
+
+.chat-name,.chat-text,.chat-time{
+  z-index: 999;
+}
+
+.chat-name{
+  font-weight: bold;
+}
+
+.chat-text{
+
+}
+
+.chat-time{
+  color: #A1A1A1;
+}
+
+.chat-status-text{
+  color: #A1A1A1;
+}
+
+.chat-status-name{
+  color: #A1A1A1;
+}
+
+/*=================================================================================================================================== 
+ #Loader
+======================================================================================================================================*/
+
+#loader{
+  position: fixed;
+  z-index: 10000;
+  display: none;
+  text-align: center;
+}
+
+#loader img, #loader-text{
+  position: relative;
+  top: 320px;
+}
+
+#loader-text{
+  color: white;
+  text-shadow:
+   -1px -1px 0 #000,  
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+     1px 1px 0 #000;
+}
