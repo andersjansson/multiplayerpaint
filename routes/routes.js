@@ -1,10 +1,12 @@
 var RoomModel = require('../models/room');
+var User = require('../models/user');
 var bcrypt   = require('bcrypt-nodejs');
+var flash = require('connect-flash');
 
 module.exports = function(app, passport) {
 
 	app.get('/', function(req, res) {
-		res.render('index.ejs', {
+		res.render('Profile/index.ejs', {
 			user : req.user
 		});
 
@@ -27,14 +29,45 @@ module.exports = function(app, passport) {
 			user : req.user
 		});
 	});
+	app.post('/profile/settings/edit', isLoggedIn, function(req, res){
+		console.log(req.body);
+		User.findOne({ _id: req.user.id }, function (err, user){
+
+			if (err) return handleError(err);
+
+			if (req.body.username === '' || req.body.email === '' || req.body.password === '') {
+				console.log(req.flash);
+				console.log(req.body);
+            	console.log("INGA TOMMA FÄLT PLESAE");
+
+				req.flash('editMessage', 'Inga tomma fält please.');
+
+				return res.redirect('/profile/settings/edit');
+			} else {
+
+				console.log("loookin good, will save this shit now!");
+	  			user.local.username = req.body.username;
+	  			user.local.email = req.body.email;
+	  			user.local.password = user.generateHash(req.body.password);
+			  	user.save();
+			  	user.save(function (err) {
+
+				    if (err) return handleError(err);
+
+				    res.redirect('/profile/settings/edit');
+
+				});
+		    }
+		});
+	});
+
 	app.get('/profile/settings/edit', isLoggedIn, function(req, res){
 		res.render('Profile/edit.ejs',{
+			message: req.flash('editMessage'),
 			user : req.user
 		});
 	});
-	app.post('/profile/settings/edit', isLoggedIn, function(req, res){
-		console.log(req.body);
-	});
+	
 
 	app.get('/logout', isLoggedIn, function(req, res) {
 		req.logout();

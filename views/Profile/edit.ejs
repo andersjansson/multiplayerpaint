@@ -2,6 +2,9 @@
 
 <div class="container" style="padding-top: 50px;">
 	<%= user %>
+	<% if (message.length > 0) { %>
+		<div class="alert alert-danger"><%= message %></div>
+	<% } %>
 <form action="/profile/settings/edit" method="post">
 
 		<div class="form-group">
@@ -17,7 +20,7 @@
 			<input type="password" class="form-control" name="password">
 		</div>
 
-		<button type="submit" class="btn btn-danger btn-lg">Signup</button>
+		<button type="submit" class="btn btn-danger btn-lg">Edit settings</button>
 	</form>
 
 </div>
