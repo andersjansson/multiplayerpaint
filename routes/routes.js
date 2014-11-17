@@ -6,7 +6,7 @@ var flash = require('connect-flash');
 module.exports = function(app, passport) {
 
 	app.get('/', function(req, res) {
-		res.render('Profile/index.ejs', {
+		res.render('index.ejs', {
 			user : req.user
 		});
 

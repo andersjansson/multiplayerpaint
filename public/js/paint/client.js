@@ -3,6 +3,7 @@ function CanvasApp(io, loader)
   this.canvas = document.getElementById('canvas');
   this.loader = loader;
   this.toolKit = new ToolKit(this);
+  this.notifier = new NotificationHandler();
 
   this.socket = io;
   console.log(" ---- socket.roomId: " + this.socket.roomId + " ----");
