@@ -31,13 +31,8 @@ function CanvasApp(io, loader)
 
     this.socket.on('connect', function(){
       _this.setupSocketEvents();
-
       _this.socket.emit("Client.joinRoom", _this.socket.roomId);
-
       _this.socket.emit("Client.requestClientCount");
-
-      console.log("Requesting dataURL");
-      
       _this.socket.emit("Client.requestDataURL");
     });
 
@@ -111,10 +106,11 @@ function CanvasApp(io, loader)
     $("#trash").click(function(e){
       _this.socket.emit("Client.clearCanvas");
       _this.clearCanvas();
+      _this.notifier.showNotification("Clearing canvas...", e);
     });
     $("#saveImage").click(function(e){
-      console.log("Ber servern att spara bilden");
       _this.socket.emit("Client.saveDataURL",_this.canvas.toDataURL());
+      _this.notifier.showNotification("Saving image...", e);
     });
     $(this.canvas).mousedown(function(e){
       _this.startX = e.pageX - this.offsetLeft;
