@@ -21,6 +21,8 @@ mongoose.connect(configDB.url);
 
 require('./config/passport')(passport);
 
+app.use(require('express-promise')());
+
 app.use(morgan('dev')); 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,6 +35,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash()); 
 app.use(express.static(__dirname + '/public'));
+
 require('./routes/routes.js')(app, passport); 
 
 var PaintingModel = require('./models/painting');

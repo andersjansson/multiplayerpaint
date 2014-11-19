@@ -39,18 +39,39 @@
 
         <button type="submit" class="btn btn-danger btn-lg">Create Room</button>
       </form>
-      <div class="thumbnails">
-        <h1><%= h1 %></h1>
-        <% for(var i = 0; i < roomCollection.length; i++) { %>
-          <%if(typeof roomCollection[i].dataURL !== "undefined" && roomCollection[i].dataURL !== null) {%>
-            <li>
-              <a href= "<%= 'rooms/'+roomCollection[i].roomId %>">
-                <img class="thumb" src="<%= roomCollection[i].dataURL %>" />
-              </a>
-            </li>
-          <% } %>
-        <% } %>  
-      </div>
+      
+        <% if(typeof user !== "undefined" && userRooms.length > 0) { %>
+        <div class="thumbnails row">
+          <h1>Your Rooms</h1>
+          <ul>
+          <% for(var i = 0; i < userRooms.length; i++) { %>
+            <%if(typeof userRooms[i].dataURL !== "undefined" && userRooms[i].dataURL !== null) {%>
+              <li>
+                <a href= "<%= 'rooms/'+userRooms[i].roomId %>">
+                  <img class="thumb" src="<%= userRooms[i].dataURL %>" />
+                </a>
+              </li>
+            <% } %>
+          <% } %> 
+          </ul>
+          </div>
+        <% } %> 
+
+        <h1>Public Rooms</h1>
+        <div class="thumbnails row">
+          <ul>
+          <% for(var i = 0; i < publicRooms.length; i++) { %>
+            <%if(typeof publicRooms[i].dataURL !== "undefined" && publicRooms[i].dataURL !== null) {%>
+              <li>
+                <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
+                  <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
+                </a>
+              </li>
+            <% } %>
+          <% } %> 
+          </ul>
+          </div>
+      
       
          <!--<form action="/rooms" method="post">
                 <button type="submit" class="btn btn-danger btn-lg">Create Random Room</button>

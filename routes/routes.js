@@ -7,22 +7,16 @@ module.exports = function(app, passport) {
 
 	app.get('/', function(req, res) {
 		if(checkIfLoggedIn(req)){
-			RoomModel.find({creator: req.user.id},function(err, rooms){
-				res.render('index.ejs', {
-					user : req.user,
-					roomCollection: rooms,
-					h1: "Your Rooms"
-				});
+			res.render('index.ejs', {
+				user: req.user,
+				userRooms: RoomModel.find({creator: req.user.id}),
+				publicRooms: RoomModel.find({/* Sortera på isPrivate här */})
 			});
 			
 		}
 		else{
-			RoomModel.find({isPrivate: "undefined"},function(err, rooms){
-				res.render('index.ejs', {
-					user : req.user,
-					roomCollection: rooms,
-					h1: "Public Rooms"
-				});
+			res.render('index.ejs', {
+				publicRooms: RoomModel.find({/* Sortera på isPrivate här */})
 			});
 		}
 
@@ -192,4 +186,25 @@ function getRoom(roomId,fn)
 	  	fn(false);
 	  	
 	});
+}
+
+function getRoomsCreatedByUser(id)
+{
+	RoomModel.find({creator: req.user.id},function(err, rooms){
+		res.render('index.ejs', {
+			user : req.user,
+			roomCollection: rooms,
+			h1: "Your Rooms"
+		});
+	});
+}
+
+function getPublicRooms()
+{
+
+}
+
+function getAllRooms()
+{
+
 }
