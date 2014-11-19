@@ -1,5 +1,28 @@
 <% include Partials/header %>
+  <style>
+    .thumb{
+      width: 200px;
+      height: 120px;
+      border: solid gray 1px;
+    }
 
+    .thumbnails{
+      
+    }
+
+    .thumbnails li{
+      list-style: none;
+      float: left;
+      padding: 10px;
+    }
+
+  </style>
+  <script>
+    function generateThumbnail(dataURL)
+    {
+
+    }
+  </script>
     <div class="container" id="createroom">
       <div class="row">
          
@@ -16,23 +39,23 @@
 
         <button type="submit" class="btn btn-danger btn-lg">Create Room</button>
       </form>
+      <div class="thumbnails">
+        <h1><%= h1 %></h1>
+        <% for(var i = 0; i < roomCollection.length; i++) { %>
+          <%if(typeof roomCollection[i].dataURL !== "undefined" && roomCollection[i].dataURL !== null) {%>
+            <li>
+              <a href= "<%= 'rooms/'+roomCollection[i].roomId %>">
+                <img class="thumb" src="<%= roomCollection[i].dataURL %>" />
+              </a>
+            </li>
+          <% } %>
+        <% } %>  
+      </div>
       
          <!--<form action="/rooms" method="post">
                 <button type="submit" class="btn btn-danger btn-lg">Create Random Room</button>
           </form> -->
     </div>
-     
-    <!--
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/lib/jscolor/jscolor.js"></script>
-    <script src="js/lib/jquery.js"></script>
-    <script src="js/lib/bootstrap.js"></script>
-    <script src="js/lib/bootstrap-slider.js"></script>  
-    <script src="js/paint/client.js"></script>
-    
-    <script>
-      var app = new CanvasApp();
-    </script>
-    -->
+  
   </body>
 </html>
