@@ -210,24 +210,3 @@ function getRoom(roomId,fn)
 	  	
 	});
 }
-
-function getRoomsCreatedByUser(id)
-{
-	RoomModel.find({creator: req.user.id},function(err, rooms){
-		res.render('index.ejs', {
-			user : req.user,
-			roomCollection: rooms,
-			h1: "Your Rooms"
-		});
-	});
-}
-
-function getPublicRooms()
-{
-
-}
-
-function getAllRooms()
-{
-
-}
