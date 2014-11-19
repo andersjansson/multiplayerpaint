@@ -2,6 +2,7 @@ var RoomModel = require('../models/room');
 var User = require('../models/user');
 var bcrypt   = require('bcrypt-nodejs');
 var flash = require('connect-flash');
+var validator = require('validator');
 
 module.exports = function(app, passport) {
 
@@ -16,7 +17,7 @@ module.exports = function(app, passport) {
 
 		var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
 
-		res.render('Profile/profile.ejs', {
+		res.render('Profile/index.ejs', {
 			user : req.user,
 			Userrooms: rooms,
 		});
@@ -25,7 +26,7 @@ module.exports = function(app, passport) {
 	});
 
 	app.get('/profile/settings', function(req, res){
-		res.render('Profile/profile_settings.ejs', {
+		res.render('Profile/show.ejs', {
 			user : req.user
 		});
 	});
@@ -35,8 +36,10 @@ module.exports = function(app, passport) {
 		User.findOne({ _id: req.user.id }, function (err, user){
 
 			if (err) return handleError(err);
+			
 
 			if (req.body.username === '' || req.body.email === '' || req.body.password === '') {
+
 				console.log(req.flash);
 				console.log(req.body);
             	console.log("INGA TOMMA FÄLT PLESAE");
@@ -44,20 +47,32 @@ module.exports = function(app, passport) {
 				req.flash('editMessage', 'Inga tomma fält please.');
 
 				return res.redirect('/profile/settings/edit');
+
 			} else {
 
-				console.log("loookin good, will save this shit now!");
-	  			user.local.username = req.body.username;
-	  			user.local.email = req.body.email;
-	  			user.local.password = user.generateHash(req.body.password);
-			  	user.save();
-			  	user.save(function (err) {
+				if (validator.isEmail(req.body.email)) {
 
-				    if (err) return handleError(err);
+					console.log("loookin good, will save this shit now!");
+		  			user.local.username = validator.escape(req.body.username);
+		  			user.local.email = validator.escape(req.body.email);
+		  			user.local.password = user.generateHash(req.body.password);
+				  	user.save();
+				  	user.save(function (err) {
 
-				    res.redirect('/profile/settings/edit');
+					    if (err) return handleError(err);
 
-				});
+					    res.redirect('/profile/settings/edit');
+
+					});
+
+				} else {
+
+					console.log("password to short!");
+					req.flash('editMessage', 'You cant fool us, give us a real email pls..fgt');
+
+					return res.redirect('/profile/settings/edit');
+				}
+				
 		    }
 		});
 	});
@@ -96,18 +111,26 @@ module.exports = function(app, passport) {
 
 		console.log(req.params);
 		Room.roomId = hashId;
-		Room.name = req.body.roomName;
-		Room.password = req.body.password;
-		Room.isPrivate = true;
-		Room.creator = req.user.id;
+		if (req.body.roomName === '' || req.body.password === '') {
 
-		Room.save(function (err) {
+			req.flash('editMessage', 'You cant fool us, give us a real email pls..fgt');
+			return res.redirect('/profile/settings/edit');
 
-  			if (err) console.log(err);
-  			
-  			else
-  				res.redirect("/rooms/" + hashId);
-		});
+		} else {
+
+			Room.name = req.body.roomName;
+			Room.password = req.body.password;
+			Room.isPrivate = true;
+			Room.creator = req.user.id;
+
+			Room.save(function (err) {
+
+	  			if (err) console.log(err);
+	  			
+	  			else
+	  				res.redirect("/rooms/" + hashId);
+			});
+		}	
 	});
 
 	app.get('/rooms/:roomId', function(req, res) {
@@ -126,7 +149,7 @@ module.exports = function(app, passport) {
 	}));
 
 	app.get('/signup', function(req, res) {
-		res.render('/Auth/signup.ejs', { message: req.flash('signupMessage') });
+		res.render('Auth/signup.ejs', { message: req.flash('signupMessage') });
 	});
 
 	app.post('/signup', passport.authenticate('local-signup', {
