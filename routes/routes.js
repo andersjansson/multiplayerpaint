@@ -7,9 +7,25 @@ var validator = require('validator');
 module.exports = function(app, passport) {
 
 	app.get('/', function(req, res) {
-		res.render('Profile/index.ejs', {
-			user : req.user
-		});
+		if(checkIfLoggedIn(req)){
+			RoomModel.find({creator: req.user.id},function(err, rooms){
+				res.render('index.ejs', {
+					user : req.user,
+					roomCollection: rooms,
+					h1: "Your Rooms"
+				});
+			});
+			
+		}
+		else{
+			RoomModel.find({isPrivate: "undefined"},function(err, rooms){
+				res.render('index.ejs', {
+					user : req.user,
+					roomCollection: rooms,
+					h1: "Public Rooms"
+				});
+			});
+		}
 
 	});
 
@@ -165,6 +181,13 @@ function isLoggedIn(req, res, next) {
 		return next();
 
 	res.redirect('/login');
+}
+
+function checkIfLoggedIn(req) {
+	if(req.isAuthenticated())
+		return true;
+
+	return false;
 }
 
 

@@ -12,12 +12,13 @@ requirejs.config({
       jscolor     : 'jscolor/jscolor',
       "socket.io" : '/socket.io/socket.io',
       utility     : '../util/utility',
-      loader      : '../util/loader'
+      loader      : '../util/loader',
+      notification: '../util/notification'
     }
 });
 
 // Start the main app logic.
-requirejs(['jquery', 'socket.io','jscolor','client','bootstrap','bootstrap-slider', 'chat', 'utility', 'loader'],
+requirejs(['jquery', 'socket.io','jscolor','client','bootstrap','bootstrap-slider', 'chat', 'utility', 'loader', 'notification'],
 function($, io, jscolor) {
   $(function(){
     
