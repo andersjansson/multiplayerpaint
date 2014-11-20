@@ -1,5 +1,8 @@
 
 
+exports.test = function(req, res){
+  console.log("eeeexppooorrrttt");
+};
 
 
 

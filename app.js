@@ -10,12 +10,12 @@ var passport      = require('passport');
 var flash         = require('connect-flash');
 var LocalStrategy = require('passport-local').Strategy;
 var morgan        = require('morgan');
-var cookieParser  = require('cookie-parser');
 var bodyParser    = require('body-parser');
 var validator     = require('validator');
 var session       = require('express-session');
-
 var configDB      = require('./config/database.js');
+var cookieParser  = require('cookie-parser');
+var user          = require('./routes/users');
 
 mongoose.connect(configDB.url); 
 
@@ -40,6 +40,9 @@ require('./routes/routes.js')(app, passport);
 
 var PaintingModel = require('./models/painting');
 var RoomModel = require('./models/room');
+
+
+//app.get('/testlol', user.test);
 
 http.listen(port, function(){
   console.log(timeStamp() + ' Server listening on port '+port);

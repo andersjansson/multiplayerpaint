@@ -3,9 +3,10 @@ var User = require('../models/user');
 var bcrypt   = require('bcrypt-nodejs');
 var flash = require('connect-flash');
 var validator = require('validator');
+var user = require('./users')
 
 module.exports = function(app, passport) {
-
+app.get('/testlol', user.test);
 	app.get('/', function(req, res) {
 		if(checkIfLoggedIn(req)){
 			res.render('index.ejs', {
@@ -23,7 +24,7 @@ module.exports = function(app, passport) {
 
 	});
 
-	app.get('/profile', function(req, res) {
+	app.get('/profile', isLoggedIn, function(req, res) {
 
 		var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
 
@@ -35,7 +36,7 @@ module.exports = function(app, passport) {
 		console.log(req.user.id);
 	});
 
-	app.get('/profile/settings', function(req, res){
+	app.get('/profile/settings', isLoggedIn, function(req, res){
 		res.render('Profile/show.ejs', {
 			user : req.user
 		});
