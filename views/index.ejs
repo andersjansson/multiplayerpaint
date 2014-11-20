@@ -6,6 +6,10 @@
       border: solid gray 1px;
     }
 
+    .thumb.last-modified{
+
+    }
+
     .thumbnails{
       
     }
@@ -18,10 +22,7 @@
 
   </style>
   <script>
-    function generateThumbnail(dataURL)
-    {
 
-    }
   </script>
     <div class="container" id="createroom">
       <div class="row">
@@ -41,41 +42,44 @@
       </form>
       
         <% if(typeof user !== "undefined" && userRooms.length > 0) { %>
-        <div class="thumbnails row">
-          <h1>Your Rooms</h1>
-          <ul>
-          <% for(var i = 0; i < userRooms.length; i++) { %>
-            <%if(typeof userRooms[i].dataURL !== "undefined" && userRooms[i].dataURL !== null) {%>
-              <li>
-                <a href= "<%= 'rooms/'+userRooms[i].roomId %>">
-                  <img class="thumb" src="<%= userRooms[i].dataURL %>" />
-                </a>
-              </li>
+          <div class="thumbnails row">
+            <h1>Your Rooms</h1>
+            <ul>
+            <% for(var i = 0; i < userRooms.length; i++) { %>
+              <%if(typeof userRooms[i].dataURL !== "undefined" && userRooms[i].dataURL !== null) {%>
+                <li>
+                  <a href= "<%= 'rooms/'+userRooms[i].roomId %>">
+                    <img class="thumb" src="<%= userRooms[i].dataURL %>" />
+                  </a>
+                    <p class="last-modified">Last modified: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
+                </li>
+              <% } %>
             <% } %>
-          <% } %> 
-          </ul>
+            </ul>
           </div>
         <% } %> 
-
+        
+        <% if(typeof publicRooms !== "undefined" && publicRooms.length > 0) { %>
         <h1>Public Rooms</h1>
-        <div class="thumbnails row">
-          <ul>
-          <% for(var i = 0; i < publicRooms.length; i++) { %>
-            <%if(typeof publicRooms[i].dataURL !== "undefined" && publicRooms[i].dataURL !== null) {%>
-              <li>
-                <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
-                  <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
-                </a>
-              </li>
-            <% } %>
-          <% } %> 
-          </ul>
+          <div class="thumbnails row">
+            <ul>
+            <% for(var i = 0; i < publicRooms.length; i++) { %>
+              <%if(typeof publicRooms[i].dataURL !== "undefined" && publicRooms[i].dataURL !== null) {%>
+                <li>
+                  <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
+                    <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
+                  </a>
+                    <p class="last-modified">Last edited: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
+                </li>
+              <% } %>
+            <% } %> 
+            </ul>
           </div>
-      
+        <% } %>
       
          <!--<form action="/rooms" method="post">
                 <button type="submit" class="btn btn-danger btn-lg">Create Random Room</button>
-          </form> -->
+          </form>-->
     </div>
   
   </body>

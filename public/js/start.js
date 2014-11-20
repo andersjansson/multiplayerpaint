@@ -22,7 +22,9 @@ requirejs(['jquery', 'socket.io','jscolor','client','bootstrap','bootstrap-slide
 function($, io, jscolor) {
   $(function(){
     
-    var room = $("title").attr("data-id");
+    var room = $("title").attr("data-roomid");
+    var name = $("title").attr("data-username");
+
     jscolor.install();
     jscolor.init();
 
@@ -30,9 +32,8 @@ function($, io, jscolor) {
     loader.start("Loading, please wait...");
     var socket = io.connect();
     socket.roomId = room;
-    console.log("---- socket.roomId: " + socket.roomId + " ----");
     var app = new CanvasApp(socket,loader);
-    var chat = new ChatApp($("#chat-window"), socket);
+    var chat = new ChatApp($("#chat-window"), socket, name);
     
   });
 });

@@ -8,17 +8,19 @@ var user = require('./users')
 module.exports = function(app, passport) {
 app.get('/testlol', user.test);
 	app.get('/', function(req, res) {
-		if(checkIfLoggedIn(req)){
+		if(req.isAuthenticated()){
 			res.render('index.ejs', {
 				user: req.user,
-				userRooms: RoomModel.find({creator: req.user.id}),
-				publicRooms: RoomModel.find({/* Sortera på isPrivate här */})
+				userRooms: RoomModel.find({creator: req.user.id}).sort({lastModified: -1}),
+				publicRooms: RoomModel.find({ isPrivate: false }).sort({lastModified: -1}),
+				timeAgo: timeAgo
 			});
 			
 		}
 		else{
 			res.render('index.ejs', {
-				publicRooms: RoomModel.find({/* Sortera på isPrivate här */})
+				publicRooms: RoomModel.find({}).sort({lastModified: -1}),
+				timeAgo: timeAgo
 			});
 		}
 
@@ -145,9 +147,19 @@ app.get('/testlol', user.test);
 	});
 
 	app.get('/rooms/:roomId', function(req, res) {
+
+		var name;
+		var uId;
+		
+		if(req.isAuthenticated()){
+			name = req.user.local.username;
+			uId  = req.user.id;
+			console.log("username: " + name);
+		}
+
 	  getRoom(req.params.roomId, function(doc){
 	  	if(doc)
-	  		res.render("Rooms/room.ejs", {roomId: req.params.roomId, roomName: doc.name, user: req.user});	
+	  		res.render("Rooms/room.ejs", {roomId: req.params.roomId, roomName: doc.name, roomCreator: doc.creator, user: req.user});	
 	  	else
 	  		res.render("Errors/404.ejs");
 	  });
@@ -210,4 +222,56 @@ function getRoom(roomId,fn)
 	  	fn(false);
 	  	
 	});
+}
+
+function removePublicRooms()
+{
+	RoomModel.find({isPrivate: false}).remove().exec();
+}
+
+function removeAllRooms()
+{
+	RoomModel.find({}).remove().exec();	
+}
+
+function generatePublicRooms(howMany)
+{
+  for(var i = 0; i < howMany; i++)
+  {
+  	var room = new RoomModel({
+  		roomName: "room" + [i],
+  		isPrivate: false,
+  		roomId: generateRoomId(10)
+  	});
+
+  	room.save();
+  }
+}
+
+function timeAgo(date)
+{
+  var seconds = Math.floor((new Date().getTime() - date) / 1000);
+
+  var interval = Math.floor(seconds / 31536000);
+
+  if (interval > 1) {
+      return interval + " years";
+  }
+  interval = Math.floor(seconds / 2592000);
+  if (interval > 1) {
+      return interval + " months";
+  }
+  interval = Math.floor(seconds / 86400);
+  if (interval > 1) {
+      return interval + " days";
+  }
+  interval = Math.floor(seconds / 3600);
+  if (interval > 1) {
+      return interval + " hours";
+  }
+  interval = Math.floor(seconds / 60);
+  if (interval > 1) {
+      return interval + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
 }
