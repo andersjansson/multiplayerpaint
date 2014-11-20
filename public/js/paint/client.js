@@ -6,7 +6,6 @@ function CanvasApp(io, loader)
   this.notifier = new NotificationHandler();
 
   this.socket = io;
-  console.log(" ---- socket.roomId: " + this.socket.roomId + " ----");
   this.context = this.canvas.getContext("2d");
   this.isPainting = false;
 
@@ -44,6 +43,7 @@ function CanvasApp(io, loader)
     this.setColor(this.color);
 
     this.setupListeners();
+
   }
 
   CanvasApp.prototype.setupSocketEvents = function()
@@ -51,7 +51,6 @@ function CanvasApp(io, loader)
     var _this = this;
     
     this.socket.on("Server.otherUserDrawingLine", function(data){
-      console.log("other user drawing");
       var d = JSON.parse(data);
       switch(d.type){
         case "arc":
@@ -64,19 +63,16 @@ function CanvasApp(io, loader)
     });
 
     this.socket.on("Server.requestDataURL", function(data, callback){
-      console.log("got a request from server");
         var lol = _this.canvas.toDataURL();
         callback(null, _this.canvas.toDataURL());
     });
 
     this.socket.on("Server.sendDataURL", function(dataURL, callback){
-      console.log("server sending dataURL");
       _this.drawCanvasFromDataURL(dataURL);
       callback(true);
     });
 
     this.socket.on("Server.drawBackup", function(data, callback){
-      console.log("server sending backup");
       _this.drawBackup(data);
       callback(true);
     });
@@ -168,7 +164,6 @@ function CanvasApp(io, loader)
       _this.singleClick(e);
 
       if(_this.clientCount == 1 && !_this.toolKit.eyeDropper.selected){
-        console.log("I AM SO ALONE! SENDING DATAURL!");
         _this.socket.emit("Client.sendDataURL",_this.canvas.toDataURL());
       }
     });
@@ -313,7 +308,6 @@ function CanvasApp(io, loader)
   }
 
   CanvasApp.prototype.drawCanvasFromDataURL = function(dataURL){
-    console.log("yay! I got me some dataURL");
     var _this = this;
     var img = new Image();
 

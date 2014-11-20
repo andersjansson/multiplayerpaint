@@ -38,43 +38,11 @@ app.use(express.static(__dirname + '/public'));
 
 require('./routes/routes.js')(app, passport); 
 
-var PaintingModel = require('./models/painting');
 var RoomModel = require('./models/room');
 
 http.listen(port, function(){
   console.log(timeStamp() + ' Server listening on port '+port);
 });
-
-/* 
-  1. Kolla om rummet finns
-    - om det inte finns, skapa det
-    - skapa ny klient i dess RoomHandler
-  2. 
-  
-
-*/
-var roomHandlers = [];
-/*
-io.sockets.on('connection', function(socket){
-  console.log(timeStamp() + ' client connected: '+socket.id);
-
-  socket.on("Client.joinRoom",function(roomId){
-    
-    if(typeof roomHandlers[roomId] == "undefined"){
-      console.log(timeStamp() + " " + "Client "+socket.id+" creates room "+roomId);
-      roomHandlers[roomId] = new RoomHandler(io,roomId);
-    }
-    else
-      console.log(timeStamp() + " " + "Client "+socket.id+" joins room "+roomId);
-    
-    roomHandlers[roomId].addClient(socket);
-
-    console.log(timeStamp() + " ---- Logging in Client.joinRoom ----");
-    roomHandlers[roomId].log();
-  });
-
-  
-});*/
 
 function RoomHandler(io)
 {
@@ -116,6 +84,8 @@ function RoomHandler(io)
     
     s.roomId = roomId;
     s.join(roomId);
+
+    console.log(socket.id);
 
     if(typeof this.rooms[roomId] == "undefined"){
       console.log(timeStamp() + " Creating room with roomId: "+roomId);
@@ -294,7 +264,7 @@ function RoomHandler(io)
         for(var prop in msg){
           msg[prop] = validator.escape(msg[prop]);
         }
-        socket.to(_this.roomId).broadcast.emit("Server.chatMessage", JSON.stringify(msg));
+        socket.to(socket.roomId).broadcast.emit("Server.chatMessage", JSON.stringify(msg));
         
         console.log(timeStamp() + " New chat message from "+msg.sender+": "+msg.text);
       });
@@ -312,7 +282,6 @@ function RoomHandler(io)
       });
 
       socket.on("Client.changeName", function(newName){
-        console.log(timeStamp() + socket.id + " changed name to "+newName);
         var changed = _this.clientNameChange(socket, newName);
         _this.io.to(socket.roomId).emit("Server.updateClient", JSON.stringify(changed));
       });

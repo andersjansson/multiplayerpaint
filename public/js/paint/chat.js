@@ -1,5 +1,8 @@
-function ChatApp(div, socket)
+function ChatApp(div, socket, username)
 {
+  if(typeof username !== "undefined")
+    this.name = username;
+
   this.output = div;
   this.socket = socket;
   this.init();
@@ -16,19 +19,25 @@ function ChatApp(div, socket)
     this.setupListeners();
     this.clients = {};
   
-    this.name;
     this.id;
 
     this.setupSocketEvents();
     
     this.socket.on("connect", function(){
       _this.id = _this.socket.io.engine.id;
-      _this.name = _this.id.substr(0,7);
+
       _this.socket.emit("Client.requestClientList");
       _this.textInput.val('');
       _this.nameInput.val('');
-    })
+
+      if(typeof _this.name === "undefined")
+        _this.name = _this.id.substr(0,7);
+
+      _this.socket.emit("Client.changeName", _this.name);
+    });
+
     
+
   }
 
   ChatApp.prototype.setupListeners = function()
@@ -64,13 +73,13 @@ function ChatApp(div, socket)
 
     this.socket.on("Server.addClient", function(client){
       var c = JSON.parse(client);
-      _this.printMessage({type: "status", sender: c.name, text: " has connected"});
+      _this.printMessage({type: "status", sender: c.name, text: " has joined the room"});
       _this.addClient(c);
       _this.renderClientList();
     });
 
     this.socket.on("Server.removeClient", function(id){
-      _this.printMessage({type: "status", sender: _this.clients[id].name, text: " has disconnected"});
+      _this.printMessage({type: "status", sender: _this.clients[id].name, text: " has left the room"});
       _this.removeClient(id);
       _this.renderClientList();
     });
@@ -82,7 +91,6 @@ function ChatApp(div, socket)
 
     this.socket.on("Server.updateClientList", function(list){
       var l = JSON.parse(list);
-      console.log(l);
       _this.renderClientList(l);
       _this.clients = l;
     });
@@ -110,7 +118,6 @@ function ChatApp(div, socket)
 
   ChatApp.prototype.printMessage = function(message)
   {
-    console.log(message);
     var scrolled = this.isScrolledDown();
     var html = "<p><span class='chat-time'>["+timeStamp()+"] </span>";
 
@@ -167,7 +174,7 @@ function ChatApp(div, socket)
         html += "<li>"+newList[key].name+"</li>";
       count++;
     }
-    pre = count + ((count > 1) ? " users " : " user ") + "connected: ";
+    pre = count + ((count > 1) ? " users " : " user ") + "in the room: ";
     this.clientListDiv.html("<ul>"+pre+html+"</ul>");
 
     this.resizeChat();
@@ -183,7 +190,7 @@ function ChatApp(div, socket)
     var cIH = document.getElementById("chat-input-container").offsetHeight;
     this.output.css({
       "margin-top": cLH + 'px',
-      "height": cH - cLH - cIH - 10 + 'px'
+      "height": cH - cLH - cIH + 4 + 'px'
     });
   }
 
@@ -195,11 +202,6 @@ function ChatApp(div, socket)
   ChatApp.prototype.updateClient = function(client)
   {
     var c = JSON.parse(client);
-    this.printMessage({
-      type: "status", 
-      sender: this.clients[c.id].name, 
-      text: " has changed name to <span class='chat-status-name'>"+c.name+"</span>"
-    });
     this.clients[c.id] = c;
   }
 
