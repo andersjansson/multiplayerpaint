@@ -24,22 +24,29 @@
   <script>
 
   </script>
+
     <div class="container" id="createroom">
       <div class="row">
          
       </div>
       <form action="/rooms" method="post">
         <div class="form-group">
-          <label>Name</label>
-          <input type="text" class="form-control" name="roomName">
+          <label>Name*</label>
+          <input type="text" class="form-control" name="roomName" required>
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" class="form-control" name="password">
+          <div id="ifYes" style="display:none">
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" class="form-control" name="password">
+          </div>
         </div>
 
+      
+        Private <input type="radio" name="radioGroup" id="yesCheck" value="private"> 
+        Public  <input type="radio"  name="radioGroup" id="noCheck" checked="" value="public"><br>
+        <br>
         <button type="submit" class="btn btn-danger btn-lg">Create Room</button>
-      </form>
+      </form> 
       
         <% if(typeof user !== "undefined" && userRooms.length > 0) { %>
           <div class="thumbnails row">

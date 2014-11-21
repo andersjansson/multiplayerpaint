@@ -3,10 +3,11 @@ var User = require('../models/user');
 var bcrypt   = require('bcrypt-nodejs');
 var flash = require('connect-flash');
 var validator = require('validator');
-var user = require('./users')
+//var user = require('./users')
 
 module.exports = function(app, passport) {
-app.get('/testlol', user.test);
+//app.get('/testlol', user.test);
+
 	app.get('/', function(req, res) {
 
 		//removeAllRooms();
@@ -114,30 +115,40 @@ app.get('/testlol', user.test);
 		res.render('Auth/login.ejs', { message: req.flash('loginMessage') });
 	});
 
-	app.get('/rooms', function(req, res) {
+	app.get('/rooms', isLoggedIn, function(req, res) {
 		res.render('index.ejs', {roomId: req.params.roomId, roomName: req.body.roomName});
 		console.log("lololol rooooms");
 	});
-	app.post('/rooms',  function(req, res) {
-
+	app.post('/rooms', isLoggedIn,  function(req, res) {
+		console.log(req.body);
 		hashId = generateRoomId(10);
 
 		var Room = RoomModel();
-		console.log(req.body.roomName);
-		console.log(req.body.password);
 
-		console.log(req.params);
 		Room.roomId = hashId;
-		if (req.body.roomName === '' || req.body.password === '') {
+		if (req.body.roomName === '') {
 
-			req.flash('editMessage', 'You cant fool us, give us a real email pls..fgt');
+			req.flash('editMessage', 'You need to enter a name for the room.');
 			return res.redirect('/profile/settings/edit');
 
 		} else {
 
 			Room.name = req.body.roomName;
-			Room.password = req.body.password;
-			Room.isPrivate = true;
+
+			if (!req.body.password === '') {
+				console.log("passwöööörd");
+				Room.password = req.body.password;
+			};
+			
+
+			if (req.body.radioGroup === "private") {
+				console.log("its private roooom");
+				Room.isPrivate = true;
+			} else {
+
+				Room.isPrivate = false;
+			}
+			
 			Room.creator = req.user.id;
 
 			Room.save(function (err) {
