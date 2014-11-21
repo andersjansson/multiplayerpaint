@@ -1,90 +1,128 @@
 <% include Partials/header %>
-  <style>
-    .thumb{
-      width: 200px;
-      height: 120px;
-      border: solid gray 1px;
-    }
+    <% if(typeof user !== "undefined") { %>
+      <div class="container-fluid content-type-a" id="createroom">
+        <div class="container">
+          <div class="row">
+              <div class="col-sm-6">
+                <div class="inner">
+                  <div class="wat">
+                    
+                      <ul>
+                        <li><h3 class="user-stuff"><span class="fa fa-male"></span><a href="/profile"> User Profile</a></h3></li>
+                        <li><h3 class="user-stuff"><span class="fa fa-gear"></span><a href="/profile"> Settings</a></h3></li>
+                      </ul>
+                  </div>
+                </div>
+             </div>
+            
+              <div class="col-sm-6">
+                <% if(typeof user !== "undefined") { %>
+                  <div class="inner">
+                    <form action="/rooms" method="post">
+                      <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" class="form-control" name="roomName">
+                      </div>
+                      <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" name="password">
+                      </div>
+                      <button type="submit" class="btn btn-danger btn-lg">Create Room</button>
+                    </form>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div><!-- /row -->
+        </div><!-- /container -->
+      </div><!-- /content-type-a -->
+      <% } else { %>
+        <div class="container-fluid content-type-a" id="createroom">
+        <div class="container">
+          <div class="row row-centered">
+            <div class="col-sm-6 col-centered">
+              <div class="inner">
+                <div class="wat">
+                  <h2>Welcome to Paint Wars!</h2>
+                  <h3>
+                    <a href="/login">&nbsp;Log In</a>&nbsp; / 
+                    <a href="/signup">Sign Up</a>
+                  </h3>
+                  <h3>or</h3>
+                  <form action="/rooms" method="post">
+                    <button type="submit" class="btn btn-danger btn-lg">Create A Room</button>
+                  </form>
+                  
+                  <h4>(Or simply join one of the public rooms below)</h4>
+                  
+                
+                </div>
+              </div>
+            </div>
+          </div><!-- /row -->
+        </div><!-- /container -->
+      </div><!-- /content-type-a -->
+      <% } %>
 
-    .thumb.last-modified{
+      <div class="container">
 
-    }
-
-    .thumbnails{
-      
-    }
-
-    .thumbnails li{
-      list-style: none;
-      float: left;
-      padding: 10px;
-    }
-
-  </style>
-  <script>
-
-  </script>
-    <div class="container" id="createroom">
-      <div class="row">
-         
-      </div>
-      <form action="/rooms" method="post">
-        <div class="form-group">
-          <label>Name</label>
-          <input type="text" class="form-control" name="roomName">
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" class="form-control" name="password">
-        </div>
-
-        <button type="submit" class="btn btn-danger btn-lg">Create Room</button>
-      </form>
-      
         <% if(typeof user !== "undefined" && userRooms.length > 0) { %>
-          <div class="thumbnails row">
-            <h1>Your Rooms</h1>
-            <ul>
-            <% for(var i = 0; i < userRooms.length; i++) { %>
-              <%if(typeof userRooms[i].dataURL !== "undefined" && userRooms[i].dataURL !== null) {%>
-                <li>
-                  <a href= "<%= 'rooms/'+userRooms[i].roomId %>">
-                    <img class="thumb" src="<%= userRooms[i].dataURL %>" />
-                  </a>
-                    <p class="last-modified">Last modified: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
-                </li>
+          <div class="row thumbnails">
+            <div class="col-md-12">
+              <h3>Your Rooms</h3>
+              <ul>
+              <% for(var i = 0; i < userRooms.length; i++) { %>
+                <%if(typeof userRooms[i].dataURL !== "undefined" && userRooms[i].dataURL !== null) {%>
+                  <li>
+                      <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
+                        <h4>
+                          <%if(typeof userRooms[i].name !== "undefined") { %>
+                            <%= userRooms[i].name %>
+                          <% } else { %>
+                            <%= userRooms[i].roomId %>
+                          <% } %>
+                        </h4>
+                        <img class="thumb" src="<%= userRooms[i].dataURL %>" />
+                      </a>
+                        <p class="last-modified">Last edited: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
+                        <p class="user-count">Users in Room: <%= userRooms[i].userCount %></p>
+                    </li>
+                <% } %>
               <% } %>
-            <% } %>
-            </ul>
-          </div>
-        <% } %> 
+              </ul>
+            </div><!-- /col-md-12 -->
+          </div><!-- /room-block -->
+        <% } %>
         
         <% if(typeof publicRooms !== "undefined" && publicRooms.length > 0) { %>
-        <h1>Public Rooms</h1>
-          <div class="thumbnails row">
-            <ul>
-            <% for(var i = 0; i < publicRooms.length; i++) { %>
-              <%if(typeof publicRooms[i].dataURL !== "undefined" && publicRooms[i].dataURL !== null) {%>
-                <li>
-                  <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
-                    <h4>
-                      <%if(typeof publicRooms[i].name !== "undefined") { %>
-                        <%= publicRooms[i].name %>
-                      <% } else { %>
-                        <%= publicRooms[i].roomId %>
-                      <% } %>
-                    </h4>
-                    <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
-                  </a>
-                    <p class="last-modified">Last edited: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
-                    <p class="user-count">Users in Room: <%= publicRooms[i].userCount %></p>
-                </li>
-              <% } %>
-            <% } %> 
-            </ul>
-          </div>
-        <% } %>
-      
+          <div class="row thumbnails">
+              <div class="col-md-12">
+                <h3>Public Rooms</h3>
+                <ul>
+                <% for(var i = 0; i < publicRooms.length; i++) { %>
+                  <%if(typeof publicRooms[i].dataURL !== "undefined" && publicRooms[i].dataURL !== null) {%>
+                    <li>
+                      <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
+                        <h4>
+                          <%if(typeof publicRooms[i].name !== "undefined") { %>
+                            <%= publicRooms[i].name %>
+                          <% } else { %>
+                            <%= publicRooms[i].roomId %>
+                          <% } %>
+                        </h4>
+                        <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
+                      </a>
+                        <p class="last-modified">Last edited: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
+                        <p class="user-count">Users in Room: <%= publicRooms[i].userCount %></p>
+                    </li>
+                  <% } %>
+                <% } %> 
+                </ul>
+              </div><!-- /col-md-12 -->
+            </div><!-- /room-block -->
+          <% } %>
+      </div> <!-- /container ..>
+
          <!--<form action="/rooms" method="post">
                 <button type="submit" class="btn btn-danger btn-lg">Create Random Room</button>
           </form>-->
