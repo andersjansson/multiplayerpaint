@@ -76,6 +76,118 @@ code {
   margin-top: 70px;
 }
 
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
+
+.center {
+  text-align: center !important;
+}
+
+.left{
+  text-align: left !important;
+}
+
+/*=================================================================================================================================== 
+ #Content
+======================================================================================================================================*/
+
+.content-type-a{
+  padding-bottom: 70px !important;
+  background: black;
+  color: white;
+}
+
+  .content-type-a a{
+    margin: -5px 0 0 5px;
+    padding: -5px 0 0 0;
+  }
+
+  .content-type-a .fa{
+    color: white;
+  }
+
+  .content-type-a .col-sm-6{
+    
+  }
+
+  .content-type-a .col-sm-6 .inner{
+    border: solid white 1px;
+    border-radius: 25px;
+    min-height: 250px;
+    min-width: 455px;
+    max-width: 455px;
+    padding: 25px 25px 25px 25px;
+    margin: 0 auto;
+  }
+
+  .content-type-a .col-sm-6 .inner li{
+    list-style: none;
+    padding: 0;
+    margin: 10px;
+    float: left;
+  }
+
+  .content-type-a .col-sm-6 .inner .wat{
+    text-align: center;
+  }
+
+  .content-type-a .col-sm-6 .inner ul{
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .content-type-a button{
+    margin-top: 5px;
+  }
+
+  .content-type-a h3{
+    margin-top: 0;
+  }
+
+  .content-type-a h4{
+    margin-top: 50px;
+  }
+
+.thumbnails{
+
+}
+
+  .thumbnails ul{
+    margin: 0;
+    padding: 0;
+  }
+
+  .thumbnails {
+
+  }
+
+  .thumbnails .user-count{
+
+  }
+
+  .thumbnails li{
+    list-style: none;
+    float: left;
+    padding: 10px;
+  }
+
+  .thumb{
+    width: 200px;
+    height: 120px;
+    border: solid gray 1px;
+  }
+
 /*=================================================================================================================================== 
  #Canvas / Canvas Interface
 ======================================================================================================================================*/

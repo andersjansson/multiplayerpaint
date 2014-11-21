@@ -371,6 +371,7 @@ function Room(id)
     console.log(timeStamp() + " Saving dataURL to roomModel");
     this.dataURL = dataURL;
     this.roomModel.dataURL = this.dataURL;
+    this.roomModel.userCount = this.clientCount;
     this.roomModel.save();
   }
 
