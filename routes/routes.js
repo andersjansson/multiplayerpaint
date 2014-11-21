@@ -7,11 +7,15 @@ var validator = require('validator');
 module.exports = function(app, passport) {
 
 	app.get('/', function(req, res) {
+
+		//removeAllRooms();
+		//generatePublicRooms(3);
+
 		if(req.isAuthenticated()){
 			res.render('index.ejs', {
 				user: req.user,
 				userRooms: RoomModel.find({creator: req.user.id}).sort({lastModified: -1}),
-				publicRooms: RoomModel.find({ isPrivate: false }).sort({lastModified: -1}),
+				publicRooms: RoomModel.find({}).sort({lastModified: -1}),
 				timeAgo: timeAgo
 			});
 			
@@ -237,8 +241,10 @@ function generatePublicRooms(howMany)
 {
   for(var i = 0; i < howMany; i++)
   {
+  	console.log("Generating room "+ i);
+
   	var room = new RoomModel({
-  		roomName: "room" + [i],
+  		name: "room " + [i],
   		isPrivate: false,
   		roomId: generateRoomId(10)
   	});

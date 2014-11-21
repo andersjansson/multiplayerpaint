@@ -1,7 +1,7 @@
 var mongoose     = require('mongoose');
 var lastModified = require('./plugins/lastModified');
-//var tempdataURL  = require('./plugins/tempdataURL');
 var Schema       = mongoose.Schema;
+//var tempdataURL  = require('./plugins/tempdataURL');
 
 var RoomSchema   = new Schema({
 	
@@ -10,7 +10,8 @@ var RoomSchema   = new Schema({
   creator: Object,
   dataURL: String,
   password: String,
-  isPrivate: Boolean
+  isPrivate: Boolean,
+  userCount: {type: Number, default: 0}
 
 });
 
