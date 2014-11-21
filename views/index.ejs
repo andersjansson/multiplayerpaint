@@ -6,10 +6,10 @@
               <div class="col-sm-6">
                 <div class="inner">
                   <div class="wat">
-                    
+                    <h2>User Panel</h2>                   
                       <ul>
                         <li><h3 class="user-stuff"><span class="fa fa-male"></span><a href="/profile"> User Profile</a></h3></li>
-                        <li><h3 class="user-stuff"><span class="fa fa-gear"></span><a href="/profile"> Settings</a></h3></li>
+                        <li><h3 class="user-stuff"><span class="fa fa-gear"></span><a href="/profile/settings/edit"> Settings</a></h3></li>
                       </ul>
                   </div>
                 </div>
@@ -18,14 +18,15 @@
               <div class="col-sm-6">
                 <% if(typeof user !== "undefined") { %>
                   <div class="inner">
+                    <h2 class="center">Create Room</h2>
                     <form action="/rooms" method="post">
                       <div class="form-group">
-                        <label>Name*</label>
+                        <label>Room Name (Required)</label>
                         <input type="text" class="form-control" name="roomName" required>
                       </div>
                         <div id="ifYes" style="display:none">
                           <div class="form-group">
-                            <label>Password</label>
+                            <label>Password (Optional)</label>
                             <input type="password" class="form-control" name="password">
                         </div>
                       </div>
@@ -42,7 +43,7 @@
         </div><!-- /container -->
       </div><!-- /content-type-a -->
       <% } else { %>
-        <div class="container-fluid content-type-a" id="createroom">
+        <div class="container-fluid content-type-a">
         <div class="container">
           <div class="row row-centered">
             <div class="col-sm-6 col-centered">
@@ -54,7 +55,7 @@
                     <a href="/signup">Sign Up</a>
                   </h3>
                   <h3>or</h3>
-                  <form action="/rooms" method="post">
+                  <form action="/createrandom" method="post">
                     <button type="submit" class="btn btn-danger btn-lg">Create A Room</button>
                   </form>
                   
@@ -68,22 +69,10 @@
         </div><!-- /container -->
       </div><!-- /content-type-a -->
       <% } %>
-
-      <div class="container">
-
-  </style>
-   
-  </style>
-  <script>
-
-  </script>
-
-    <div class="container" id="createroom">
-      <div class="row">
-         
-      </div> 
-        <% if(typeof user !== "undefined" && userRooms.length > 0) { %>
-        
+    <% if(typeof user !== "undefined" && userRooms.length > 0) { %>
+      <div class="container-fluid content-type-b">
+        <div class="container">
+          
           <div class="row thumbnails">
             <div class="col-md-12">
               <h3>Your Rooms</h3>
@@ -108,10 +97,15 @@
               <% } %>
               </ul>
             </div><!-- /col-md-12 -->
-          </div><!-- /room-block -->
-        <% } %>
+          </div><!-- /row thumbnails -->
+        </div>
         
-        <% if(typeof publicRooms !== "undefined" && publicRooms.length > 0) { %>
+      </div><!-- /container content-type-b -->
+    <% } %>
+    <% if(typeof publicRooms !== "undefined" && publicRooms.length > 0) { %>
+      <div class="container-fluid content-type-b">
+        <div class="container">
+          
           <div class="row thumbnails">
               <div class="col-md-12">
                 <h3>Public Rooms</h3>
@@ -137,13 +131,9 @@
                 </ul>
               </div><!-- /col-md-12 -->
             </div><!-- /room-block -->
-          <% } %>
-      </div> <!-- /container ..>
-
-         <!--<form action="/rooms" method="post">
-                <button type="submit" class="btn btn-danger btn-lg">Create Random Room</button>
-          </form>-->
-    </div>
-  
+            
+          </div><!-- /container content-type-b -->
+        </div> 
+      <% } %>
   </body>
 </html>

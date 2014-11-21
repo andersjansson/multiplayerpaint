@@ -197,7 +197,19 @@ module.exports = function(app, passport) {
 	}));
 
 	app.post('/createrandom',  function(req, res) {
-		
+		var id = generateRoomId(10);
+
+		var room = new RoomModel({
+  		roomId: id,
+  		isPrivate: false,
+  	});
+
+  	room.save(function(err, doc){
+  		if(err) console.log(err);
+
+  		else
+  			res.redirect("/rooms/"+id);
+  	});
 	});
 };
 
@@ -294,5 +306,5 @@ function timeAgo(date)
   if (interval >= 1) {
       return interval + (Math.floor(interval) > 1 ? " minutes" : " minute");
   }
-  return Math.floor(seconds) + " seconds";
+  return "< 1 minute";
 }

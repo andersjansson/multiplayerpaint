@@ -362,17 +362,21 @@ function Room(id)
 
   Room.prototype.saveLocalDataURLToMongo = function()
   {
-    this.roomModel.dataURL = this.dataURL;
-    this.roomModel.save();
+    if(typeof this.roomModel !== "undefined"){
+      this.roomModel.dataURL = this.dataURL;
+      this.roomModel.save();
+    }
   }
 
   Room.prototype.saveDataURLtoMongo = function(dataURL)
   {
     console.log(timeStamp() + " Saving dataURL to roomModel");
     this.dataURL = dataURL;
-    this.roomModel.dataURL = this.dataURL;
-    this.roomModel.userCount = this.clientCount;
-    this.roomModel.save();
+    if(typeof this.roomModel !== "undefined"){
+      this.roomModel.dataURL = this.dataURL;
+      this.roomModel.userCount = this.clientCount;
+      this.roomModel.save();
+    }
   }
 
   Room.prototype.getModelFromMongo = function(id, fn)
@@ -387,8 +391,10 @@ function Room(id)
 
   Room.prototype.saveCountToMongo = function()
   {
-    this.roomModel.userCount = this.clientCount;
-    this.roomModel.save();
+    if(typeof this.roomModel !== "undefined"){
+      this.roomModel.userCount = this.clientCount;
+      this.roomModel.save();  
+    }
   }
 
   Room.prototype.saveDataURL = function(dataURL)
@@ -404,6 +410,7 @@ function Room(id)
     this.paintArray.push(JSON.parse(data));
 
     if(time > this.lastSaved){
+      console.log(timeStamp() + " TROLOLOLOLOLOLOLOLOLOLOLOLOLOL")
       this.saveCountToMongo();
       this.lastSaved = time;
     }
@@ -419,8 +426,10 @@ function Room(id)
   {
     this.paintArray = [];
     this.dataURL = null;
-    this.roomModel.dataURL = null;
-    this.roomModel.save();
+    if(typeof this.roomModel !== "undefined"){
+      this.roomModel.dataURL = null;
+      this.roomModel.save();
+    }
     this.hasLocalDataURL = false;
   }
 

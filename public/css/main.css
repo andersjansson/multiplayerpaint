@@ -30,7 +30,7 @@ body {
 }
 
 body > .container-fluid {
-  padding: 60px 15px 0;
+
 }
 .container .text-muted {
   margin: 20px 0;
@@ -60,6 +60,7 @@ code {
   width: 100%;
   position: relative;
   overflow: hidden;
+  padding: 60px 15px;
 }
 
 .fa {
@@ -102,6 +103,7 @@ code {
 ======================================================================================================================================*/
 
 .content-type-a{
+  padding-top: 120px !important;
   padding-bottom: 70px !important;
   background: black;
   color: white;
@@ -123,8 +125,7 @@ code {
   .content-type-a .col-sm-6 .inner{
     border: solid white 1px;
     border-radius: 25px;
-    min-height: 250px;
-    min-width: 455px;
+    min-height: 277px;
     max-width: 455px;
     padding: 25px 25px 25px 25px;
     margin: 0 auto;
@@ -187,6 +188,10 @@ code {
     height: 120px;
     border: solid gray 1px;
   }
+
+.content-type-b{
+  margin-top: 30px;
+}
 
 /*=================================================================================================================================== 
  #Canvas / Canvas Interface
