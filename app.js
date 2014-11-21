@@ -99,12 +99,16 @@ function RoomHandler(io)
 
     this.rooms[roomId].dataURLQueue.push(socket.id);
     this.rooms[roomId].clientCount++;
+
+    if(typeof this.rooms[roomId].roomModel !== "undefined")
+      this.rooms[socket.roomId].saveCountToMongo();
   }
 
   RoomHandler.prototype.clientLeaveRoom = function(socket)
   {
     this.rooms[socket.roomId].dataURLQueue.splice(this.rooms[socket.roomId].dataURLQueue.indexOf(socket.id),1);
     this.rooms[socket.roomId].clientCount--;
+    this.rooms[socket.roomId].saveCountToMongo();
   }  
 
   RoomHandler.prototype.removeClient = function(socket)
@@ -310,11 +314,10 @@ function RoomHandler(io)
     }
 
     else{
-      console.log("In sendPaintingbackup, roomId: "+ socket.roomId);
-    
       _this.rooms[socket.roomId].getModelFromMongo(socket.roomId, function(model){
         if(model && typeof model !== "undefined"){
           socket.emit("Server.sendDataURL", model.dataURL, _this.sendDataURLCallback);
+          _this.rooms[socket.roomId].saveCountToMongo();
           console.log(timeStamp() + " No local dataURL, sending dataURL from mongoDB");
         }
         else{
@@ -336,7 +339,7 @@ function Room(id)
   this.dataURL;
   this.hasLocalDataURL = false;
   this.paintArray = new Array();
-  this.lastModified = 0;
+  this.lastSaved = 0;
 
   this.init();
 }
@@ -379,7 +382,12 @@ function Room(id)
       else
         fn(false);
     });
-      
+  }
+
+  Room.prototype.saveCountToMongo = function()
+  {
+    this.roomModel.userCount = this.clientCount;
+    this.roomModel.save();
   }
 
   Room.prototype.saveDataURL = function(dataURL)
@@ -391,7 +399,14 @@ function Room(id)
 
   Room.prototype.saveBrushStroke = function(data)
   {
+    var time = new Date().getMinutes();
     this.paintArray.push(JSON.parse(data));
+
+    if(time > this.lastSaved){
+      this.saveCountToMongo();
+      this.lastSaved = time;
+    }
+
   }
 
   Room.prototype.getFullPainting = function()

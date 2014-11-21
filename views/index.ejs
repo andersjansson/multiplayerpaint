@@ -67,9 +67,17 @@
               <%if(typeof publicRooms[i].dataURL !== "undefined" && publicRooms[i].dataURL !== null) {%>
                 <li>
                   <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
+                    <h4>
+                      <%if(typeof publicRooms[i].name !== "undefined") { %>
+                        <%= publicRooms[i].name %>
+                      <% } else { %>
+                        <%= publicRooms[i].roomId %>
+                      <% } %>
+                    </h4>
                     <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
                   </a>
                     <p class="last-modified">Last edited: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
+                    <p class="user-count">Users in Room: <%= publicRooms[i].userCount %></p>
                 </li>
               <% } %>
             <% } %> 
