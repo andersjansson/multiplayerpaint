@@ -124,7 +124,7 @@
                 
                 <div class="thumbs-ul-container">
                   <ul class="test">
-                  <% var pLimit = (publicRooms.length > 15) ? 15 : publicRooms.length; %>
+                  <% var pLimit = (publicRooms.length > 10) ? 10 : publicRooms.length; %>
                   <% for(var i = 0; i < pLimit; i++) { %>
                     <li>
                       <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
@@ -150,5 +150,8 @@
           </div><!-- /container content-type-b -->
         </div> 
       <% } %>
+      <script>
+        var gallery = new PasswordChecker();
+      </script>
   </body>
 </html>

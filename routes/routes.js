@@ -166,15 +166,48 @@ module.exports = function(app, passport) {
 
 		var name;
 		var uId;
+		var pass;
+		var requirePass;
+		var auth = false;
 		
 		if(req.isAuthenticated()){
 			name = req.user.local.username;
 			uId  = req.user.id;
+			auth = true;
 		}
 
 	  getRoom(req.params.roomId, function(doc){
-	  	if(doc)
-	  		res.render("Rooms/room.ejs", {roomId: req.params.roomId, roomName: doc.name, roomCreator: doc.creator, userId: uId, user: req.user});	
+	  	if(doc){
+
+	  		/*
+	  			1. Kolla om rummet har ett password
+	  					om det har:
+								2. Kolla om vi är inloggade, isf, är vi rummets host?
+									om vi är behöver vi inte skriva in password
+									om vi inte är rummets host behöver vi skriva in password
+									
+	  		*/
+	  		if(typeof doc.password !== "undefined"){
+	  			if(auth && doc.creator !== uId){
+	  				pass = doc.password;
+	  			}
+
+	  		}
+
+	  		
+
+	  		
+	  	
+	  		res.render("Rooms/room.ejs", {
+	  			roomId: req.params.roomId, 
+	  			roomName: doc.name, 
+	  			roomCreator: doc.creator, 
+	  			userId: uId, 
+	  			user: req.user, 
+	  			password: true
+	  		});
+	  	}
+	  	
 	  	else
 	  		res.render("Errors/404.ejs");
 	  });
