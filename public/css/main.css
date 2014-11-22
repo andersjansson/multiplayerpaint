@@ -119,6 +119,8 @@ code {
   font-weight: 500;
 }
 
+
+
 /*=================================================================================================================================== 
  #Content
 ======================================================================================================================================*/
@@ -457,3 +459,67 @@ canvas {
   font-weight: 700;
   color: black;
 }
+
+/*=================================================================================================================================== 
+ #Password-modal-thingie
+======================================================================================================================================*/
+
+.password-modal-wrapper {
+  display: block;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999999; }
+
+.visible {
+  display: table !important; }
+
+.password-modal-vertical-align {
+  margin: 0;
+  padding: 0;
+  display: table-cell;
+  vertical-align: middle;
+  background-color: rgba(0, 0, 0, 0.8);
+  opacity: 1;
+  color: white;
+  -webkit-transition: opacity 0.3s ease-out;
+  -moz-transition: opacity 0.3s ease-out;
+  -o-transition: opacity 0.3s ease-out;
+  -ms-transition: opacity 0.3s ease-out;
+  transition: opacity 0.3s ease-out; }
+
+.opaque {
+  opacity: 1 !important; 
+}
+
+.password-modal-horizontal-align {
+  text-align: center; 
+}
+
+.password-modal-container {
+  position: relative;
+  margin: 0 auto;
+  color: white;
+  font-weight: bold;
+  margin-top: -200px;
+  max-width: 600px;
+}
+  .password-modal-container .btn{
+    margin-top: 30px !important;
+  }
+
+  .password-message{
+    margin-top: 10px !important;
+    margin-bottom: 5px;
+    font-weight: bold;
+    height: 30px;
+  }
+
+  .red{
+    font-weight: bold;
+    color: red;
+  }
