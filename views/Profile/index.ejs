@@ -16,20 +16,21 @@
 			<h1>Profile Settings</h1>
 				<b>Email:</b> <%= user.local.email %> 
 			<br>	
-				<b>Email:</b> <%= user.local.email %> 
+				<b>Username:</b> <%= user.local.username %> 
 			<br>	
-				<b>Email:</b> <%= user.local.email %> 
+				<b>First Name:</b> <%= firstName = (user.local.first_name === "undefined") ? user.local.first_name  : "" %>
 			<br>	
-				<b>Email:</b> <%= user.local.email %> 
+				<b>Last Name:</b>  <%= lastName = (user.local.last_name === "undefined") ? user.local.last_name : ""  %>
 			<br>	
-				<b>Email:</b> <%= user.local.email %> 
+				<b>Age:</b>  <%= age = (user.local.age === "undefined") ? user.local.age :  "" %>
 			<hr>
 			
 
 			<h1>Statistics</h1>
-			<b>Antal Skapade rum:</b> 1337
+			
+			<b>Total Created Rooms:</b> <%= totalrooms = (userRooms.length === 'undefined') ? 0 : userRooms.length  %>
 			<br>
-			<b>Antal strokes:</b> 102301301203
+			<b>Member since:</b> <%= user.local.created_at %>
 			<br>	
 
 		</div>
@@ -40,32 +41,42 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-	</div>
-	<br>
-	<div class="row">
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-		<div class="col-md-3">
-			<img src="http://placehold.it/200x150">
-		</div>
-	</div>
+
+	<% if(typeof user !== "undefined" && userRooms.length > 0) { %>
+      
+      <div class="container-fluid content-type-b">
+        
+        <div class="container">
+          
+          <div class="row row-centered thumbnails">
+            <div class="col-md-12 col-centered">
+              <div class="thumbs-ul-container">
+                <ul class="test">
+                <% var uLimit = (userRooms.length > 10) ? 10 : userRooms.length; %>
+                <% for(var i = 0; i < uLimit; i++) { %>
+                  <li>
+                    <a href= "<%= 'rooms/'+userRooms[i].roomId %>">
+                      <h4 class="room-name">
+                        <%if(typeof userRooms[i].name !== "undefined") { %>
+                          <% var name = (userRooms[i].name.length > 17) ? (userRooms[i].name.substring(0,17) + "..") : userRooms[i].name %>
+                          <%= name %>
+                        <% } else { %>
+                          <%= userRooms[i].roomId %>
+                        <% } %>
+                      </h4>
+                      <img class="thumb" src="<%= userRooms[i].dataURL %>" />
+                    </a>
+                      <p class="last-modified">Last used: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
+                      <p class="user-count">Users in Room: <%= userRooms[i].userCount %></p>
+                  </li>
+                <% } %>
+                </ul>
+              </div>
+            </div><!-- /col-md-12 -->
+          </div><!-- /row thumbnails -->
+        </div>
+        
+      </div><!-- /container content-type-b -->
+    <% } %>
+
 </div>

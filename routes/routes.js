@@ -33,14 +33,15 @@ module.exports = function(app, passport) {
 
 	app.get('/profile', isLoggedIn, function(req, res) {
 
-		var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
+		//var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
 
 		res.render('Profile/index.ejs', {
 			user : req.user,
-			Userrooms: rooms,
-			userRooms: RoomModel.find({creator: req.user.id}).sort({lastModified: -1})
+			//Userrooms: rooms,
+			userRooms: RoomModel.find({creator: req.user.id}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
+			timeAgo: timeAgo
 		});
-		console.log(rooms);
+		//console.log(rooms);
 		console.log(req.user.id);
 	});
 
@@ -75,6 +76,11 @@ module.exports = function(app, passport) {
 		  			user.local.username = validator.escape(req.body.username);
 		  			user.local.email = validator.escape(req.body.email);
 		  			user.local.password = user.generateHash(req.body.password);
+		  			
+		  			if (req.body.lastName !== "") user.local.last_name = req.body.lastName;
+		  			if (req.body.firstName !== "") user.local.first_name = req.body.firstName;
+		  			if (req.body.lastName !== "") user.local.age = req.body.age;
+
 				  	user.save();
 				  	user.save(function (err) {
 
