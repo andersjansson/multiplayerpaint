@@ -85,23 +85,21 @@
                 <ul class="test">
                 <% var uLimit = (userRooms.length > 10) ? 10 : userRooms.length; %>
                 <% for(var i = 0; i < uLimit; i++) { %>
-                  <%if(typeof userRooms[i].dataURL !== "undefined" && userRooms[i].dataURL !== null && typeof userRooms[i].roomId !== "undefined") {%>
-                    <li>
-                        <a href= "<%= 'rooms/'+userRooms[i].roomId %>">
-                          <h4 class="room-name">
-                            <%if(typeof userRooms[i].name !== "undefined") { %>
-                              <% var name = (userRooms[i].name.length > 17) ? (userRooms[i].name.substring(0,17) + "..") : userRooms[i].name %>
-                              <%= name %>
-                            <% } else { %>
-                              <%= userRooms[i].roomId %>
-                            <% } %>
-                          </h4>
-                          <img class="thumb" src="<%= userRooms[i].dataURL %>" />
-                        </a>
-                          <p class="last-modified">Last used: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
-                          <p class="user-count">Users in Room: <%= userRooms[i].userCount %></p>
-                      </li>
-                  <% } %>
+                  <li>
+                    <a href= "<%= 'rooms/'+userRooms[i].roomId %>">
+                      <h4 class="room-name">
+                        <%if(typeof userRooms[i].name !== "undefined") { %>
+                          <% var name = (userRooms[i].name.length > 17) ? (userRooms[i].name.substring(0,17) + "..") : userRooms[i].name %>
+                          <%= name %>
+                        <% } else { %>
+                          <%= userRooms[i].roomId %>
+                        <% } %>
+                      </h4>
+                      <img class="thumb" src="<%= userRooms[i].dataURL %>" />
+                    </a>
+                      <p class="last-modified">Last used: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
+                      <p class="user-count">Users in Room: <%= userRooms[i].userCount %></p>
+                  </li>
                 <% } %>
                 </ul>
               </div>
@@ -126,25 +124,23 @@
                 
                 <div class="thumbs-ul-container">
                   <ul class="test">
-                  <% var pLimit = (publicRooms.length > 10) ? 10 : publicRooms.length; %>
+                  <% var pLimit = (publicRooms.length > 15) ? 15 : publicRooms.length; %>
                   <% for(var i = 0; i < pLimit; i++) { %>
-                    <%if(typeof publicRooms[i].dataURL !== "undefined" && publicRooms[i].dataURL !== null) {%>
-                      <li>
-                        <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
-                          <h4 class="room-name">
-                            <%if(typeof publicRooms[i].name !== "undefined") { %>
-                              <% var name = (publicRooms[i].name.length > 17) ? (publicRooms[i].name.substring(0,17) + "..") : publicRooms[i].name %>
-                              <%= name %>
-                            <% } else { %>
-                              <%= publicRooms[i].roomId %>
-                            <% } %>
-                          </h4>
-                          <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
-                        </a>
-                          <p class="last-modified">Last used: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
-                          <p class="user-count">Users in Room: <%= publicRooms[i].userCount %></p>
-                      </li>
-                    <% } %>
+                    <li>
+                      <a href= "<%= 'rooms/'+publicRooms[i].roomId %>">
+                        <h4 class="room-name">
+                          <%if(typeof publicRooms[i].name !== "undefined") { %>
+                            <% var name = (publicRooms[i].name.length > 17) ? (publicRooms[i].name.substring(0,17) + "..") : publicRooms[i].name %>
+                            <%= name %>
+                          <% } else { %>
+                            <%= publicRooms[i].roomId %>
+                          <% } %>
+                        </h4>
+                        <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
+                      </a>
+                        <p class="last-modified">Last used: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
+                        <p class="user-count">Users in Room: <%= publicRooms[i].userCount %></p>
+                    </li>
                   <% } %> 
                   </ul>
                 </div>

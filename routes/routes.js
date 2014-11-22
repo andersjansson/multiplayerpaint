@@ -11,20 +11,20 @@ module.exports = function(app, passport) {
 	app.get('/', function(req, res) {
 
 		//removeAllRooms();
-		//generatePublicRooms(3);
+		//generatePublicRooms(23);
 
 		if(req.isAuthenticated()){
 			res.render('index.ejs', {
 				user: req.user,
-				userRooms: RoomModel.find({creator: req.user.id}).sort({lastModified: -1}),
-				publicRooms: RoomModel.find({isPrivate: false}).sort({lastModified: -1}),
+				userRooms: RoomModel.find({creator: req.user.id}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
+				publicRooms: RoomModel.find({isPrivate: false}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
 				timeAgo: timeAgo
 			});
 			
 		}
 		else{
 			res.render('index.ejs', {
-				publicRooms: RoomModel.find({isPrivate: false}).sort({lastModified: -1}),
+				publicRooms: RoomModel.find({isPrivate: false}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
 				timeAgo: timeAgo
 			});
 		}
