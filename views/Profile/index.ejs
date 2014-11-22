@@ -1,7 +1,9 @@
 <% include ../Partials/header %>
 
 <div class="container" style="padding-top: 50px;">
-	
+	<% if (message.length > 0) { %>
+		<div class="alert alert-danger"><%= message %></div>
+	<% } %>
 	<div class="row">
 		<div class="col-md-3">
 			<h2><%= user.local.username %> </h2>
@@ -17,12 +19,24 @@
 				<b>Email:</b> <%= user.local.email %> 
 			<br>	
 				<b>Username:</b> <%= user.local.username %> 
-			<br>	
-				<b>First Name:</b> <%= firstName = (user.local.first_name === "undefined") ? user.local.first_name  : "" %>
-			<br>	
-				<b>Last Name:</b>  <%= lastName = (user.local.last_name === "undefined") ? user.local.last_name : ""  %>
-			<br>	
-				<b>Age:</b>  <%= age = (user.local.age === "undefined") ? user.local.age :  "" %>
+			<br>
+
+			<% if(typeof user.local.first_name !== "undefined") {
+				var firstNamelol = user.local.first_name; 
+			} else {var firstNamelol = "";} %>
+				<b>First Name:</b> <%= firstNamelol %>
+			<br> 
+
+			<% if(typeof user.local.last_name !== "undefined") {
+				var lastNamelol = user.local.last_name; 
+			} else {var lastNamelol = "";} %>	 
+				<b>Last Name:</b> <%= lastNamelol %>
+			<br>
+
+			<% if(typeof user.local.age !== "undefined") {
+				var agelol = user.local.age; 
+			} else {var agelol = "";} %>		
+				<b>Age:</b>  <%= agelol %>
 			<hr>
 			
 

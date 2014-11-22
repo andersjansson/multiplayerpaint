@@ -1,7 +1,7 @@
 <% include ../Partials/header %>
 
-<div class="container" style="padding-top: 50px;">
-	<%= user %>
+<div class="container" style="padding-top: 75px; padding-bottom: 20px;">
+	
 	<% if (message.length > 0) { %>
 		<div class="alert alert-danger"><%= message %></div>
 	<% } %>
@@ -9,6 +9,7 @@
 
 		<div class="form-group">
 			<label>Username</label>
+
 			<input type="text" class="form-control" name="username" value= '<%= user.local.username %>'>
 		</div>
 		<div class="form-group">
@@ -16,23 +17,28 @@
 			<input type="text" class="form-control" name="email" value= '<%= user.local.email %>'>
 		</div>
 		<div class="form-group">
-			<label>Password</label>
-			<input type="password" class="form-control" name="password">
-		</div>
-		<div class="form-group">
 			<label>Age</label>
-			<input type="text" class="form-control" name="age" value= ' <%= age = (user.local.age !== "undefined") ? user.local.age : "" %>'>
+				<% if(typeof user.local.age !== "undefined") {
+				var agelol = user.local.age; 
+			} else {var agelol = "";} %>
+			<input type="text" class="form-control" name="age" value= ' <%= agelol %>'>
 		</div>
 		<div class="form-group">
 			<label>First Name</label>
-			<input type="text" class="form-control" name="firstName" value= '<%= firstName = (user.local.first_name !== "undefined") ? user.local.first_name  : "" %>'>
+			<% if(typeof user.local.first_name !== "undefined") {
+				var firstNamelol = user.local.first_name; 
+			} else {var firstNamelol = "";} %>
+			<input type="text" class="form-control" name="firstName" value= '<%= firstNamelol %>'>
 		</div>
 		<div class="form-group">
 			<label>Last Name</label>
-			<input type="text" class="form-control" name="lastName" value= '<%= lastName = (user.local.last_name !== "undefined") ? user.local.last_name  : "" %>'>
+			<% if(typeof user.local.last_name !== "undefined") {
+				var lastNamelol = user.local.last_name; 
+			} else {var lastNamelol = "";} %>
+			<input type="text" class="form-control" name="lastName" value= '<%= lastNamelol %>'>
 		</div>
 
-		<button type="submit" class="btn btn-danger btn-lg">Edit settings</button>
+		<button type="submit" class="btn btn-danger btn-lg">Save Settings</button>
 	</form>
 
 </div>

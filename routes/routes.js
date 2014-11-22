@@ -34,10 +34,12 @@ module.exports = function(app, passport) {
 	app.get('/profile', isLoggedIn, function(req, res) {
 
 		//var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
+		console.log(req.user);
 
 		res.render('Profile/index.ejs', {
 			user : req.user,
 			//Userrooms: rooms,
+			message: req.flash('editMessage'),
 			userRooms: RoomModel.find({creator: req.user.id}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
 			timeAgo: timeAgo
 		});
@@ -58,7 +60,7 @@ module.exports = function(app, passport) {
 			if (err) return handleError(err);
 			
 
-			if (req.body.username === '' || req.body.email === '' || req.body.password === '') {
+			if (req.body.username === '' || req.body.email === '') {
 
 				console.log(req.flash);
 				console.log(req.body);
@@ -75,18 +77,17 @@ module.exports = function(app, passport) {
 					console.log("loookin good, will save this shit now!");
 		  			user.local.username = validator.escape(req.body.username);
 		  			user.local.email = validator.escape(req.body.email);
-		  			user.local.password = user.generateHash(req.body.password);
 		  			
-		  			if (req.body.lastName !== "") user.local.last_name = req.body.lastName;
+		  			if (req.body.lastName !== "") {user.local.last_name = req.body.lastName};
 		  			if (req.body.firstName !== "") user.local.first_name = req.body.firstName;
 		  			if (req.body.lastName !== "") user.local.age = req.body.age;
-
+					
 				  	user.save();
 				  	user.save(function (err) {
 
 					    if (err) return handleError(err);
-
-					    res.redirect('/profile/settings/edit');
+					    req.flash('editMessage', 'Profile setting has been changed!');
+					    res.redirect('/profile');
 
 					});
 
