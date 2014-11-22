@@ -97,8 +97,10 @@ function RoomHandler(io)
     else
       console.log(timeStamp() + " Joining room with roomId: "+roomId);
 
-    this.rooms[roomId].dataURLQueue.push(socket.id);
-    this.rooms[roomId].clientCount++;
+    if(typeof this.rooms[socket.roomId] !== "undefined"){
+      this.rooms[roomId].dataURLQueue.push(socket.id);
+      this.rooms[roomId].clientCount++;
+    }
 
     if(typeof this.rooms[roomId].roomModel !== "undefined")
       this.rooms[socket.roomId].saveCountToMongo();
@@ -106,9 +108,11 @@ function RoomHandler(io)
 
   RoomHandler.prototype.clientLeaveRoom = function(socket)
   {
-    this.rooms[socket.roomId].dataURLQueue.splice(this.rooms[socket.roomId].dataURLQueue.indexOf(socket.id),1);
-    this.rooms[socket.roomId].clientCount--;
-    this.rooms[socket.roomId].saveCountToMongo();
+    if(typeof this.rooms[socket.roomId] !== "undefined"){
+      this.rooms[socket.roomId].dataURLQueue.splice(this.rooms[socket.roomId].dataURLQueue.indexOf(socket.id),1);
+      this.rooms[socket.roomId].clientCount--;
+      this.rooms[socket.roomId].saveCountToMongo();
+    }
   }  
 
   RoomHandler.prototype.removeClient = function(socket)
@@ -231,7 +235,7 @@ function RoomHandler(io)
       /* Canvas-related events */
 
       socket.on("Client.drawLine", function(msg){
-        _this.rooms[socket.roomId].saveBrushStroke(msg);
+        _this.rooms[socket.roomId].saveBrushStroke(msg, socket.userEmail);
         if(_this.clientCount > 1)
           socket.broadcast.to(socket.roomId).emit("Server.otherUserDrawingLine", msg);
       });
@@ -334,6 +338,7 @@ function Room(id)
 {
   this.id = id;
   this.roomModel;
+  this.roomCreator;
   this.dataURLQueue = [];
   this.clientCount = 0;
   this.dataURL;
@@ -349,9 +354,12 @@ function Room(id)
     var _this = this;
 
     this.getModelFromMongo(this.id, function(model){
-      if(model && typeof model !== "undefined"){
+      if(typeof model !== "undefined"){
         console.log(timeStamp() + " Successfully retrieved model from mongoDB.");
         _this.roomModel = model;
+        
+        if(typeof model.creator !== "undefined")
+          _this.roomCreator = model.creator;
       }
       else{
         console.log(timeStamp() + " Failed to retrieve model from mongoDB.");
@@ -364,6 +372,7 @@ function Room(id)
   {
     if(typeof this.roomModel !== "undefined"){
       this.roomModel.dataURL = this.dataURL;
+      this.roomModel.userCOunt = this.clientCount;
       this.roomModel.save();
     }
   }
@@ -410,7 +419,6 @@ function Room(id)
     this.paintArray.push(JSON.parse(data));
 
     if(time > this.lastSaved){
-      console.log(timeStamp() + " TROLOLOLOLOLOLOLOLOLOLOLOLOLOL")
       this.saveCountToMongo();
       this.lastSaved = time;
     }

@@ -17,14 +17,14 @@ module.exports = function(app, passport) {
 			res.render('index.ejs', {
 				user: req.user,
 				userRooms: RoomModel.find({creator: req.user.id}).sort({lastModified: -1}),
-				publicRooms: RoomModel.find({}).sort({lastModified: -1}),
+				publicRooms: RoomModel.find({isPrivate: false}).sort({lastModified: -1}),
 				timeAgo: timeAgo
 			});
 			
 		}
 		else{
 			res.render('index.ejs', {
-				publicRooms: RoomModel.find({}).sort({lastModified: -1}),
+				publicRooms: RoomModel.find({isPrivate: false}).sort({lastModified: -1}),
 				timeAgo: timeAgo
 			});
 		}
@@ -169,12 +169,11 @@ module.exports = function(app, passport) {
 		if(req.isAuthenticated()){
 			name = req.user.local.username;
 			uId  = req.user.id;
-			console.log("username: " + name);
 		}
 
 	  getRoom(req.params.roomId, function(doc){
 	  	if(doc)
-	  		res.render("Rooms/room.ejs", {roomId: req.params.roomId, roomName: doc.name, roomCreator: doc.creator, user: req.user});	
+	  		res.render("Rooms/room.ejs", {roomId: req.params.roomId, roomName: doc.name, roomCreator: doc.creator, userId: uId, user: req.user});	
 	  	else
 	  		res.render("Errors/404.ejs");
 	  });

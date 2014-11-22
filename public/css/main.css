@@ -98,6 +98,27 @@ code {
   text-align: left !important;
 }
 
+.thumbs-ul-container{
+  text-align: center;
+}
+
+.test{
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+}
+
+.blue{
+  background: #428bca;
+}
+
+.blue h2{
+  color: white;
+  padding-top: 0px;
+  padding-bottom: 10px;
+  font-weight: 500;
+}
+
 /*=================================================================================================================================== 
  #Content
 ======================================================================================================================================*/
@@ -163,6 +184,15 @@ code {
 .thumbnails{
 
 }
+  .thumbnails .room-name{
+    font-size: 1.2em;
+  }
+
+  .thumbnails p{
+    margin: 0;
+    padding: 0;
+    font-size: 0.9em;
+  }
 
   .thumbnails ul{
     margin: 0;
@@ -180,7 +210,10 @@ code {
   .thumbnails li{
     list-style: none;
     float: left;
-    padding: 10px;
+    margin: 10px;
+    max-width: 200px;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .thumb{
@@ -191,6 +224,12 @@ code {
 
 .content-type-b{
   margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.test{
+  display: inline-block;
+  text-align: left;
 }
 
 /*=================================================================================================================================== 

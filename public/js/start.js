@@ -22,8 +22,8 @@ requirejs(['jquery', 'socket.io','jscolor','client','bootstrap','bootstrap-slide
 function($, io, jscolor) {
   $(function(){
     
-    var room = $("title").attr("data-roomid");
-    var name = $("title").attr("data-username");
+    var room   = $("title").attr("data-roomid");
+    var name   = $("title").attr("data-username");
 
     jscolor.install();
     jscolor.init();
