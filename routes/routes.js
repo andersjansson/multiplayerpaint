@@ -142,7 +142,7 @@ module.exports = function(app, passport) {
 
 			Room.name = req.body.roomName;
 
-			if (!req.body.password === '') {
+			if (typeof req.body.password !== 'undefined') {
 				console.log("passwöööörd");
 				Room.password = req.body.password;
 			};
@@ -184,39 +184,53 @@ module.exports = function(app, passport) {
 
 	  getRoom(req.params.roomId, function(doc){
 	  	if(doc){
-
-	  		/*
-	  			1. Kolla om rummet har ett password
-	  					om det har:
-								2. Kolla om vi är inloggade, isf, är vi rummets host?
-									om vi är behöver vi inte skriva in password
-									om vi inte är rummets host behöver vi skriva in password
-									
-	  		*/
 	  		if(typeof doc.password !== "undefined"){
-	  			if(auth && doc.creator !== uId){
+	  			console.log("ROOM HAS PASSWORD");
+	  			if(auth && doc.creator === uId){
+	  				console.log("HOST JOINS ROOM");
+	  				//rummets skapare joinar, han behöver inte skriva in password
+	  			}
+	  			else{
+	  				console.log("NON-HOST JOINS ROOM");
 	  				pass = doc.password;
 	  			}
-
 	  		}
+	  		else
+	  			console.log("ROOM HAS NO PASSWORD");
 
-	  		
-
-	  		
-	  	
 	  		res.render("Rooms/room.ejs", {
 	  			roomId: req.params.roomId, 
 	  			roomName: doc.name, 
-	  			roomCreator: doc.creator, 
+	  			roomCreator: doc.creator,
+	  			dataURL: doc.dataURL,
 	  			userId: uId, 
 	  			user: req.user, 
-	  			password: true
+	  			password: pass
 	  		});
 	  	}
 	  	
 	  	else
 	  		res.render("Errors/404.ejs");
 	  });
+	});
+
+	app.post("/checkroompassword", function(req,res){
+		var pass = req.body.password;
+		var id = req.body.roomId;
+
+		console.log("id: "+id);
+
+		RoomModel.findOne({roomId: id}, function (err, doc){
+			if(doc !== null){
+				if(doc.password === pass)
+					res.send("correct");
+				else
+					res.send("wrong");
+			}
+			else
+				res.send("error");
+		});
+		
 	});
 
 	app.post('/login', passport.authenticate('local-login', {
@@ -260,14 +274,6 @@ function isLoggedIn(req, res, next) {
 	res.redirect('/login');
 }
 
-function checkIfLoggedIn(req) {
-	if(req.isAuthenticated())
-		return true;
-
-	return false;
-}
-
-
 function generateRoomId(length){
 	var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 	var id = "";
@@ -308,8 +314,6 @@ function generatePublicRooms(howMany)
 {
   for(var i = 0; i < howMany; i++)
   {
-  	console.log("Generating room "+ i);
-
   	var room = new RoomModel({
   		name: "room " + [i],
   		isPrivate: false,

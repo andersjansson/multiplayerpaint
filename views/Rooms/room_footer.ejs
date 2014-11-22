@@ -41,17 +41,18 @@
         </div><!--/.nav-collapse -->
       </div>
     </div>
-    <!--
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/lib/jscolor/jscolor.js"></script>
-    <script src="js/lib/jquery.js"></script>
-    <script src="js/lib/bootstrap.js"></script>
-    <script src="js/lib/bootstrap-slider.js"></script>  
-    <script src="js/paint/client.js"></script>
-    
-    <script>
-      var app = new CanvasApp();
-    </script>
-    -->
+    <% if(typeof password !== "undefined") { %>
+      <script>
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var imageObj = new Image();
+
+        imageObj.onload = function() {
+          context.drawImage(imageObj, 69, 50);
+        };
+        
+        imageObj.src = "<%= dataURL %>";
+      </script>
+    <% } %>
   </body>
 </html>

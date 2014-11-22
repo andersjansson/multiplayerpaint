@@ -31,6 +31,27 @@
   </head>
 
   <body>
+    <% if(typeof password !== "undefined") { %>
+      <div class="password-modal-wrapper visible">
+        <div class="password-modal-vertical-align opaque">
+          <div class="password-modal-horizontal-align">
+            <div class="password-modal-container">
+              <h4>THIS ROOM IS PASSWORD PROTECTED</h4>
+              <!--<div class="alert alert-danger">ERROR</div>-->
+              <form class="room-password-check">
+                <div class="password-message">
+                  <label>Enter Password</label>
+                </div>
+                <input type="password" class="form-control" name="password">
+
+                <button type="submit" class="btn btn-danger btn-lg">Enter</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
     <!-- Fixed navbar -->
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
       <div class="container">
