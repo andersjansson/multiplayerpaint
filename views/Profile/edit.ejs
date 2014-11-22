@@ -19,6 +19,18 @@
 			<label>Password</label>
 			<input type="password" class="form-control" name="password">
 		</div>
+		<div class="form-group">
+			<label>Age</label>
+			<input type="text" class="form-control" name="age" value= ' <%= age = (user.local.age !== "undefined") ? user.local.age : "" %>'>
+		</div>
+		<div class="form-group">
+			<label>First Name</label>
+			<input type="text" class="form-control" name="firstName" value= '<%= firstName = (user.local.first_name !== "undefined") ? user.local.first_name  : "" %>'>
+		</div>
+		<div class="form-group">
+			<label>Last Name</label>
+			<input type="text" class="form-control" name="lastName" value= '<%= lastName = (user.local.last_name !== "undefined") ? user.local.last_name  : "" %>'>
+		</div>
 
 		<button type="submit" class="btn btn-danger btn-lg">Edit settings</button>
 	</form>

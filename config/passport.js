@@ -82,6 +82,10 @@ module.exports = function(passport) {
                         newUser.local.email = validator.escape(email);
                         newUser.local.password = newUser.generateHash(password);
                         newUser.local.username = validator.escape(req.body.username);
+                        date = new Date();
+                        console.log(date);
+                        newUser.local.created_at = date.getFullYear() +"-"+ date.getMonth() + "-" + date.getDay();
+                        console.log(date.getFullYear() +"-"+ date.getMonth() + "-" + date.getDay());
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
@@ -104,6 +108,7 @@ module.exports = function(passport) {
                         user.local.username = validator.escape(username);
                         user.local.email = validator.escape(email);
                         user.local.password = user.generateHash(password);
+                        user.local.created_at = date.getFullYear() +"-"+ date.getMonth() + "-" + date.getDay();
                         user.save(function (err) {
                             if (err)
                                 return done(err);
