@@ -38,6 +38,7 @@ module.exports = function(app, passport) {
 		res.render('Profile/index.ejs', {
 			user : req.user,
 			Userrooms: rooms,
+			userRooms: RoomModel.find({creator: req.user.id}).sort({lastModified: -1})
 		});
 		console.log(rooms);
 		console.log(req.user.id);
