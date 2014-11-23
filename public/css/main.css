@@ -17,6 +17,7 @@ body {
   user-select: none; 
   -webkit-user-select: none; 
   -moz-user-select: none;
+  background: #fff;
 }
 #createroom {
   padding-top: 100px;
@@ -46,7 +47,11 @@ code {
 }
 
 .navbar{
-  background-color: white;
+  background-color: #428bca;
+}
+
+.navbar a{
+  color: #fff !important;
 }
 
 .navbar-right{
@@ -60,7 +65,7 @@ code {
   width: 100%;
   position: relative;
   overflow: hidden;
-  padding: 60px 15px;
+  padding: 80px 15px;
 }
 
 .fa {
@@ -119,7 +124,21 @@ code {
   font-weight: 500;
 }
 
+.icon-bar{
+  background-color: #fff !important;
+}
 
+.dropdown-menu a{
+  color: #006bc8 !important;
+}
+
+.open .dropdown-toggle{
+  background: #3a78ae !important;
+}
+
+.navbar-fixed-bottom{
+  background: #fff !important;
+}
 
 /*=================================================================================================================================== 
  #Content
@@ -188,6 +207,7 @@ code {
 }
   .thumbnails .room-name{
     font-size: 1.2em;
+    color: #000;
   }
 
   .thumbnails p{
@@ -222,6 +242,11 @@ code {
     width: 200px;
     height: 120px;
     border: solid gray 1px;
+    background: #fff;
+  }
+
+  .thumb:hover{
+    border-color: #d0d0d0;
   }
 
 .content-type-b{

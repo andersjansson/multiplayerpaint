@@ -411,6 +411,11 @@ function ToolKit(canvasApp)
   ToolKit.prototype.setCursor = function(tool, eraser)
   {
     this.pointerDiv = tool.div;
+    this.brush.div.hide();
+    if(tool == this.brush)
+    {
+      this.brush.div.show();
+    }
     $("body").append(this.pointerDiv);
     $(".tool-icon").removeClass("active");
 
