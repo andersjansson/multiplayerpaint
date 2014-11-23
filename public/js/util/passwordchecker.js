@@ -17,7 +17,6 @@ function PasswordChecker(id,fn)
       e.preventDefault();
 
       var password = $(this)[0][0].value;
-      console.log(password);
 
       $.ajax({
         type: "POST",
