@@ -264,7 +264,13 @@ module.exports = function(app, passport) {
   			res.redirect("/rooms/"+id);
   	});
 	});
+
+	app.get('*', function(req,res) {
+		res.render("Errors/404.ejs");
+	});
 };
+
+
 
 // route middleware to ensure user is logged in
 function isLoggedIn(req, res, next) {
