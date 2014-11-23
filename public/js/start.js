@@ -43,15 +43,7 @@ function($, io, jscolor) {
     var passwordchecker = new PasswordChecker(room, startCanvasApp);
 
     if (typeof $(".password-modal-wrapper")[0] == "undefined"){
-      jscolor.install();
-      jscolor.init();
-
-      var loader = new Loader(document.getElementById("canvas"));
-      loader.start("Loading, please wait...");
-      var socket = io.connect();
-      socket.roomId = room;
-      var app = new CanvasApp(socket,loader);
-      var chat = new ChatApp($("#chat-window"), socket, name);
+      startCanvasApp();
     }
 
   });

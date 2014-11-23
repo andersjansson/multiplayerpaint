@@ -4,7 +4,6 @@ function PasswordChecker(id,fn)
   this.$form = $(".room-password-check");
   this.$message = $(".password-message");
   this.id = id;
-  console.log("PASSWORCHECKER INITIALIZED! id: " +id);
   this.startCanvasApp = fn;
 
   this.init();
@@ -17,7 +16,6 @@ function PasswordChecker(id,fn)
     this.$form.on("submit", function(e){
       e.preventDefault();
 
-      //var password = $(' :input');
       var password = $(this)[0][0].value;
       console.log(password);
 
@@ -32,6 +30,7 @@ function PasswordChecker(id,fn)
               break;
             case "wrong":
               _this.$message.html("<span class='red'>Incorrect.</span> Try again or go <a href='/'>back</a>.");
+              _this.$form[0][0].value = "";
               break;
 
             default:
@@ -48,9 +47,11 @@ function PasswordChecker(id,fn)
   PasswordChecker.prototype.remove = function()
   {
     var _this = this;
-    $("#password-modal-vertical-align").toggleClass("opaque");
+
+    $(".password-modal-vertical-align").toggleClass("opaque");
     setTimeout(function(){
       _this.$modal.toggleClass("visible");
+      $(".password-modal-wrapper").css({"display" : "none"});
     }, 300);
 
     this.startCanvasApp();
