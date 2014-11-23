@@ -40,9 +40,6 @@ require('./routes/routes.js')(app, passport);
 
 var RoomModel = require('./models/room');
 
-
-//app.get('/testlol', user.test);
-
 http.listen(port, function(){
   console.log(timeStamp() + ' Server listening on port '+port);
 });
@@ -68,7 +65,6 @@ function RoomHandler(io)
     this.setupSocketEvents();
   }
 
-  //verkar funka
   RoomHandler.prototype.addClient = function(socket)
   {
     this.clientCount++;
@@ -87,8 +83,6 @@ function RoomHandler(io)
     
     s.roomId = roomId;
     s.join(roomId);
-
-    console.log(socket.id);
 
     if(typeof this.rooms[roomId] == "undefined"){
       console.log(timeStamp() + " Creating room with roomId: "+roomId);

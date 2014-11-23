@@ -210,8 +210,6 @@ module.exports = function(app, passport) {
 		var pass = req.body.password;
 		var id = req.body.roomId;
 
-		console.log("id: "+id);
-
 		RoomModel.findOne({roomId: id}, function (err, doc){
 			if(doc !== null){
 				if(doc.password === pass)
