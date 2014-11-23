@@ -109,6 +109,11 @@ module.exports = function(app, passport) {
 			user : req.user
 		});
 	});
+	app.get('/profile/settings/editlol', isLoggedIn, function(req, res){
+		res.render('Profile/editlol.ejs',{
+			user : req.user
+		});
+	});
 	
 	app.get('/profile/settings/edit', function(req, res){
 		return "EDIT MOTHERRUCKAH"
