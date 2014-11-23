@@ -82,7 +82,8 @@ module.exports = function(app, passport) {
 		  		
 					user.local.age = req.body.age;
 					user.local.first_name = req.body.firstName;
-					user.local.last_name = req.body.lastName
+					user.local.last_name = req.body.lastName;
+					
 				  	user.save();
 				  	user.save(function (err) {
 
