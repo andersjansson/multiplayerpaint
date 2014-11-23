@@ -11,11 +11,11 @@
 			<img src="http://brandonmathis.com/projects/fancy-avatars/demo/images/avatar_male_dark_on_clear_200x200.png" alt="derp" class="img-thumbnail">
 			<br>
 			<br>
-			<a href="/profile/edit"><button type="button" class="btn btn-danger">Edit settings</button></a>
+			<a href="/profile/edit"><button type="button" class="btn btn-danger">Edit Profile</button></a>
 		</div>
 
 		<div class="col-md-9">
-			<h1>Profile Settings</h1>
+			<h1 class="mt-55">Profile Settings</h1>
 				<b>Email:</b> <%= user.local.email %> 
 			<br>	
 				<b>Username:</b> <%= user.local.username %> 
@@ -64,7 +64,7 @@
           
           <div class="row row-centered thumbnails">
             <div class="col-md-12 col-centered">
-              <div class="thumbs-ul-container">
+              <div class="thumbs-ul-container align-left">
                 <ul class="test">
                 <% var uLimit = (userRooms.length > 10) ? 10 : userRooms.length; %>
                 <% for(var i = 0; i < uLimit; i++) { %>
