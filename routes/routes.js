@@ -79,11 +79,10 @@ module.exports = function(app, passport) {
 					console.log("loookin good, will save this shit now!");
 		  			user.local.username = validator.escape(req.body.username);
 		  			user.local.email = validator.escape(req.body.email);
-		  			
-		  			if (req.body.lastName !== "") {user.local.last_name = req.body.lastName};
-		  			if (req.body.firstName !== "") user.local.first_name = req.body.firstName;
-		  			if (req.body.lastName !== "") user.local.age = req.body.age;
-					
+		  		
+					user.local.age = req.body.age;
+					user.local.first_name = req.body.firstName;
+					user.local.last_name = req.body.lastName
 				  	user.save();
 				  	user.save(function (err) {
 
