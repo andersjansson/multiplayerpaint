@@ -46,12 +46,14 @@ module.exports = function(app, passport) {
 		//console.log(rooms);
 		console.log(req.user.id);
 	});
+	app.get('/profile/edit', isLoggedIn, function(req, res) {
 
-	app.get('/profile/settings', isLoggedIn, function(req, res){
-		res.render('Profile/show.ejs', {
-			user : req.user
+		res.render('Profile/edit.ejs', {
+			user : req.user,
+			message: req.flash('editMessage')
 		});
 	});
+
 
 	app.post('/profile/settings/edit', isLoggedIn, function(req, res){
 		console.log(req.body);
@@ -101,22 +103,6 @@ module.exports = function(app, passport) {
 				
 		    }
 		});
-	});
-
-	app.get('/profile/settings/edit', isLoggedIn, function(req, res){
-		res.render('Profile/edit.ejs',{
-			message: req.flash('editMessage'),
-			user : req.user
-		});
-	});
-	app.get('/profile/settings/editlol', isLoggedIn, function(req, res){
-		res.render('Profile/editlol.ejs',{
-			user : req.user
-		});
-	});
-	
-	app.get('/profile/settings/edit', function(req, res){
-		return "EDIT MOTHERRUCKAH"
 	});
 
 	app.get('/logout', function(req, res) {
