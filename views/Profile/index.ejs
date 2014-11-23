@@ -6,7 +6,7 @@
 	<% } %>
 	<div class="row">
 		<div class="col-md-3">
-			<h2><%= user.local.username %> </h2>
+			<h1><%= user.local.username %> </h1>
 
 			<img src="http://brandonmathis.com/projects/fancy-avatars/demo/images/avatar_male_dark_on_clear_200x200.png" alt="derp" class="img-thumbnail">
 			<br>
@@ -15,7 +15,7 @@
 		</div>
 
 		<div class="col-md-9">
-			<h1 class="mt-55">Profile Settings</h1>
+			<h2 class="extra-mt">Profile Settings</h2>
 				<b>Email:</b> <%= user.local.email %> 
 			<br>	
 				<b>Username:</b> <%= user.local.username %> 
@@ -40,7 +40,7 @@
 			<hr>
 			
 
-			<h1>Statistics</h1>
+			<h2>Statistics</h2>
 			
 			<b>Total Created Rooms:</b> <%= totalrooms = (userRooms.length === 'undefined') ? 0 : userRooms.length  %>
 			<br>
