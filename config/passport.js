@@ -57,9 +57,6 @@ module.exports = function(passport) {
 
         }    
         else {
-            console.log(password);
-            console.log(email);
-            console.log(validator.isEmail(email));
             return done(null, false, req.flash('signupMessage', 'Invalid email!'));
         }
 
@@ -83,9 +80,9 @@ module.exports = function(passport) {
                         newUser.local.password = newUser.generateHash(password);
                         newUser.local.username = validator.escape(req.body.username);
                         date = new Date();
-                        console.log(date);
+                        
                         newUser.local.created_at = date.getFullYear() +"-"+ date.getMonth() + "-" + date.getDay();
-                        console.log(date.getFullYear() +"-"+ date.getMonth() + "-" + date.getDay());
+                        
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);

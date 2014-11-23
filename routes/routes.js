@@ -6,12 +6,8 @@ var validator = require('validator');
 //var user = require('./users')
 
 module.exports = function(app, passport) {
-//app.get('/testlol', user.test);
 
 	app.get('/', function(req, res) {
-
-		//removeAllRooms();
-		//generatePublicRooms(23);
 
 		if(req.isAuthenticated()){
 			res.render('index.ejs', {
@@ -33,18 +29,12 @@ module.exports = function(app, passport) {
 
 	app.get('/profile', isLoggedIn, function(req, res) {
 
-		//var rooms = RoomModel.findOne({ roomId : 'roomId'}).where('creator').equals(req.user.id);
-		console.log(req.user);
-
 		res.render('Profile/index.ejs', {
 			user : req.user,
-			//Userrooms: rooms,
 			message: req.flash('editMessage'),
 			userRooms: RoomModel.find({creator: req.user.id}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
 			timeAgo: timeAgo
 		});
-		//console.log(rooms);
-		console.log(req.user.id);
 	});
 	app.get('/profile/edit', isLoggedIn, function(req, res) {
 
@@ -56,17 +46,12 @@ module.exports = function(app, passport) {
 
 
 	app.post('/profile/settings/edit', isLoggedIn, function(req, res){
-		console.log(req.body);
 		User.findOne({ _id: req.user.id }, function (err, user){
 
 			if (err) return handleError(err);
 			
 
 			if (req.body.username === '' || req.body.email === '') {
-
-				console.log(req.flash);
-				console.log(req.body);
-            	console.log("INGA TOMMA FÄLT PLESAE");
 
 				req.flash('editMessage', 'Inga tomma fält please.');
 
@@ -76,7 +61,6 @@ module.exports = function(app, passport) {
 
 				if (validator.isEmail(req.body.email)) {
 
-					console.log("loookin good, will save this shit now!");
 		  			user.local.username = validator.escape(req.body.username);
 		  			user.local.email = validator.escape(req.body.email);
 		  		
@@ -95,7 +79,6 @@ module.exports = function(app, passport) {
 
 				} else {
 
-					console.log("password to short!");
 					req.flash('editMessage', 'You cant fool us, give us a real email pls..fgt');
 
 					return res.redirect('/profile/settings/edit');
@@ -116,10 +99,9 @@ module.exports = function(app, passport) {
 
 	app.get('/rooms', isLoggedIn, function(req, res) {
 		res.render('index.ejs', {roomId: req.params.roomId, roomName: req.body.roomName});
-		console.log("lololol rooooms");
 	});
 	app.post('/rooms', isLoggedIn,  function(req, res) {
-		console.log(req.body);
+	
 		hashId = generateRoomId(10);
 
 		var Room = RoomModel();
@@ -135,13 +117,11 @@ module.exports = function(app, passport) {
 			Room.name = req.body.roomName;
 
 			if (typeof req.body.password !== 'undefined') {
-				console.log("passwöööörd");
 				Room.password = req.body.password;
 			};
 			
 
 			if (req.body.radioGroup === "private") {
-				console.log("its private roooom");
 				Room.isPrivate = true;
 			} else {
 
@@ -177,13 +157,9 @@ module.exports = function(app, passport) {
 	  getRoom(req.params.roomId, function(doc){
 	  	if(doc){
 	  		if(typeof doc.password !== "undefined"){
-	  			console.log("ROOM HAS PASSWORD");
 	  			if(auth && doc.creator === uId){
-	  				console.log("HOST JOINS ROOM");
-	  				//rummets skapare joinar, han behöver inte skriva in password
 	  			}
 	  			else{
-	  				console.log("NON-HOST JOINS ROOM");
 	  				pass = doc.password;
 	  			}
 	  		}
