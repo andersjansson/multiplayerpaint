@@ -23,19 +23,19 @@
 
 			<% if(typeof user.local.first_name !== "undefined") {
 				var firstNamelol = user.local.first_name; 
-			} else {var firstNamelol = "";} %>
+			} else {var firstNamelol = "unknown";} %>
 				<b>First Name:</b> <%= firstNamelol %>
 			<br> 
 
 			<% if(typeof user.local.last_name !== "undefined") {
 				var lastNamelol = user.local.last_name; 
-			} else {var lastNamelol = "";} %>	 
+			} else {var lastNamelol = "unknown";} %>	 
 				<b>Last Name:</b> <%= lastNamelol %>
 			<br>
 
 			<% if(typeof user.local.age !== "undefined") {
 				var agelol = user.local.age; 
-			} else {var agelol = "";} %>		
+			} else {var agelol = "unknown";} %>		
 				<b>Age:</b>  <%= agelol %>
 			<hr>
 			

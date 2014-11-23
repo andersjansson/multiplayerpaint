@@ -82,7 +82,6 @@ module.exports = function(passport) {
                         date = new Date();
                         
                         newUser.local.created_at = date.getFullYear() +"-"+ date.getMonth() + "-" + date.getDay();
-                        
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
