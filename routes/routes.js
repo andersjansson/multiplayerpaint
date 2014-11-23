@@ -16,15 +16,15 @@ module.exports = function(app, passport) {
 		if(req.isAuthenticated()){
 			res.render('index.ejs', {
 				user: req.user,
-				userRooms: RoomModel.find({creator: req.user.id}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
-				publicRooms: RoomModel.find({isPrivate: false}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
+				userRooms: RoomModel.find({creator: req.user.id}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(10),
+				publicRooms: RoomModel.find({isPrivate: false}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(10),
 				timeAgo: timeAgo
 			});
 			
 		}
 		else{
 			res.render('index.ejs', {
-				publicRooms: RoomModel.find({isPrivate: false}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(20),
+				publicRooms: RoomModel.find({isPrivate: false}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(10),
 				timeAgo: timeAgo
 			});
 		}
