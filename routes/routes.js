@@ -159,11 +159,7 @@ module.exports = function(app, passport) {
 
 	  getRoom(req.params.roomId, function(doc){
 	  	if(doc){
-	  		console.log(" --------------- GETTING ROOM ------------------");
-
 	  		if(typeof doc.password !== "undefined" && doc.password !== ""){
-	  			console.log(" --------------- ROOM HAS PASSWORD ------------------");
-
 	  			if(auth && doc.creator === uId){
 	  				//hosten försöker joina, hosten behöver inget password
 	  			}
@@ -171,7 +167,6 @@ module.exports = function(app, passport) {
 	  				pass = doc.password;
 	  			}
 	  		}
-	  		else
 	  
 	  		res.render("Rooms/room.ejs", {
 	  			roomId: req.params.roomId, 
