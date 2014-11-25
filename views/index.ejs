@@ -100,7 +100,7 @@
                       </h4>
                       <img class="thumb" src="<%= userRooms[i].dataURL %>" />
                     </a>
-                      <p class="last-modified">Last used: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
+                      <p class="last-modified">Last activity: <%= timeAgo(userRooms[i].lastModified) %> ago.</p>
                       <p class="user-count">Users in Room: <%= userRooms[i].userCount %></p>
                   </li>
                 <% } %>
@@ -141,7 +141,7 @@
                         </h4>
                         <img class="thumb" src="<%= publicRooms[i].dataURL %>" />
                       </a>
-                        <p class="last-modified">Last used: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
+                        <p class="last-modified">Last activity: <%= timeAgo(publicRooms[i].lastModified) %> ago.</p>
                         <p class="user-count">Users in Room: <%= publicRooms[i].userCount %></p>
                     </li>
                   <% } %> 

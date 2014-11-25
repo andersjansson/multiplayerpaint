@@ -323,6 +323,8 @@ function ToolKit(canvasApp)
   this.app = canvasApp;
   this.color;
   this.brushSize;
+  this.mouseX;
+  this.mouseY;
 
   this.init();
 }
@@ -412,8 +414,7 @@ function ToolKit(canvasApp)
   {
     this.pointerDiv = tool.div;
     this.brush.div.hide();
-    if(tool == this.brush)
-    {
+    if(tool == this.brush && this.isMouseWithinCanvas() ){
       this.brush.div.show();
     }
     $("body").append(this.pointerDiv);
@@ -426,6 +427,20 @@ function ToolKit(canvasApp)
       tool.icon.addClass("active");
     }
       
+  }
+
+  ToolKit.prototype.isMouseWithinCanvas = function()
+  {
+    var c = document.getElementById("canvas");
+
+    if(this.mouseX > c.offsetLeft 
+      && this.mouseX < (c.offsetWidth - this.brush.size/2 + c.offsetLeft) 
+      && this.mouseY > c.offsetTop
+      && this.mouseY < (c.offsetTop - this.brush.size/2 + c.offsetHeight)
+    ) return true;
+    
+    else
+      return false;
   }
 
   ToolKit.prototype.removeCursor = function()
@@ -445,12 +460,12 @@ function ToolKit(canvasApp)
 
   ToolKit.prototype.moveCursor = function(e)
   {
-    var mouseX = e.pageX - this.brush.size/2;
-    var mouseY = e.pageY - this.brush.size/2;
+    this.mouseX = e.pageX - this.brush.size/2;
+    this.mouseY = e.pageY - this.brush.size/2;
 
     this.pointerDiv.css({
-      "top": mouseY,
-      "left": mouseX
+      "top": this.mouseY,
+      "left": this.mouseX
     });
   }
 
