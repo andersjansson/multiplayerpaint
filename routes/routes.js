@@ -119,9 +119,9 @@ module.exports = function(app, passport) {
 
 			Room.name = req.body.roomName;
 
-			if (typeof req.body.password !== 'undefined') {
+			if (typeof req.body.password !== 'undefined' && req.body.password !== "") {
 				Room.password = req.body.password;
-			};
+			}
 			
 
 			if (req.body.radioGroup === "private") {
@@ -159,8 +159,13 @@ module.exports = function(app, passport) {
 
 	  getRoom(req.params.roomId, function(doc){
 	  	if(doc){
-	  		if(typeof doc.password !== "undefined"){
+	  		console.log(" --------------- GETTING ROOM ------------------");
+
+	  		if(typeof doc.password !== "undefined" && doc.password !== ""){
+	  			console.log(" --------------- ROOM HAS PASSWORD ------------------");
+
 	  			if(auth && doc.creator === uId){
+	  				//hosten försöker joina, hosten behöver inget password
 	  			}
 	  			else{
 	  				pass = doc.password;
