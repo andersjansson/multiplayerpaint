@@ -100,9 +100,9 @@ module.exports = function(app, passport) {
 		res.render('Auth/login.ejs', { message: req.flash('loginMessage') });
 	});
 
-	app.get('/rooms', isLoggedIn, function(req, res) {
+	/*app.get('/rooms', isLoggedIn, function(req, res) {
 		res.render('index.ejs', {roomId: req.params.roomId, roomName: req.body.roomName});
-	});
+	}); */
 	app.post('/rooms', isLoggedIn,  function(req, res) {
 	
 		hashId = generateRoomId(10);
