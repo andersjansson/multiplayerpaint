@@ -53,9 +53,9 @@ module.exports = function(app, passport) {
 
 			if (req.body.username === '' || req.body.email === '') {
 
-				req.flash('editMessage', 'Inga tomma fält please.');
+				req.flash('editMessage', 'Username and email cant be empty');
 
-				return res.redirect('/profile/settings/edit');
+				return res.redirect('/profile/edit');
 
 			} else {
 
@@ -79,9 +79,9 @@ module.exports = function(app, passport) {
 
 				} else {
 
-					req.flash('editMessage', 'You cant fool us, give us a real email pls..fgt');
+					req.flash('editMessage', 'You need to give us a proper email! ');
 
-					return res.redirect('/profile/settings/edit');
+					return res.redirect('/profile/edit');
 				}
 				
 		    }
@@ -110,7 +110,7 @@ module.exports = function(app, passport) {
 		if (req.body.roomName === '') {
 
 			req.flash('editMessage', 'You need to enter a name for the room.');
-			return res.redirect('/profile/settings/edit');
+			return res.redirect('/');
 
 		} else {
 
