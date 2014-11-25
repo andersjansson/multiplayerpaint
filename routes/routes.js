@@ -9,6 +9,8 @@ module.exports = function(app, passport) {
 
 	app.get('/', function(req, res) {
 
+		//User.find({}).remove().exec();	
+
 		if(req.isAuthenticated()){
 			res.render('index.ejs', {
 				user: req.user,
@@ -270,30 +272,6 @@ function getRoom(roomId,fn)
 	  	fn(false);
 	  	
 	});
-}
-
-function removePublicRooms()
-{
-	RoomModel.find({isPrivate: false}).remove().exec();
-}
-
-function removeAllRooms()
-{
-	RoomModel.find({}).remove().exec();	
-}
-
-function generatePublicRooms(howMany)
-{
-  for(var i = 0; i < howMany; i++)
-  {
-  	var room = new RoomModel({
-  		name: "room " + [i],
-  		isPrivate: false,
-  		roomId: generateRoomId(10)
-  	});
-
-  	room.save();
-  }
 }
 
 function timeAgo(date)
