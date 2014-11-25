@@ -112,7 +112,7 @@ module.exports = function(app, passport) {
 		if (req.body.roomName === '') {
 
 			req.flash('editMessage', 'You need to enter a name for the room.');
-			return res.redirect('/profile/settings/edit');
+			return res.redirect('/');
 
 		} else {
 
