@@ -16,7 +16,8 @@ module.exports = function(app, passport) {
 				user: req.user,
 				userRooms: RoomModel.find({creator: req.user.id}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(10),
 				publicRooms: RoomModel.find({isPrivate: false}).exists('roomId').exists('dataURL').sort({lastModified: -1}).limit(10),
-				timeAgo: timeAgo
+				timeAgo: timeAgo,
+				message: req.flash('roomMessage')
 			});
 			
 		}
@@ -55,9 +56,9 @@ module.exports = function(app, passport) {
 
 			if (req.body.username === '' || req.body.email === '') {
 
-				req.flash('editMessage', 'Inga tomma fält please.');
+				req.flash('editMessage', 'Username or email cant be empty');
 
-				return res.redirect('/profile/settings/edit');
+				return res.redirect('/profile/edit');
 
 			} else {
 
@@ -81,9 +82,9 @@ module.exports = function(app, passport) {
 
 				} else {
 
-					req.flash('editMessage', 'You cant fool us, give us a real email pls..fgt');
+					req.flash('editMessage', 'You need to enter a valid email! ');
 
-					return res.redirect('/profile/settings/edit');
+					return res.redirect('/profile/edit');
 				}
 				
 		    }
@@ -111,7 +112,7 @@ module.exports = function(app, passport) {
 		Room.roomId = hashId;
 		if (req.body.roomName === '') {
 
-			req.flash('editMessage', 'You need to enter a name for the room.');
+			req.flash('roomMessage', 'You need to enter a name for the room.');
 			return res.redirect('/');
 
 		} else {
@@ -166,8 +167,7 @@ module.exports = function(app, passport) {
 	  			}
 	  		}
 	  		else
-	  			console.log("ROOM HAS NO PASSWORD");
-
+	  
 	  		res.render("Rooms/room.ejs", {
 	  			roomId: req.params.roomId, 
 	  			roomName: doc.name, 

@@ -18,6 +18,9 @@
               <div class="col-sm-6">
                 <% if(typeof user !== "undefined") { %>
                   <div class="inner">
+                   <% if (message.length > 0) { %>
+                      <div class="alert alert-danger"><%= message %></div>
+                   <% } %>
                     <h2 class="center">Create Room</h2>
                     <form action="/rooms" method="post">
                       <div class="form-group">
